@@ -178,7 +178,7 @@ void main() {
           .ancestor(of: find.text('floor'), matching: find.byType(ColoredBox))
           .first,
     );
-    expect(box.color, const Color(0xFFF3F3F3));
+    expect(box.color, const Color(0xFFF5F5F5));
   });
 
   test('glass follows the brightness and system colors follow suit', () {
