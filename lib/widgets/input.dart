@@ -32,30 +32,81 @@ class OptionsDialog<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final desktop = MediaQuery.sizeOf(context).width >= 600;
     return CommonDialog(
       title: title,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      padding: EdgeInsets.fromLTRB(
+        desktop ? 12 : 8,
+        desktop ? 4 : 16,
+        desktop ? 12 : 8,
+        desktop ? 12 : 16,
+      ),
       child: RadioGroup(
         onChanged: (value) {
           Navigator.of(context).pop(value);
         },
         groupValue: value,
-        child: Wrap(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             for (final option in options)
               Builder(
                 builder: (context) {
-                  if (value == option) {
+                  final selected = value == option;
+                  if (selected) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       Scrollable.ensureVisible(context);
                     });
                   }
-                  return ListItem.radio(
-                    value: option,
-                    onTap: () {
-                      Navigator.of(context).pop(option);
-                    },
-                    title: Text(textBuilder(option)),
+                  if (!desktop) {
+                    return ListItem.radio(
+                      value: option,
+                      onTap: () {
+                        Navigator.of(context).pop(option);
+                      },
+                      title: Text(textBuilder(option)),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Material(
+                      color: selected
+                          ? context.colorScheme.primary.withValues(alpha: 0.09)
+                          : Colors.transparent,
+                      borderRadius: AppRadius.extraSmall,
+                      child: InkWell(
+                        borderRadius: AppRadius.extraSmall,
+                        onTap: () {
+                          Navigator.of(context).pop(option);
+                        },
+                        child: SizedBox(
+                          height: 44,
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 6),
+                              Radio<T>(
+                                value: option,
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  textBuilder(option),
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),
