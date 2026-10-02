@@ -19,8 +19,8 @@ const _enterStaggerStep = Duration(milliseconds: 20);
 const _enterSlideBase = 32.0;
 const _enterSlideStep = 8.0;
 final _enterWindow = Durations.medium2 + _enterStaggerStep * _enterStaggerLimit;
-const _desktopGroupHeaderHeight = 68.0;
-const _desktopGroupToolbarHeight = 38.0;
+const _desktopGroupHeaderHeight = 72.0;
+const _desktopGroupToolbarHeight = 34.0;
 
 class ProxiesListView extends ConsumerStatefulWidget {
   const ProxiesListView({super.key});
@@ -454,11 +454,11 @@ class _ListHeaderState extends ConsumerState<ListHeader> {
       enterAnimated: widget.enterAnimated,
       key: widget.key,
       type: CommonCardType.filled,
-      radius: widget.compact ? AppCorner.small : null,
+      radius: widget.compact ? AppCorner.extraSmall : null,
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: widget.compact ? 14 : 16,
-          vertical: widget.compact ? 10 : 12,
+          vertical: widget.compact ? 11 : 12,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -511,29 +511,42 @@ class _DesktopGroupToolbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final glass = context.glass;
+    final primary = context.colorScheme.primary;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: context.appLocalizations.scrollToSelected,
-            visualDensity: VisualDensity.compact,
-            onPressed: onScrollToSelected,
-            iconSize: 19,
-            icon: const Icon(Icons.my_location_rounded),
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 4),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: glass.fill,
+          borderRadius: AppRadius.extraSmall,
+        ),
+        child: SizedBox(
+          height: _desktopGroupToolbarHeight - 4,
+          child: Row(
+            children: [
+              IconButton(
+                tooltip: context.appLocalizations.scrollToSelected,
+                visualDensity: VisualDensity.compact,
+                onPressed: onScrollToSelected,
+                iconSize: 18,
+                color: primary,
+                icon: const Icon(Icons.my_location_rounded),
+              ),
+              IconButton(
+                tooltip: context.appLocalizations.delayTest,
+                visualDensity: VisualDensity.compact,
+                onPressed: () {
+                  ref
+                      .read(proxiesActionProvider.notifier)
+                      .delayTest(group.all, group.testUrl);
+                },
+                iconSize: 19,
+                color: primary,
+                icon: const Icon(Icons.network_ping_rounded),
+              ),
+            ],
           ),
-          IconButton(
-            tooltip: context.appLocalizations.delayTest,
-            visualDensity: VisualDensity.compact,
-            onPressed: () {
-              ref
-                  .read(proxiesActionProvider.notifier)
-                  .delayTest(group.all, group.testUrl);
-            },
-            iconSize: 20,
-            icon: const Icon(Icons.network_ping_rounded),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -647,10 +660,10 @@ class _GroupSummary extends StatelessWidget {
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                color: context.colorScheme.primary.withValues(alpha: 0.07),
-                borderRadius: AppRadius.extraSmall,
+                color: context.colorScheme.primary.withValues(alpha: 0.05),
+                borderRadius: AppRadius.all(4),
                 border: Border.all(
-                  color: context.colorScheme.primary.withValues(alpha: 0.35),
+                  color: context.colorScheme.primary.withValues(alpha: 0.45),
                 ),
               ),
               child: Padding(
@@ -727,7 +740,7 @@ class _GroupActions extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: context.colorScheme.primary.withValues(alpha: 0.08),
-              borderRadius: AppRadius.full,
+              borderRadius: AppRadius.all(10),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
