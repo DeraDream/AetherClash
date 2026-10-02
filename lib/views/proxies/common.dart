@@ -11,16 +11,17 @@ double get listHeaderHeight {
 
 double getItemHeight(ProxyCardType proxyCardType, {bool compact = false}) {
   final measure = globalState.measure;
-  final nameLines = compact ? 1 : 2;
+  if (compact) {
+    return 60;
+  }
   final baseHeight =
-      (compact ? 12 : 16) +
-      measure.bodyMediumHeight * nameLines +
+      16 +
+      measure.bodyMediumHeight * 2 +
       measure.bodySmallHeight +
-      (compact ? 6 : 8) +
+      8 +
       4;
   return switch (proxyCardType) {
-    ProxyCardType.expand =>
-      baseHeight + measure.labelSmallHeight + (compact ? 4 : 6),
+    ProxyCardType.expand => baseHeight + measure.labelSmallHeight + 6,
     ProxyCardType.shrink => baseHeight,
     ProxyCardType.min => baseHeight - measure.bodyMediumHeight,
   };
