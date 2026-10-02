@@ -66,18 +66,18 @@ class GlassStyle extends ThemeExtension<GlassStyle> {
     }
     return GlassStyle(
       brightness: Brightness.light,
-      background: const Color(0xFFF3F3F3),
+      background: const Color(0xFFF5F5F5),
       card: Colors.white,
-      fill: const Color(0xFFF0F1F3),
+      fill: const Color(0xFFEDEDED),
       thumb: Colors.white,
-      glass: const Color(0xF7F7F7F8),
-      glassStrong: const Color(0xFFFAFAFB),
+      glass: const Color(0xFFF7F7F7),
+      glassStrong: const Color(0xFFFFFFFF),
       rimLight: Colors.white,
-      rimShade: const Color(0xFFE7E8EB),
-      separator: const Color(0xFFE6E7EA),
+      rimShade: const Color(0xFFE5E5E5),
+      separator: const Color(0xFFE1E1E1),
       shadow: Colors.black.withValues(alpha: 0.06),
       selected: scheme.primary.withValues(alpha: 0.12),
-      secondaryLabel: const Color(0xFF7C7F87),
+      secondaryLabel: const Color(0xFF8A8A8A),
       blurSigma: 16,
     );
   }
