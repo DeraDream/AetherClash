@@ -180,7 +180,11 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                 child: ListHeader(
                   enterAnimated: false,
                   onScrollToSelected: (groupName) {
-                    _scrollToGroupSelected(groupName, columns);
+                    _scrollToGroupSelected(
+                      groupName,
+                      columns,
+                      compact: compact,
+                    );
                   },
                   key: ValueKey(groupName),
                   isExpand: isExpand,
@@ -212,7 +216,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
           ),
         if (isExpand)
           SliverFixedExtentList(
-            itemExtent: getItemHeight(cardType) + 8,
+            itemExtent: getItemHeight(cardType, compact: compact) + 8,
             delegate: SliverChildBuilderDelegate(
               (_, index) => _buildProxyRow(
                 group: group,
