@@ -340,6 +340,13 @@ class _SidebarItem extends ConsumerWidget {
           hasTokens: po0TokensOf(setting.tokenEntries).isNotEmpty,
           state: ref.watch(po0FirewallProvider),
         ).title;
+      case PageLabel.core:
+        final status = ref.watch(coreStatusProvider);
+        return switch (status) {
+          CoreStatus.connecting => appLocalizations.connecting,
+          CoreStatus.connected => appLocalizations.connected,
+          CoreStatus.disconnected => appLocalizations.disconnected,
+        };
       case PageLabel.activity:
         return appLocalizations.activityDesc;
       default:
