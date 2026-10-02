@@ -145,7 +145,7 @@ enum GlassTone {
   pink;
 
   (Color, Color) get lightAndDark => switch (this) {
-    GlassTone.accent => (const Color(0xFF007AFF), const Color(0xFF0A84FF)),
+    GlassTone.accent => (const Color(0xFF1677FF), const Color(0xFF4096FF)),
     GlassTone.success => (const Color(0xFF34C759), const Color(0xFF30D158)),
     GlassTone.warning => (const Color(0xFFFF9500), const Color(0xFFFF9F0A)),
     GlassTone.danger => (const Color(0xFFFF3B30), const Color(0xFFFF453A)),
