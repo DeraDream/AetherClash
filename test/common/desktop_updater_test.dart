@@ -12,6 +12,8 @@ Map<String, dynamic> releaseWithAssets() => <String, dynamic>{
       'name': 'po0-clash-5.4.0-windows-amd64-setup.exe',
       'browser_download_url': 'https://example.com/windows.exe',
       'size': 200,
+      'digest':
+          'sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     },
     <String, dynamic>{
       'name': 'po0-clash-5.4.0-macos-arm64.dmg',
@@ -36,6 +38,10 @@ void main() {
 
     expect(asset?.name, 'po0-clash-5.4.0-windows-amd64-setup.exe');
     expect(asset?.expectedBytes, 200);
+    expect(
+      asset?.expectedSha256,
+      '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+    );
   });
 
   test('selects the matching macOS architecture', () {
