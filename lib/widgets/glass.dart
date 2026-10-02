@@ -72,9 +72,9 @@ class GlassSurface extends StatelessWidget {
   final Widget child;
 
   static BorderRadius radiusOf(GlassKind kind) => switch (kind) {
-    GlassKind.panel => AppRadius.extraLarge,
-    GlassKind.tile => AppRadius.medium,
-    GlassKind.chrome => AppRadius.full,
+    GlassKind.panel => AppRadius.medium,
+    GlassKind.tile => AppRadius.small,
+    GlassKind.chrome => AppRadius.large,
   };
 
   static OutlinedBorder shapeOf({
