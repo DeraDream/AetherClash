@@ -12,8 +12,9 @@
   `scripts/check-release-tag.sh` 校验二者一致；`release.yaml` 在构建标签时先运行它，不一致直接失败。
 - 旧的 `v0.8.98-po0.N` 标签属于已停用的 FlClash-po0 构建，不再使用，也不要再打 `-po0.N` 形式的标签。
 - 应用内「检查更新」指向本仓库（`lib/common/constant.dart` 的 `repository`），按语义化版本比较本机版本与
-  最新 Release 的标签，不会把用户引导回官方版。更新弹窗会逐行显示发布说明中以 `- ` 开头的条目，所以
-  `docs/release-notes.md` 保持单行、无格式的列表。
+  最新 Release 的标签，不会把用户引导回官方版。Windows 与 macOS 会在弹窗内下载匹配架构的 Release 产物并
+  显示进度，随后退出当前进程、原地安装并自动重启；其他平台仍打开 Release 下载页。更新弹窗会逐行显示发布
+  说明中以 `- ` 开头的条目，所以 `docs/release-notes.md` 保持单行、无格式的列表。
 
 ## 流程
 

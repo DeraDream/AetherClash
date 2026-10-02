@@ -87,6 +87,19 @@ class Dialogs {
     );
   }
 
+  Future<void> showUpdateProgress({
+    required String version,
+    required Future<void> Function(
+      void Function(DesktopUpdateProgress progress) onProgress,
+    )
+    task,
+  }) async {
+    await showCommonDialog<void>(
+      dismissible: false,
+      child: _UpdateProgressDialog(version: version, task: task),
+    );
+  }
+
   Future<bool?> showAllUpdatingMessagesDialog(
     List<UpdatingMessage> messages,
   ) async {
@@ -164,6 +177,121 @@ class Dialogs {
       return;
     }
     unawaited(launchUrl(Uri.parse(url)));
+  }
+}
+
+class _UpdateProgressDialog extends StatefulWidget {
+  final String version;
+  final Future<void> Function(
+    void Function(DesktopUpdateProgress progress) onProgress,
+  )
+  task;
+
+  const _UpdateProgressDialog({required this.version, required this.task});
+
+  @override
+  State<_UpdateProgressDialog> createState() => _UpdateProgressDialogState();
+}
+
+class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
+  DesktopUpdateProgress _progress = const DesktopUpdateProgress(
+    stage: DesktopUpdateStage.downloading,
+  );
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_run());
+    });
+  }
+
+  Future<void> _run() async {
+    try {
+      await widget.task((progress) {
+        if (!mounted) return;
+        setState(() {
+          _progress = progress;
+        });
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = compactError(error);
+      });
+    }
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    final kib = bytes / 1024;
+    if (kib < 1024) return '${kib.toStringAsFixed(1)} KB';
+    return '${(kib / 1024).toStringAsFixed(1)} MB';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final error = _error;
+    final installing = _progress.stage == DesktopUpdateStage.installing;
+    final fraction = _progress.fraction;
+    final received = _formatBytes(_progress.receivedBytes);
+    final total = _progress.totalBytes > 0
+        ? _formatBytes(_progress.totalBytes)
+        : null;
+    return CommonDialog(
+      title: '${appLocalizations.update} ${widget.version}',
+      actions: error == null
+          ? null
+          : [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(appLocalizations.confirm),
+              ),
+            ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            installing
+                ? '${appLocalizations.update} · ${appLocalizations.restart}'
+                : appLocalizations.download,
+            style: context.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 16),
+          LinearProgressIndicator(value: fraction),
+          const SizedBox(height: 8),
+          if (!installing)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  total == null ? received : '$received / $total',
+                  style: context.textTheme.bodySmall,
+                ),
+                if (fraction != null)
+                  Text(
+                    '${(fraction * 100).toStringAsFixed(0)}%',
+                    style: context.textTheme.bodySmall,
+                  ),
+              ],
+            ),
+          if (error != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              error,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: context.colorScheme.error,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 

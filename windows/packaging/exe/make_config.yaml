@@ -1,8 +1,8 @@
 script_template: inno_setup.iss
 app_id: 67A8CFA2-EC79-4DD3-AB44-75CDD5C3B591
 app_name: po0-clash
-publisher_name: yuuuki-creation
-publisher_url: https://github.com/yuuuki-creation/po0-clash
+publisher_name: DeraDream
+publisher_url: https://github.com/DeraDream/po0-clash
 display_name: po0-clash
 executable_name: po0-clash.exe
 output_base_file_name: po0-clash.exe

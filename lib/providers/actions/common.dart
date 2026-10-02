@@ -135,11 +135,25 @@ class CommonAction extends _$CommonAction {
         cancelText: isUser ? null : currentAppLocalizations.noLongerRemind,
       );
       if (res == true) {
-        unawaited(
-          launchUrl(
-            Uri.parse('https://github.com/$repository/releases/latest'),
-          ),
-        );
+        if (desktopUpdater.isSupported) {
+          await dialogs.showUpdateProgress(
+            version: data['tag_name'] as String,
+            task: (onProgress) async {
+              await desktopUpdater.prepareUpdate(
+                release: data,
+                dio: request.dio,
+                onProgress: onProgress,
+              );
+              await ref.read(systemActionProvider.notifier).handleExit();
+            },
+          );
+        } else {
+          unawaited(
+            launchUrl(
+              Uri.parse('https://github.com/$repository/releases/latest'),
+            ),
+          );
+        }
       } else if (!isUser && res == false) {
         ref
             .read(appSettingProvider.notifier)
