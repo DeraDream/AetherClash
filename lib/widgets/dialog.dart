@@ -55,7 +55,9 @@ class CommonDialog extends ConsumerWidget {
       shape: desktop
           ? RoundedRectangleBorder(
               borderRadius: AppRadius.all(AppCorner.largeIncreased),
-              side: BorderSide(color: context.glass.separator.withValues(alpha: 0.8)),
+              side: BorderSide(
+                color: context.glass.separator.withValues(alpha: 0.8),
+              ),
             )
           : null,
       content: Container(
