@@ -200,6 +200,7 @@ final class DesktopUpdater {
 \$installer = ${_powerShellQuote(installer.path)}
 \$target = ${_powerShellQuote(executable.path)}
 \$installDir = ${_powerShellQuote(installDirectory)}
+\$updateRoot = ${_powerShellQuote(updateDirectory.path)}
 
 for (\$i = 0; \$i -lt 40; \$i++) {
   if (-not (Get-Process -Id \$appProcessId -ErrorAction SilentlyContinue)) {
@@ -226,6 +227,7 @@ try {
   exit 1
 } finally {
   Remove-Item -LiteralPath \$installer -Force -ErrorAction SilentlyContinue
+  Remove-Item -LiteralPath \$updateRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 ''');
     await Process.start(
@@ -280,6 +282,10 @@ if /bin/kill -0 "\$app_pid" >/dev/null 2>&1; then
   /bin/sleep 1
   /bin/kill -9 "\$app_pid" >/dev/null 2>&1 || true
 fi
+
+/usr/bin/pkill -TERM -x Po0ClashCore >/dev/null 2>&1 || true
+/bin/sleep 0.5
+/usr/bin/pkill -KILL -x Po0ClashCore >/dev/null 2>&1 || true
 
 /bin/mkdir -p "\$mountpoint"
 /usr/bin/hdiutil attach "\$dmg" -nobrowse -readonly -quiet -mountpoint "\$mountpoint"
