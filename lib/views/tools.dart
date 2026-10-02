@@ -211,7 +211,7 @@ class _TileSection extends StatelessWidget {
       children: [
         GlassSectionLabel(title),
         GlassSurface(
-          borderRadius: AppRadius.all(AppCorner.largeIncreased),
+          borderRadius: AppRadius.small,
           elevated: false,
           child: Material(
             type: MaterialType.transparency,
@@ -457,7 +457,7 @@ class _DesktopLocaleDialog extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.small,
+        borderRadius: AppRadius.all(AppCorner.largeIncreased),
         side: BorderSide(color: glass.separator),
       ),
       child: ConstrainedBox(
