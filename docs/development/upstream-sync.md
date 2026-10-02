@@ -31,6 +31,7 @@ git merge upstream/main
 | `lib/common/constant.dart` | `repository` 指向本仓库，`upstreamRepository`；应用身份常量（见下节） |
 | `lib/common/package.dart` | `compareVersions` 按语义化版本比较（含预发布版本） |
 | `lib/common/request.dart` / `lib/views/about.dart` | 检查更新直接比较 `pubspec` 版本；「关于」页链接本仓库与上游 |
+| `lib/providers/actions/common.dart` | Windows / macOS 更新确认后进入应用内下载、退出、安装与重启流程 |
 | `lib/application.dart` / `lib/common/app_theme.dart` | 主题由 `buildAppTheme` 构建，页面转场用 `appPageTransitionsTheme` |
 | `lib/manager/app_manager.dart` / `lib/common/layout.dart` | Material 3 导航侧栏（顶部菜单按钮、可展开）与窗口宽度分级 |
 | `lib/common/shape.dart` / `lib/widgets/card.dart` | Material 3 圆角档位；`CommonCard` 的描边 / 填充卡片样式 |
