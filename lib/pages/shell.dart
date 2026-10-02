@@ -184,6 +184,8 @@ class GlassRail extends StatelessWidget {
       width: width,
       child: GlassSurface(
         kind: GlassKind.panel,
+        borderRadius: AppRadius.small,
+        elevated: false,
         child: Material(
           type: MaterialType.transparency,
           child: SingleChildScrollView(
@@ -236,7 +238,7 @@ class ControlSidebar extends StatelessWidget {
     this.topInset = 0,
   });
 
-  static const width = 300.0;
+  static const width = 264.0;
 
   final List<NavigationItem> items;
   final int currentIndex;
@@ -254,29 +256,29 @@ class ControlSidebar extends StatelessWidget {
           child: CustomScrollView(
             slivers: [
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(16, 16 + topInset, 16, 0),
+                padding: EdgeInsets.fromLTRB(12, 12 + topInset, 12, 0),
                 sliver: SliverList.list(
                   children: [
                     const BrandHeader(dense: true),
-                    const SizedBox(height: 12),
-                    const Center(child: ConnectOrb(size: 92)),
-                    const SizedBox(height: 12),
-                    const OutboundModeSwitch(height: 40),
+                    const SizedBox(height: 14),
+                    const CompactConnectControl(),
+                    const SizedBox(height: 10),
+                    const OutboundModeSwitch(height: 34),
                     if (system.isDesktop) ...[
-                      const SizedBox(height: 8),
-                      const DesktopRouteSwitch(),
+                      const SizedBox(height: 6),
+                      const DesktopRouteSwitch(height: 34),
                     ],
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                   ],
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 sliver: SliverList.list(
                   children: [
                     for (final (index, item) in items.indexed)
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.only(bottom: 2),
                         child: _SidebarItem(
                           item: item,
                           selected: index == currentIndex,
@@ -291,7 +293,7 @@ class ControlSidebar extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
                     child: _SidebarFooter(),
                   ),
                 ),
@@ -353,17 +355,17 @@ class _SidebarItem extends ConsumerWidget {
       color: glass.selected,
       rimColor: Colors.transparent,
       elevated: false,
-      borderRadius: AppRadius.small,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      borderRadius: AppRadius.extraSmall,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       onTap: onTap,
       child: Row(
         children: [
           Icon(
             _iconOf(item),
-            size: 20,
+            size: 18,
             color: selected ? colorScheme.primary : glass.secondaryLabel,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
