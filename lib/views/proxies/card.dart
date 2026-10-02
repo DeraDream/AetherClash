@@ -13,6 +13,7 @@ class ProxyCard extends ConsumerWidget {
   final GroupType groupType;
   final ProxyCardType type;
   final String? testUrl;
+  final bool compact;
 
   const ProxyCard({
     super.key,
@@ -21,6 +22,7 @@ class ProxyCard extends ConsumerWidget {
     required this.proxy,
     required this.groupType,
     required this.type,
+    this.compact = false,
   });
 
   Measure get measure => globalState.measure;
@@ -76,27 +78,18 @@ class ProxyCard extends ConsumerWidget {
   }
 
   Widget _buildProxyNameText(BuildContext context) {
-    if (type == ProxyCardType.min) {
-      return SizedBox(
-        height: measure.bodyMediumHeight * 1,
-        child: EmojiText(
-          proxy.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: context.textTheme.bodyMedium,
+    final lines = type == ProxyCardType.min || compact ? 1 : 2;
+    return SizedBox(
+      height: measure.bodyMediumHeight * lines,
+      child: EmojiText(
+        proxy.name,
+        maxLines: lines,
+        overflow: TextOverflow.ellipsis,
+        style: context.textTheme.bodyMedium?.copyWith(
+          fontWeight: compact ? FontWeight.w500 : null,
         ),
-      );
-    } else {
-      return SizedBox(
-        height: measure.bodyMediumHeight * 2,
-        child: EmojiText(
-          proxy.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: context.textTheme.bodyMedium,
-        ),
-      );
-    }
+      ),
+    );
   }
 
   Future<void> _changeProxy(WidgetRef ref) async {
@@ -137,24 +130,25 @@ class ProxyCard extends ConsumerWidget {
                 _changeProxy(ref);
               },
               isSelected: selectedProxyName == proxy.name,
+              radius: compact ? AppCorner.small : null,
               child: child!,
             );
           },
           child: Container(
             alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 proxyNameText,
-                const SizedBox(height: 8),
+                SizedBox(height: compact ? 6 : 8),
                 if (type == ProxyCardType.expand) ...[
                   SizedBox(
                     height: measure.bodySmallHeight,
                     child: _ProxyDesc(proxy: proxy),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: compact ? 4 : 6),
                   delayText,
                 ] else
                   SizedBox(
