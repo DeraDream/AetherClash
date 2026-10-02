@@ -20,7 +20,6 @@ const _enterSlideBase = 32.0;
 const _enterSlideStep = 8.0;
 final _enterWindow = Durations.medium2 + _enterStaggerStep * _enterStaggerLimit;
 const _desktopGroupHeaderHeight = 72.0;
-const _desktopGroupToolbarHeight = 34.0;
 
 class ProxiesListView extends ConsumerStatefulWidget {
   const ProxiesListView({super.key});
@@ -89,9 +88,6 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
       offsets.add(currentOffset);
       currentOffset += headerHeight + 8;
       if (currentUnfoldSet.contains(group.name)) {
-        if (compact) {
-          currentOffset += _desktopGroupToolbarHeight;
-        }
         final rowCount = (group.all.length + columns - 1) ~/ columns;
         currentOffset += rowCount * rowExtent;
       }
@@ -202,18 +198,6 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
             ),
           ),
         ),
-        if (isExpand && compact)
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: _desktopGroupToolbarHeight,
-              child: _DesktopGroupToolbar(
-                group: group,
-                onScrollToSelected: () {
-                  _scrollToGroupSelected(groupName, columns, compact: compact);
-                },
-              ),
-            ),
-          ),
         if (isExpand)
           SliverFixedExtentList(
             itemExtent: getItemHeight(cardType, compact: compact) + 8,
@@ -302,7 +286,6 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
     _jumpTo(
       currentInitOffset +
           8 +
-          (compact ? _desktopGroupToolbarHeight : 0) +
           getScrollToSelectedOffset(
             ref: ref,
             groupName: groupName,
@@ -496,58 +479,6 @@ class _ListHeaderState extends ConsumerState<ListHeader> {
       onPressed: () {
         _handleChange(groupName);
       },
-    );
-  }
-}
-
-class _DesktopGroupToolbar extends ConsumerWidget {
-  const _DesktopGroupToolbar({
-    required this.group,
-    required this.onScrollToSelected,
-  });
-
-  final Group group;
-  final VoidCallback onScrollToSelected;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final glass = context.glass;
-    final primary = context.colorScheme.primary;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 4),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: glass.fill,
-          borderRadius: AppRadius.extraSmall,
-        ),
-        child: SizedBox(
-          height: _desktopGroupToolbarHeight - 4,
-          child: Row(
-            children: [
-              IconButton(
-                tooltip: context.appLocalizations.scrollToSelected,
-                visualDensity: VisualDensity.compact,
-                onPressed: onScrollToSelected,
-                iconSize: 18,
-                color: primary,
-                icon: const Icon(Icons.my_location_rounded),
-              ),
-              IconButton(
-                tooltip: context.appLocalizations.delayTest,
-                visualDensity: VisualDensity.compact,
-                onPressed: () {
-                  ref
-                      .read(proxiesActionProvider.notifier)
-                      .delayTest(group.all, group.testUrl);
-                },
-                iconSize: 19,
-                color: primary,
-                icon: const Icon(Icons.network_ping_rounded),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -753,7 +684,17 @@ class _GroupActions extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
+          IconButton(
+            tooltip: context.appLocalizations.delayTest,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            iconSize: 18,
+            style: _shrinkWrap,
+            onPressed: onDelayTest,
+            icon: const Icon(Icons.network_ping_rounded),
+          ),
+          const SizedBox(width: 2),
           IconButton(
             tooltip: isExpand
                 ? context.appLocalizations.showLess
