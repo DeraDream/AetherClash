@@ -52,7 +52,7 @@ ThemeData buildAppTheme({
       backgroundColor: glass.glassStrong,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      shape: AppShape.extraLarge.copyWith(side: floatingSide),
+      shape: AppShape.small.copyWith(side: floatingSide),
       barrierColor: colorScheme.modalScrim,
     ),
     bottomSheetTheme: BottomSheetThemeData(
@@ -67,7 +67,7 @@ ThemeData buildAppTheme({
     inputDecorationTheme: _inputTheme(glass, colorScheme),
     filledButtonTheme: const FilledButtonThemeData(
       style: ButtonStyle(
-        shape: WidgetStatePropertyAll(AppShape.full),
+        shape: WidgetStatePropertyAll(AppShape.small),
         elevation: WidgetStatePropertyAll(0),
         padding: WidgetStatePropertyAll(
           EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -76,7 +76,7 @@ ThemeData buildAppTheme({
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(AppShape.full),
+        shape: const WidgetStatePropertyAll(AppShape.small),
         backgroundColor: WidgetStatePropertyAll(glass.fill),
         side: const WidgetStatePropertyAll(BorderSide.none),
         padding: const WidgetStatePropertyAll(
@@ -85,11 +85,11 @@ ThemeData buildAppTheme({
       ),
     ),
     textButtonTheme: const TextButtonThemeData(
-      style: ButtonStyle(shape: WidgetStatePropertyAll(AppShape.full)),
+      style: ButtonStyle(shape: WidgetStatePropertyAll(AppShape.small)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(AppShape.full),
+        shape: const WidgetStatePropertyAll(AppShape.small),
         elevation: const WidgetStatePropertyAll(0),
         backgroundColor: WidgetStatePropertyAll(glass.fill),
       ),
@@ -101,11 +101,11 @@ ThemeData buildAppTheme({
       focusElevation: 0,
       hoverElevation: 0,
       highlightElevation: 0,
-      shape: AppShape.full,
+      shape: AppShape.small,
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(AppShape.full),
+        shape: const WidgetStatePropertyAll(AppShape.extraSmall),
         side: const WidgetStatePropertyAll(BorderSide.none),
         backgroundColor: WidgetStateProperty.resolveWith(
           (states) =>
@@ -172,16 +172,9 @@ ThemeData buildAppTheme({
       indicatorSize: TabBarIndicatorSize.tab,
       indicator: ShapeDecoration(
         color: glass.thumb,
-        shape: AppShape.full,
-        shadows: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: glass.isDark ? 0.3 : 0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        shape: AppShape.extraSmall,
       ),
-      splashBorderRadius: AppRadius.full,
+      splashBorderRadius: AppRadius.extraSmall,
       labelColor: colorScheme.onSurface,
       unselectedLabelColor: glass.secondaryLabel,
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
