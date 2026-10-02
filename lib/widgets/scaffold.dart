@@ -317,6 +317,16 @@ class CommonScaffoldState extends State<CommonScaffold> {
                           ? false
                           : true,
                       animateColor: true,
+                      backgroundColor: MediaQuery.sizeOf(context).width >= 600
+                          ? context.glass.card
+                          : null,
+                      shape: MediaQuery.sizeOf(context).width >= 600
+                          ? Border(
+                              bottom: BorderSide(
+                                color: context.glass.separator,
+                              ),
+                            )
+                          : null,
                       centerTitle: widget.centerTitle ?? false,
                       leading: _buildLeading(backAction),
                       title: _buildTitle(state.searchState),
