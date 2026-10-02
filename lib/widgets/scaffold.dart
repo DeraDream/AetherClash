@@ -241,7 +241,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
                 : appLocalizations.selectedCountTitle(
                     '${_appBarState.value.editState?.editCount ?? 0}',
                   ),
-            style: context.isMobileView
+            style: MediaQuery.sizeOf(context).width < 600
                 ? null
                 : context.textTheme.headlineSmall?.copyWith(fontSize: 24),
           );
@@ -275,7 +275,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
     if (actions.isEmpty) {
       return const [];
     }
-    final isMobile = context.isMobileView;
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
     return [
       Center(
         child: GlassSurface(
