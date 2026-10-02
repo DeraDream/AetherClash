@@ -26,17 +26,50 @@ class CommonDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final size = ref.watch(viewSizeProvider);
+    final desktop = size.width >= 600;
+    final colorScheme = Theme.of(context).colorScheme;
+    final effectivePadding =
+        padding ??
+        (desktop
+            ? const EdgeInsets.fromLTRB(14, 6, 14, 14)
+            : null);
     return AlertDialog(
-      title: Text(title),
+      title: Text(
+        title,
+        style: desktop
+            ? context.textTheme.titleLarge?.copyWith(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              )
+            : null,
+      ),
+      titlePadding: desktop
+          ? const EdgeInsets.fromLTRB(22, 20, 22, 8)
+          : null,
       actions: actions,
-      contentPadding: padding,
-      backgroundColor: backgroundColor,
+      actionsPadding: desktop
+          ? const EdgeInsets.fromLTRB(14, 0, 14, 14)
+          : null,
+      contentPadding: effectivePadding,
+      insetPadding: desktop
+          ? const EdgeInsets.symmetric(horizontal: 24, vertical: 24)
+          : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      backgroundColor:
+          backgroundColor ?? (desktop ? colorScheme.surface : null),
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: desktop
+          ? RoundedRectangleBorder(
+              borderRadius: AppRadius.small,
+              side: BorderSide(color: context.glass.separator),
+            )
+          : null,
       content: Container(
         constraints: BoxConstraints(
-          maxHeight: min(size.height - 40, 500),
-          maxWidth: 300,
+          maxHeight: min(size.height - 56, desktop ? 560 : 500),
+          maxWidth: desktop ? 380 : 300,
         ),
-        width: size.width - 40,
+        width: min(size.width - 48, desktop ? 380 : 300),
         child: !overrideScroll ? SingleChildScrollView(child: child) : child,
       ),
     );
