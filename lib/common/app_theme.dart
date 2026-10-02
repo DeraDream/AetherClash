@@ -236,8 +236,7 @@ SwitchThemeData _switchTheme(GlassStyle glass, ColorScheme scheme) {
 extension GlassSchemeExt on ColorScheme {
   Color get modalScrim => scrim.withValues(alpha: 0.2);
 
-  /// Neutral Apple grouped surfaces in place of the seeded, tinted ones, so
-  /// the accent is the only color a screen carries.
+  /// Neutral grouped surfaces keep the accent as the only strong color.
   ColorScheme toGlass(GlassStyle glass) {
     final dark = glass.isDark;
     return copyWith(
@@ -249,14 +248,14 @@ extension GlassSchemeExt on ColorScheme {
       surfaceContainerLow: glass.card,
       surfaceContainer: glass.card,
       surfaceContainerHigh: dark
-          ? const Color(0xFF2C2C2E)
-          : const Color(0xFFF2F2F7),
+          ? const Color(0xFF303136)
+          : const Color(0xFFEFEFF1),
       surfaceContainerHighest: dark
-          ? const Color(0xFF3A3A3C)
-          : const Color(0xFFE5E5EA),
-      outline: dark ? const Color(0xFF545458) : const Color(0xFFC6C6C8),
+          ? const Color(0xFF393A40)
+          : const Color(0xFFE5E6E9),
+      outline: dark ? const Color(0xFF505159) : const Color(0xFFD0D2D6),
       outlineVariant: glass.separator,
-      secondaryContainer: primary.withValues(alpha: dark ? 0.24 : 0.14),
+      secondaryContainer: primary.withValues(alpha: dark ? 0.18 : 0.10),
       onSecondaryContainer: primary,
     );
   }
