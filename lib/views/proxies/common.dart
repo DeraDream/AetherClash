@@ -9,12 +9,18 @@ double get listHeaderHeight {
   return 20 + measure.titleMediumHeight + 4 + measure.bodyMediumHeight + 2;
 }
 
-double getItemHeight(ProxyCardType proxyCardType) {
+double getItemHeight(ProxyCardType proxyCardType, {bool compact = false}) {
   final measure = globalState.measure;
+  final nameLines = compact ? 1 : 2;
   final baseHeight =
-      16 + measure.bodyMediumHeight * 2 + measure.bodySmallHeight + 8 + 4;
+      (compact ? 12 : 16) +
+      measure.bodyMediumHeight * nameLines +
+      measure.bodySmallHeight +
+      (compact ? 6 : 8) +
+      4;
   return switch (proxyCardType) {
-    ProxyCardType.expand => baseHeight + measure.labelSmallHeight + 6,
+    ProxyCardType.expand =>
+      baseHeight + measure.labelSmallHeight + (compact ? 4 : 6),
     ProxyCardType.shrink => baseHeight,
     ProxyCardType.min => baseHeight - measure.bodyMediumHeight,
   };
@@ -46,6 +52,7 @@ double getScrollToSelectedOffset({
   required String groupName,
   required List<Proxy> proxies,
   required int columns,
+  bool compact = false,
 }) {
   final proxyCardType = ref.read(
     proxiesStyleSettingProvider.select((state) => state.cardType),
@@ -56,5 +63,7 @@ double getScrollToSelectedOffset({
   );
   final selectedIndex = findSelectedIndex != -1 ? findSelectedIndex : 0;
   final rows = (selectedIndex / columns).floor();
-  return rows * getItemHeight(proxyCardType) + (rows - 1) * 8;
+  final spacing = compact ? 6.0 : 8.0;
+  return rows * getItemHeight(proxyCardType, compact: compact) +
+      (rows - 1) * spacing;
 }
