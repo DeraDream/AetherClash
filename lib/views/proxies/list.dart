@@ -288,8 +288,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
       containerHeight: containerHeight,
       pixels: pixels,
       start: offset,
-      end:
-          offset + (compact ? _desktopGroupHeaderHeight : listHeaderHeight),
+      end: offset + (compact ? _desktopGroupHeaderHeight : listHeaderHeight),
     );
   }
 
@@ -655,10 +654,7 @@ class _GroupSummary extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 5,
-                  vertical: 1,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 child: Text(
                   groupType,
                   style: context.textTheme.labelSmall?.copyWith(
