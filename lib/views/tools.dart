@@ -41,7 +41,7 @@ class ToolsView extends ConsumerWidget {
 class _ToolsBoard extends ConsumerWidget {
   const _ToolsBoard();
 
-  static const _maxWidth = 860.0;
+  static const _maxWidth = 980.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -251,7 +251,7 @@ class _SettingTile extends StatelessWidget {
            showExtend(context, builder: (_) => page);
            return;
          }
-         BaseNavigator.push(context, page);
+         BaseNavigator.push(context, _DesktopSettingsPage(child: page));
        });
 
   final IconData icon;
@@ -269,12 +269,12 @@ class _SettingTile extends StatelessWidget {
     final leading = desktop
         ? DecoratedBox(
             decoration: BoxDecoration(
-              color: toneColor.withValues(alpha: 0.10),
-              borderRadius: AppRadius.extraSmall,
+              color: toneColor.withValues(alpha: 0.12),
+              borderRadius: AppRadius.all(7),
             ),
             child: SizedBox.square(
-              dimension: 34,
-              child: Icon(icon, size: 19, color: toneColor),
+              dimension: 36,
+              child: Icon(icon, size: 20, color: toneColor),
             ),
           )
         : GlassIconBadge(icon: icon, color: toneColor);
@@ -284,9 +284,9 @@ class _SettingTile extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           desktop ? 14 : 16,
-          desktop ? 11 : 10,
           desktop ? 12 : 10,
-          desktop ? 11 : 10,
+          desktop ? 12 : 10,
+          desktop ? 12 : 10,
         ),
         child: Row(
           children: [
@@ -352,17 +352,26 @@ class _LocaleTile extends ConsumerWidget {
       title: appLocalizations.language,
       subtitle: _labelOf(context, locale),
       onTap: (context) async {
+        final options = [
+          const _LocaleChoice(null),
+          for (final locale in AppLocalizations.delegate.supportedLocales)
+            _LocaleChoice(locale),
+        ];
         final result = await dialogs.showCommonDialog<_LocaleChoice>(
-          child: OptionsDialog<_LocaleChoice>(
-            title: appLocalizations.language,
-            options: [
-              const _LocaleChoice(null),
-              for (final locale in AppLocalizations.delegate.supportedLocales)
-                _LocaleChoice(locale),
-            ],
-            textBuilder: (choice) => _labelOf(context, choice.locale),
-            value: _LocaleChoice(locale),
-          ),
+          context: context,
+          child: MediaQuery.sizeOf(context).width >= 600
+              ? _DesktopLocaleDialog(
+                  title: appLocalizations.language,
+                  options: options,
+                  value: _LocaleChoice(locale),
+                  labelOf: (choice) => _labelOf(context, choice.locale),
+                )
+              : OptionsDialog<_LocaleChoice>(
+                  title: appLocalizations.language,
+                  options: options,
+                  textBuilder: (choice) => _labelOf(context, choice.locale),
+                  value: _LocaleChoice(locale),
+                ),
         );
         if (result == null) {
           return;
@@ -408,6 +417,131 @@ class _DisclaimerTile extends ConsumerWidget {
           await ref.read(systemActionProvider.notifier).handleExit();
         }
       },
+    );
+  }
+}
+
+
+class _DesktopSettingsPage extends StatelessWidget {
+  const _DesktopSettingsPage({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: context.glass.background,
+      child: SizedBox.expand(child: child),
+    );
+  }
+}
+
+class _DesktopLocaleDialog extends StatelessWidget {
+  const _DesktopLocaleDialog({
+    required this.title,
+    required this.options,
+    required this.value,
+    required this.labelOf,
+  });
+
+  final String title;
+  final List<_LocaleChoice> options;
+  final _LocaleChoice value;
+  final String Function(_LocaleChoice choice) labelOf;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = context.glass;
+    return Dialog(
+      backgroundColor: context.colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.small,
+        side: BorderSide(color: glass.separator),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 360, maxWidth: 420),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                title,
+                style: context.textTheme.headlineSmall?.copyWith(fontSize: 24),
+              ),
+              const SizedBox(height: 14),
+              for (final choice in options)
+                _DesktopLocaleOption(
+                  label: labelOf(choice),
+                  selected: choice == value,
+                  onTap: () => Navigator.of(context).pop(choice),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopLocaleOption extends StatelessWidget {
+  const _DesktopLocaleOption({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final glass = context.glass;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.extraSmall,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: Durations.short3,
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? colorScheme.primary : glass.secondaryLabel,
+                  width: selected ? 2.5 : 2,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: selected
+                  ? Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorScheme.primary,
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            Text(
+              label,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
