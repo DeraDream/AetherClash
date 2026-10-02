@@ -51,7 +51,7 @@ void main() {
       final theme = _build();
       final glass = theme.extension<GlassStyle>()!;
       expect(theme.scaffoldBackgroundColor, Colors.transparent);
-      expect(theme.colorScheme.surface, const Color(0xFFF3F3F3));
+      expect(theme.colorScheme.surface, const Color(0xFFF5F5F5));
       expect(theme.colorScheme.surfaceContainer, Colors.white);
       expect(theme.colorScheme.onSurface, Colors.black);
       expect(theme.cardTheme.color, glass.card);
