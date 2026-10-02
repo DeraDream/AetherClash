@@ -30,16 +30,11 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
         IconButton(
           tooltip: appLocalizations.delayTest,
           onPressed: () async {
-            final groups = ref.read(groupsProvider);
-            final proxiesByName = <String, dynamic>{};
-            for (final group in groups) {
-              for (final proxy in group.all) {
-                proxiesByName[proxy.name] = proxy;
-              }
-            }
-            await ref
-                .read(proxiesActionProvider.notifier)
-                .delayTest(proxiesByName.values.cast().toList());
+            final proxies = ref
+                .read(groupsProvider)
+                .expand((group) => group.all)
+                .toList();
+            await ref.read(proxiesActionProvider.notifier).delayTest(proxies);
           },
           icon: const Icon(Icons.network_ping_rounded),
         ),
