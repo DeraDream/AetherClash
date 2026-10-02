@@ -22,33 +22,33 @@ class Navigation implements NavigationPort {
         modes: const [NavigationItemMode.mobile, NavigationItemMode.laptop],
       ),
       NavigationItem(
-        icon: const Icon(Icons.hub_rounded),
+        icon: const Icon(Icons.wifi_rounded),
         label: PageLabel.proxies,
         builder: (_) =>
             const ProxiesView(key: GlobalObjectKey(PageLabel.proxies)),
         modes: hasProxies ? NavigationItemMode.values : const [],
       ),
       NavigationItem(
-        icon: const Icon(Icons.layers_rounded),
+        icon: const Icon(Icons.dns_rounded),
         label: PageLabel.profiles,
         builder: (_) =>
             const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
       ),
       NavigationItem(
-        icon: const Icon(Icons.shield_rounded),
+        icon: const Icon(Icons.lock_outline_rounded),
         label: PageLabel.po0,
         builder: (_) =>
             const Po0FirewallView(key: GlobalObjectKey(PageLabel.po0)),
       ),
       NavigationItem(
-        icon: const Icon(Icons.insights_rounded),
+        icon: const Icon(Icons.public_rounded),
         label: PageLabel.activity,
         builder: (_) =>
             const ActivityView(key: GlobalObjectKey(PageLabel.activity)),
         modes: const [NavigationItemMode.laptop, NavigationItemMode.desktop],
       ),
       NavigationItem(
-        icon: const Icon(Icons.tune_rounded),
+        icon: const Icon(Icons.settings_rounded),
         label: PageLabel.tools,
         builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
       ),
