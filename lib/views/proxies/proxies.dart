@@ -26,6 +26,23 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   List<Widget> _buildActions(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return [
+      if (!context.isMobileView)
+        IconButton(
+          tooltip: appLocalizations.delayTest,
+          onPressed: () async {
+            final groups = ref.read(groupsProvider);
+            final proxiesByName = <String, dynamic>{};
+            for (final group in groups) {
+              for (final proxy in group.all) {
+                proxiesByName[proxy.name] = proxy;
+              }
+            }
+            await ref
+                .read(proxiesActionProvider.notifier)
+                .delayTest(proxiesByName.values.cast().toList());
+          },
+          icon: const Icon(Icons.network_ping_rounded),
+        ),
       if (_isTab && context.isMobileView)
         IconButton(
           tooltip: context.appLocalizations.scrollToSelected,
