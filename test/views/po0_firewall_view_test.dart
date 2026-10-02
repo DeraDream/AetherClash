@@ -292,9 +292,9 @@ void main() {
         .opacity
         .value;
 
-    double scale(WidgetTester tester) => tester
-        .widget<ScaleTransition>(find.byType(ScaleTransition))
-        .scale
+    Offset offset(WidgetTester tester) => tester
+        .widget<SlideTransition>(find.byType(SlideTransition))
+        .position
         .value;
 
     Widget entrance({required bool active, required bool enabled}) =>
@@ -307,7 +307,7 @@ void main() {
           ),
         );
 
-    testWidgets('fades and grows a page in when it becomes current', (
+    testWidgets('fades and slides a page in when it becomes current', (
       tester,
     ) async {
       await tester.pumpWidget(entrance(active: false, enabled: true));
@@ -316,10 +316,11 @@ void main() {
       await tester.pumpWidget(entrance(active: true, enabled: true));
       await tester.pump(PageEntrance.duration ~/ 4);
       expect(opacity(tester), inExclusiveRange(0, 1));
-      expect(scale(tester), inExclusiveRange(0.97, 1));
+      expect(offset(tester).dx, 0);
+      expect(offset(tester).dy, inExclusiveRange(0, 0.012));
       await tester.pumpAndSettle();
       expect(opacity(tester), 1);
-      expect(scale(tester), 1);
+      expect(offset(tester), Offset.zero);
     });
 
     testWidgets('stays still when disabled', (tester) async {
