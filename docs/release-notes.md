@@ -1,30 +1,23 @@
-po0-clash v5.4.0：新增 Windows / macOS 应用内在线升级，下载、校验、安装和重启可在客户端内完成。
+po0-clash v5.4.1：修复 Windows 安装版默认不创建桌面快捷方式的问题。
 
 ## 本次更新
 
-- Windows / macOS 的“检查更新”改为应用内在线升级，不再只跳转 GitHub Release 下载页
-- 发现新版本后弹出更新确认窗口，确认后显示实时下载进度、百分比和已下载 / 总大小
-- Windows 自动选择对应版本的 amd64 setup.exe；macOS 自动识别 Apple Silicon / Intel 并选择对应 dmg
-- 下载完成后校验 Release 文件大小，并在 GitHub 提供 SHA-256 digest 时进一步校验完整性
-- 更新安装前通过现有退出流程保存设置、关闭托盘、系统代理 / DNS 和 Core；超时仍会由独立更新进程强制结束主进程
-- Windows 使用独立 PowerShell 更新器提权静默覆盖安装，完成后自动重新启动 po0-clash，并清理临时更新目录
-- macOS 使用独立更新脚本挂载 dmg、覆盖当前 app；必要时请求管理员权限，强退兜底同时清理残留 Po0ClashCore，完成后自动重新打开
-- 更新源和安装脚本仓库地址统一修正为 DeraDream/po0-clash
-- Android 和其他非桌面平台保持原有 Release 页面下载方式
+- 修复 Windows setup.exe 安装时“创建桌面快捷方式”默认未勾选的问题
+- Windows 安装器现在默认创建 po0-clash 桌面快捷方式
+- 覆盖安装和应用内在线升级时不再沿用旧版本“未创建桌面快捷方式”的任务状态，因此从 5.4.0 升级到 5.4.1 后也会补建桌面快捷方式
+- 保留开始菜单快捷方式、安装目录、在线升级和自动重启逻辑
 
 ## 升级说明
 
-- 5.3.0 及更早版本尚未包含新的在线升级器，本次 5.4.0 需要先手动覆盖安装一次
-- 从 5.4.0 开始，后续 Windows / macOS 版本可直接在应用内完成在线升级
-- 覆盖升级会保留现有配置、订阅、po0 设置和桌面偏好
-- Windows 在线升级过程中如安装目录需要管理员权限，会弹出 UAC 确认
-- macOS 版本仍未经 Apple 公证，升级时如目标目录需要管理员权限会出现系统授权提示
+- 5.4.0 用户可直接使用应用内在线升级到 5.4.1
+- Windows 在线升级完成并重启后，桌面应出现 po0-clash 快捷方式
+- 现有配置、订阅、po0 设置和桌面偏好均会保留
 
 ## 安装
 
-- Windows：po0-clash-5.4.0-windows-amd64-setup.exe（安装包）或 .zip（免安装）
+- Windows：po0-clash-5.4.1-windows-amd64-setup.exe（安装包）或 .zip（免安装）
 - macOS：使用 Release 中对应架构的 dmg，或运行仓库 scripts/install-macos.sh
-- Android：po0-clash-5.4.0-android-arm64-v8a.apk（主流机型），可与官方 FlClash 共存
+- Android：po0-clash-5.4.1-android-arm64-v8a.apk（主流机型）
 
 ## 已知限制
 
