@@ -223,7 +223,8 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                       padding: EdgeInsets.only(
                         left: compact ? 8 : 16,
                         right:
-                            (compact ? 8 : 16) + (value ? (compact ? 8 : 16) : 0),
+                            (compact ? 8 : 16) +
+                            (value ? (compact ? 8 : 16) : 0),
                       ),
                       dividerColor: Colors.transparent,
                       indicator: compact
@@ -387,8 +388,7 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
           top: widget.compact ? 12 : 16,
           left: widget.compact ? 12 : 16,
           right: widget.compact ? 12 : 16,
-          bottom:
-              (widget.compact ? 12 : 16) + BottomInsetScope.of(context),
+          bottom: (widget.compact ? 12 : 16) + BottomInsetScope.of(context),
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: widget.columns,
