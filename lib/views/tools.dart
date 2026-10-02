@@ -20,11 +20,29 @@ import 'config/advanced.dart';
 import 'developer.dart';
 import 'theme.dart';
 
-/// Settings as a board of glass tiles, grouped by what they change.
+/// Settings keep the app shell visible on desktop: sub-pages are pushed into
+/// this local navigator instead of appearing as a narrow modal side sheet.
 class ToolsView extends ConsumerWidget {
   const ToolsView({super.key});
 
-  static const _maxWidth = 720.0;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMobile = ref.watch(isMobileViewProvider);
+    if (isMobile) {
+      return const _ToolsBoard();
+    }
+    return Navigator(
+      onGenerateRoute: (_) => MaterialPageRoute<void>(
+        builder: (_) => const _ToolsBoard(),
+      ),
+    );
+  }
+}
+
+class _ToolsBoard extends ConsumerWidget {
+  const _ToolsBoard();
+
+  static const _maxWidth = 860.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +70,7 @@ class ToolsView extends ConsumerWidget {
         appLocalizations.appearance,
         [
           _SettingTile.page(
-            icon: Icons.palette_rounded,
+            icon: Icons.palette_outlined,
             tone: GlassTone.indigo,
             title: appLocalizations.theme,
             subtitle: appLocalizations.themeDesc,
@@ -66,13 +84,13 @@ class ToolsView extends ConsumerWidget {
         [
           _SettingTile.page(
             icon: Icons.tune_rounded,
-            tone: GlassTone.neutral,
+            tone: GlassTone.accent,
             title: appLocalizations.basicConfig,
             subtitle: appLocalizations.basicConfigDesc,
             page: const ConfigView(),
           ),
           _SettingTile.page(
-            icon: Icons.build_rounded,
+            icon: Icons.build_outlined,
             tone: GlassTone.neutral,
             title: appLocalizations.advancedConfig,
             subtitle: appLocalizations.advancedConfigDesc,
@@ -80,7 +98,7 @@ class ToolsView extends ConsumerWidget {
           ),
           if (system.isAndroid)
             _SettingTile.page(
-              icon: Icons.apps_rounded,
+              icon: Icons.apps_outlined,
               tone: GlassTone.success,
               title: appLocalizations.accessControl,
               subtitle: appLocalizations.accessControlDesc,
@@ -103,7 +121,7 @@ class ToolsView extends ConsumerWidget {
         appLocalizations.system,
         [
           _SettingTile.page(
-            icon: Icons.settings_rounded,
+            icon: Icons.settings_outlined,
             tone: GlassTone.neutral,
             title: appLocalizations.application,
             subtitle: appLocalizations.applicationDesc,
@@ -111,21 +129,21 @@ class ToolsView extends ConsumerWidget {
           ),
           if (system.isDesktop)
             _SettingTile.page(
-              icon: Icons.keyboard_rounded,
+              icon: Icons.keyboard_outlined,
               tone: GlassTone.neutral,
               title: appLocalizations.hotkeyManagement,
               subtitle: appLocalizations.hotkeyManagementDesc,
               page: const HotKeyView(),
             ),
           _SettingTile.page(
-            icon: Icons.cloud_sync_rounded,
+            icon: Icons.cloud_sync_outlined,
             tone: GlassTone.teal,
             title: appLocalizations.backupAndRestore,
             subtitle: appLocalizations.backupAndRestoreDesc,
             page: const BackupAndRestore(),
           ),
           _SettingTile.page(
-            icon: Icons.storage_rounded,
+            icon: Icons.storage_outlined,
             tone: GlassTone.warning,
             title: appLocalizations.resources,
             subtitle: appLocalizations.resourcesDesc,
@@ -139,13 +157,13 @@ class ToolsView extends ConsumerWidget {
           const _DisclaimerTile(),
           if (developerMode)
             _SettingTile.page(
-              icon: Icons.developer_board_rounded,
+              icon: Icons.developer_board_outlined,
               tone: GlassTone.neutral,
               title: appLocalizations.developerMode,
               page: const DeveloperView(),
             ),
           _SettingTile.page(
-            icon: Icons.info_rounded,
+            icon: Icons.info_outline_rounded,
             tone: GlassTone.accent,
             title: appLocalizations.about,
             subtitle: appName,
@@ -159,9 +177,9 @@ class ToolsView extends ConsumerWidget {
       body: ListView(
         key: toolsStoreKey,
         padding: EdgeInsets.fromLTRB(
-          16,
+          isMobile ? 16 : 20,
           0,
-          16,
+          isMobile ? 16 : 20,
           24 + BottomInsetScope.of(context),
         ),
         children: [
@@ -194,6 +212,8 @@ class _TileSection extends StatelessWidget {
       children: [
         GlassSectionLabel(title),
         GlassSurface(
+          borderRadius: AppRadius.small,
+          elevated: false,
           child: Material(
             type: MaterialType.transparency,
             child: Column(
@@ -227,7 +247,13 @@ class _SettingTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     required Widget page,
-  }) : onTap = ((context) => showExtend(context, builder: (_) => page));
+  }) : onTap = ((context) {
+         if (context.isMobileView) {
+           showExtend(context, builder: (_) => page);
+           return;
+         }
+         BaseNavigator.push(context, page);
+       });
 
   final IconData icon;
   final GlassTone tone;
@@ -239,13 +265,33 @@ class _SettingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
     final glass = context.glass;
+    final desktop = MediaQuery.sizeOf(context).width >= 600;
+    final toneColor = context.toneColor(tone);
+    final leading = desktop
+        ? DecoratedBox(
+            decoration: BoxDecoration(
+              color: toneColor.withValues(alpha: 0.10),
+              borderRadius: AppRadius.extraSmall,
+            ),
+            child: SizedBox.square(
+              dimension: 34,
+              child: Icon(icon, size: 19, color: toneColor),
+            ),
+          )
+        : GlassIconBadge(icon: icon, color: toneColor);
     return InkWell(
       onTap: () => onTap(context),
+      borderRadius: AppRadius.extraSmall,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
+        padding: EdgeInsets.fromLTRB(
+          desktop ? 14 : 16,
+          desktop ? 11 : 10,
+          desktop ? 12 : 10,
+          desktop ? 11 : 10,
+        ),
         child: Row(
           children: [
-            GlassIconBadge(icon: icon, color: context.toneColor(tone)),
+            leading,
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -255,9 +301,14 @@ class _SettingTile extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.textTheme.bodyLarge,
+                    style: desktop
+                        ? context.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          )
+                        : context.textTheme.bodyLarge,
                   ),
-                  if (subtitle != null)
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
                     Text(
                       subtitle,
                       maxLines: 1,
@@ -266,12 +317,14 @@ class _SettingTile extends StatelessWidget {
                         color: glass.secondaryLabel,
                       ),
                     ),
+                  ],
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: glass.secondaryLabel.withValues(alpha: 0.5),
+              size: desktop ? 20 : 24,
+              color: glass.secondaryLabel.withValues(alpha: 0.55),
             ),
           ],
         ),
