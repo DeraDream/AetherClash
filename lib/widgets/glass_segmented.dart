@@ -23,7 +23,7 @@ class GlassSegmented<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glass = context.glass;
-    final compact = !context.isMobileView;
+    final compact = MediaQuery.sizeOf(context).width >= 600;
     final shape = compact ? AppShape.extraSmall : AppShape.full;
     final index = values.indexOf(selected);
     final count = values.length;
