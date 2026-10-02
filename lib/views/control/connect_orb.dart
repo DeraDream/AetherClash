@@ -104,7 +104,6 @@ class ConnectOrb extends ConsumerWidget {
   }
 }
 
-
 /// Compact connection control used by the wide desktop sidebar.
 class CompactConnectControl extends ConsumerWidget {
   const CompactConnectControl({super.key});
