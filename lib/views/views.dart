@@ -7,6 +7,7 @@ export 'config/config.dart';
 export 'connection/connections.dart';
 export 'connection/requests.dart';
 export 'control/control_center.dart';
+export 'core.dart';
 export 'developer.dart';
 export 'logs.dart';
 export 'po0_firewall.dart';
