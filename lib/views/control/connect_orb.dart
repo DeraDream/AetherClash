@@ -103,3 +103,120 @@ class ConnectOrb extends ConsumerWidget {
     );
   }
 }
+
+
+/// Compact connection control used by the wide desktop sidebar.
+class CompactConnectControl extends ConsumerWidget {
+  const CompactConnectControl({super.key});
+
+  void _handleTap(WidgetRef ref, bool hasProfile) {
+    if (!hasProfile) {
+      ref.read(currentPageLabelProvider.notifier).toPage(PageLabel.profiles);
+      return;
+    }
+    ref.read(commonActionProvider.notifier).toggleRunning();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasProfile = ref.watch(
+      profilesProvider.select((state) => state.isNotEmpty),
+    );
+    final isStart = ref.watch(isStartProvider);
+    final suspend = ref.watch(suspendProvider);
+    final runTime = ref.watch(runTimeProvider);
+    final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
+    final glass = context.glass;
+    final active = isStart && !suspend;
+    final label = !hasProfile
+        ? appLocalizations.addProfile
+        : suspend
+        ? appLocalizations.suspended
+        : isStart
+        ? appLocalizations.proxyOn
+        : appLocalizations.tapToConnect;
+    final duration = context.motionDuration(Durations.medium2);
+    return Semantics(
+      button: true,
+      toggled: isStart,
+      label: label,
+      child: GlassButton(
+        kind: GlassKind.tile,
+        borderRadius: AppRadius.small,
+        elevated: false,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        onTap: () => _handleTap(ref, hasProfile),
+        child: Row(
+          children: [
+            TweenAnimationBuilder<double>(
+              tween: Tween(end: active ? 1 : 0),
+              duration: duration,
+              curve: Easing.standard,
+              builder: (_, t, _) => SizedBox.square(
+                dimension: 34,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: Color.lerp(
+                      glass.fill,
+                      colorScheme.primary.withValues(alpha: 0.18),
+                      t,
+                    ),
+                    shape: AppShape.circle,
+                  ),
+                  child: Icon(
+                    hasProfile
+                        ? Icons.power_settings_new_rounded
+                        : Icons.add_rounded,
+                    size: 19,
+                    color: Color.lerp(
+                      glass.secondaryLabel,
+                      colorScheme.primary,
+                      t,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.textTheme.titleSmall,
+                  ),
+                  if (runTime != null) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      getTimeText(runTime),
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: glass.secondaryLabel,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            AnimatedContainer(
+              duration: duration,
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: active
+                    ? context.toneColor(GlassTone.success)
+                    : glass.secondaryLabel.withValues(alpha: 0.45),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
