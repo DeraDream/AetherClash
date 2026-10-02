@@ -1,10 +1,8 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/core.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'connect_orb.dart';
-import 'core_status.dart';
 import 'tiles.dart';
 
 /// The home space on phones and narrow windows. Wide windows show the same
@@ -75,7 +73,6 @@ class BrandHeader extends StatelessWidget {
                     ),
           ),
         ),
-        if (coreLib == null) const CoreStatusButton(),
       ],
     );
   }
