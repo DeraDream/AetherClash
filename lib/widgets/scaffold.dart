@@ -243,7 +243,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
                   ),
             style: MediaQuery.sizeOf(context).width < 600
                 ? null
-                : context.textTheme.headlineSmall?.copyWith(fontSize: 24),
+                : context.textTheme.headlineSmall?.copyWith(fontSize: 22),
           );
   }
 
@@ -276,11 +276,19 @@ class CommonScaffoldState extends State<CommonScaffold> {
       return const [];
     }
     final isMobile = MediaQuery.sizeOf(context).width < 600;
+    if (!isMobile) {
+      return [
+        Center(
+          child: Row(mainAxisSize: MainAxisSize.min, children: actions),
+        ),
+        const SizedBox(width: 10),
+      ];
+    }
     return [
       Center(
         child: GlassSurface(
           kind: GlassKind.panel,
-          borderRadius: isMobile ? AppRadius.full : AppRadius.extraSmall,
+          borderRadius: AppRadius.full,
           elevated: false,
           padding: const EdgeInsets.all(2),
           child: Material(
@@ -289,7 +297,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
           ),
         ),
       ),
-      SizedBox(width: isMobile ? 12 : 8),
+      const SizedBox(width: 12),
     ];
   }
 
@@ -318,7 +326,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
                           : true,
                       animateColor: true,
                       backgroundColor: MediaQuery.sizeOf(context).width >= 600
-                          ? context.glass.card
+                          ? context.glass.background
                           : null,
                       shape: MediaQuery.sizeOf(context).width >= 600
                           ? Border(
