@@ -118,11 +118,11 @@ class ProxyCard extends ConsumerWidget {
     final colorScheme = context.colorScheme;
     final glass = context.glass;
     return ClipRRect(
-      borderRadius: AppRadius.extraSmall,
+      borderRadius: AppRadius.all(7),
       child: Material(
         color: selected
             ? Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.12),
+                colorScheme.primary.withValues(alpha: 0.16),
                 glass.card,
               )
             : glass.card,
@@ -133,7 +133,7 @@ class ProxyCard extends ConsumerWidget {
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
                 child: Row(
                   children: [
                     Expanded(
@@ -154,7 +154,9 @@ class ProxyCard extends ConsumerWidget {
                           const SizedBox(height: 5),
                           DecoratedBox(
                             decoration: BoxDecoration(
-                              color: glass.fill,
+                              color: selected
+                                  ? colorScheme.primary.withValues(alpha: 0.08)
+                                  : glass.fill,
                               borderRadius: AppRadius.all(4),
                               border: Border.all(color: glass.separator),
                             ),
