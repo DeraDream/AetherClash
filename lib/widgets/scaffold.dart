@@ -241,6 +241,9 @@ class CommonScaffoldState extends State<CommonScaffold> {
                 : appLocalizations.selectedCountTitle(
                     '${_appBarState.value.editState?.editCount ?? 0}',
                   ),
+            style: context.isMobileView
+                ? null
+                : context.textTheme.headlineSmall?.copyWith(fontSize: 24),
           );
   }
 
