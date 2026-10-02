@@ -3,13 +3,13 @@
 #
 #   PO0CLASH_VERSION  release tag to install (default: latest release)
 #   PO0CLASH_DMG      local dmg path or URL; skips the release lookup
-#   PO0CLASH_REPO     owner/repo (default: yuuuki-creation/po0-clash)
+#   PO0CLASH_REPO     owner/repo (default: DeraDream/po0-clash)
 #   GH_TOKEN          token for a private repository when gh is unavailable
 set -euo pipefail
 # macOS ships bash 3.2, where "${a[@]}" on an empty array trips set -u;
 # arrays below expand as ${a[@]+"${a[@]}"}.
 
-repo="${PO0CLASH_REPO:-yuuuki-creation/po0-clash}"
+repo="${PO0CLASH_REPO:-DeraDream/po0-clash}"
 version="${PO0CLASH_VERSION:-latest}"
 app_name="po0-clash.app"
 target="/Applications/$app_name"
