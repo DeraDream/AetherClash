@@ -143,6 +143,7 @@ class CommonAction extends _$CommonAction {
                 release: data,
                 dio: request.dio,
                 onProgress: onProgress,
+                launchElevated: windows?.runas,
               );
               await ref.read(systemActionProvider.notifier).handleExit();
             },

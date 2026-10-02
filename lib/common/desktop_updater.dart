@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:fl_clash/common/exception.dart';
 import 'package:path/path.dart' as path;
 
+typedef ElevatedLauncher = bool Function(String command, String arguments);
+
 enum DesktopUpdateStage { downloading, installing }
 
 final class DesktopUpdateProgress {
@@ -97,6 +99,7 @@ final class DesktopUpdater {
     required Map<String, dynamic> release,
     required Dio dio,
     required void Function(DesktopUpdateProgress progress) onProgress,
+    ElevatedLauncher? launchElevated,
   }) async {
     final target = await _target();
     final asset = findDesktopUpdateAsset(
@@ -155,7 +158,10 @@ final class DesktopUpdater {
         ),
       );
       if (Platform.isWindows) {
-        await _launchWindowsUpdater(package);
+        await _launchWindowsUpdater(
+          package,
+          launchElevated: launchElevated,
+        );
       } else {
         await _launchMacOSUpdater(package);
       }
@@ -189,10 +195,21 @@ final class DesktopUpdater {
     return (platform: 'macos', arch: arch);
   }
 
-  Future<void> _launchWindowsUpdater(File installer) async {
+  Future<void> _launchWindowsUpdater(
+    File installer, {
+    ElevatedLauncher? launchElevated,
+  }) async {
+    final elevate = launchElevated;
+    if (elevate == null) {
+      throw const MessageException(
+        'The Windows update process could not request administrator access.',
+      );
+    }
+
     final executable = File(Platform.resolvedExecutable);
     final updateDirectory = installer.parent;
     final script = File(path.join(updateDirectory.path, 'update.ps1'));
+    final readyFile = File(path.join(updateDirectory.path, 'ready'));
     final installDirectory = executable.parent.path;
     await script.writeAsString('''
 \$ErrorActionPreference = 'Stop'
@@ -201,48 +218,101 @@ final class DesktopUpdater {
 \$target = ${_powerShellQuote(executable.path)}
 \$installDir = ${_powerShellQuote(installDirectory)}
 \$updateRoot = ${_powerShellQuote(updateDirectory.path)}
+\$readyFile = ${_powerShellQuote(readyFile.path)}
+\$logRoot = Join-Path \$env:LOCALAPPDATA 'po0-clash'
+\$logPath = Join-Path \$logRoot 'update.log'
 
-for (\$i = 0; \$i -lt 40; \$i++) {
+New-Item -ItemType Directory -Path \$logRoot -Force | Out-Null
+
+function Write-UpdateLog([string]\$message) {
+  Add-Content -LiteralPath \$logPath -Value ("[{0}] {1}" -f (Get-Date -Format o), \$message)
+}
+
+Write-UpdateLog 'Updater started and elevated.'
+Set-Content -LiteralPath \$readyFile -Value 'ready' -Encoding ASCII
+
+for (\$i = 0; \$i -lt 80; \$i++) {
   if (-not (Get-Process -Id \$appProcessId -ErrorAction SilentlyContinue)) {
     break
   }
   Start-Sleep -Milliseconds 250
 }
 if (Get-Process -Id \$appProcessId -ErrorAction SilentlyContinue) {
+  Write-UpdateLog 'Application did not exit in time; forcing it to stop.'
   Stop-Process -Id \$appProcessId -Force
-  Start-Sleep -Milliseconds 500
+  Start-Sleep -Milliseconds 750
 }
 
 try {
-  \$installerArgs = '/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="' + \$installDir + '"'
-  \$process = Start-Process -FilePath \$installer -ArgumentList \$installerArgs -Verb RunAs -PassThru -Wait
-  if (\$process.ExitCode -ne 0) {
-    throw "installer exited with code \$(\$process.ExitCode)"
+  Write-UpdateLog ("Running installer: " + \$installer)
+  \$installerArgs = @(
+    '/SP-',
+    '/VERYSILENT',
+    '/SUPPRESSMSGBOXES',
+    '/NORESTART',
+    ('/DIR=' + \$installDir),
+    ('/LOG=' + \$logPath)
+  )
+  & \$installer @installerArgs
+  \$installerExitCode = \$LASTEXITCODE
+  Write-UpdateLog ("Installer exit code: " + \$installerExitCode)
+  if (\$installerExitCode -ne 0) {
+    throw "installer exited with code \$installerExitCode"
   }
-  Start-Process -FilePath \$target
+  if (-not (Test-Path -LiteralPath \$target)) {
+    throw "updated executable is missing: \$target"
+  }
+  Write-UpdateLog ("Restarting: " + \$target)
+  Start-Process -FilePath \$target -WorkingDirectory \$installDir
+  Write-UpdateLog 'Update completed successfully.'
 } catch {
+  Write-UpdateLog ("Update failed: " + \$_.Exception.Message)
   if (Test-Path -LiteralPath \$target) {
-    Start-Process -FilePath \$target
+    Start-Process -FilePath \$target -WorkingDirectory \$installDir
   }
   exit 1
 } finally {
+  Remove-Item -LiteralPath \$readyFile -Force -ErrorAction SilentlyContinue
   Remove-Item -LiteralPath \$installer -Force -ErrorAction SilentlyContinue
+  Start-Sleep -Milliseconds 250
   Remove-Item -LiteralPath \$updateRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 ''');
-    await Process.start(
+
+    final launched = elevate(
       'powershell.exe',
-      [
-        '-NoLogo',
-        '-NoProfile',
-        '-NonInteractive',
-        '-ExecutionPolicy',
-        'Bypass',
-        '-File',
-        script.path,
-      ],
-      mode: ProcessStartMode.detached,
+      '-NoLogo -NoProfile -ExecutionPolicy Bypass -File '
+          '${_windowsCommandQuote(script.path)}',
     );
+    if (!launched) {
+      throw const MessageException(
+        'Administrator access was not granted. The update was not started.',
+      );
+    }
+
+    final ready = await _waitForFile(
+      readyFile,
+      timeout: const Duration(seconds: 15),
+    );
+    if (!ready) {
+      throw const MessageException(
+        'The elevated updater did not start. The application is still running.',
+      );
+    }
+  }
+
+  Future<bool> _waitForFile(
+    File file, {
+    required Duration timeout,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    while (stopwatch.elapsed < timeout) {
+      if (await file.exists()) {
+        return true;
+      }
+      await Future.delayed(const Duration(milliseconds: 125));
+    }
+    return false;
   }
 
   Future<void> _launchMacOSUpdater(File dmg) async {
@@ -322,6 +392,8 @@ trap - EXIT
 }
 
 String _powerShellQuote(String value) => "'${value.replaceAll("'", "''")}'";
+
+String _windowsCommandQuote(String value) => '"$value"';
 
 String _shellQuote(String value) => "'${value.replaceAll("'", "'\"'\"'")}'";
 

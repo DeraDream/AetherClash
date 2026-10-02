@@ -16,6 +16,7 @@ extension PageLabelL10n on PageLabel {
       PageLabel.resources => appLocalizations.resources,
       PageLabel.connections => appLocalizations.connections,
       PageLabel.po0 => appLocalizations.po0Nav,
+      PageLabel.core => appLocalizations.core,
       PageLabel.activity => appLocalizations.activity,
     };
   }
@@ -28,6 +29,7 @@ extension PageLabelL10n on PageLabel {
       PageLabel.resources => appLocalizations.resourcesDesc,
       PageLabel.connections => appLocalizations.connectionsDesc,
       PageLabel.po0 => appLocalizations.po0FirewallDesc,
+      PageLabel.core => appLocalizations.coreStatus,
       PageLabel.activity => appLocalizations.activityDesc,
       PageLabel.dashboard ||
       PageLabel.proxies ||
