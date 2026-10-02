@@ -30,10 +30,7 @@ class CommonDialog extends ConsumerWidget {
     final desktop = size.width >= 600;
     final colorScheme = Theme.of(context).colorScheme;
     final effectivePadding =
-        padding ??
-        (desktop
-            ? const EdgeInsets.fromLTRB(14, 6, 14, 14)
-            : null);
+        padding ?? (desktop ? const EdgeInsets.fromLTRB(14, 6, 14, 14) : null);
     return AlertDialog(
       title: Text(
         title,
@@ -44,13 +41,9 @@ class CommonDialog extends ConsumerWidget {
               )
             : null,
       ),
-      titlePadding: desktop
-          ? const EdgeInsets.fromLTRB(22, 20, 22, 8)
-          : null,
+      titlePadding: desktop ? const EdgeInsets.fromLTRB(22, 20, 22, 8) : null,
       actions: actions,
-      actionsPadding: desktop
-          ? const EdgeInsets.fromLTRB(14, 0, 14, 14)
-          : null,
+      actionsPadding: desktop ? const EdgeInsets.fromLTRB(14, 0, 14, 14) : null,
       contentPadding: effectivePadding,
       insetPadding: desktop
           ? const EdgeInsets.symmetric(horizontal: 24, vertical: 24)
