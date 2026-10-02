@@ -421,7 +421,6 @@ class _DisclaimerTile extends ConsumerWidget {
   }
 }
 
-
 class _DesktopSettingsPage extends StatelessWidget {
   const _DesktopSettingsPage({required this.child});
 
