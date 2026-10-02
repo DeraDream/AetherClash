@@ -251,6 +251,8 @@ class ControlSidebar extends StatelessWidget {
       width: width,
       child: GlassSurface(
         kind: GlassKind.panel,
+        borderRadius: AppRadius.small,
+        elevated: false,
         child: Material(
           type: MaterialType.transparency,
           child: CustomScrollView(
