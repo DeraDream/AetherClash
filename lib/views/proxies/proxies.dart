@@ -26,15 +26,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   List<Widget> _buildActions(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return [
-      if (_isTab && !context.isMobileView)
-        IconButton(
-          tooltip: appLocalizations.delayTest,
-          onPressed: () {
-            _proxiesTabKey.currentState?.delayTestCurrentGroup();
-          },
-          icon: const Icon(Icons.network_ping_rounded),
-        ),
-      if (_isTab)
+      if (_isTab && context.isMobileView)
         IconButton(
           tooltip: context.appLocalizations.scrollToSelected,
           onPressed: () {
@@ -141,10 +133,12 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       actions: _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
-      body: switch (proxiesType) {
-        ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
-        ProxiesType.list => const ProxiesListView(),
-      },
+      body: !context.isMobileView
+          ? const ProxiesListView()
+          : switch (proxiesType) {
+              ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
+              ProxiesType.list => const ProxiesListView(),
+            },
     );
   }
 }
