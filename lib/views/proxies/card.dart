@@ -112,8 +112,98 @@ class ProxyCard extends ConsumerWidget {
     );
   }
 
+  Widget _buildCompactCard(BuildContext context, WidgetRef ref) {
+    final selectedProxyName = ref.watch(selectedProxyNameProvider(groupName));
+    final selected = selectedProxyName == proxy.name;
+    final colorScheme = context.colorScheme;
+    final glass = context.glass;
+    return ClipRRect(
+      borderRadius: AppRadius.extraSmall,
+      child: Material(
+        color: selected
+            ? Color.alphaBlend(
+                colorScheme.primary.withValues(alpha: 0.12),
+                glass.card,
+              )
+            : glass.card,
+        child: InkWell(
+          onTap: () {
+            _changeProxy(ref);
+          },
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          EmojiText(
+                            proxy.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              fontWeight: selected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: glass.fill,
+                              borderRadius: AppRadius.all(4),
+                              border: Border.all(color: glass.separator),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1,
+                              ),
+                              child: Text(
+                                proxy.type,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.textTheme.labelSmall?.copyWith(
+                                  color: glass.secondaryLabel,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildDelayText(),
+                  ],
+                ),
+              ),
+              if (selected)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: ColoredBox(
+                    color: colorScheme.primary,
+                    child: const SizedBox(width: 3),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (compact) {
+      return _buildCompactCard(context, ref);
+    }
     final measure = globalState.measure;
     final delayText = _buildDelayText();
     final proxyNameText = _buildProxyNameText(context);
