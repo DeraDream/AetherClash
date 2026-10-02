@@ -194,6 +194,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
       proxiesStyleSettingProvider.select((state) => state.layout),
     );
     final groups = state.groups;
+    final compact = !context.isMobileView;
     _keyMap = {};
     return NullStatusSwitcher(
       isEmpty: groups.isEmpty || _tabController == null,
@@ -220,11 +221,27 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                     TabBar(
                       controller: _tabController,
                       padding: EdgeInsets.only(
-                        left: 16,
-                        right: 16 + (value ? 16 : 0),
+                        left: compact ? 8 : 16,
+                        right:
+                            (compact ? 8 : 16) +
+                            (value ? (compact ? 8 : 16) : 0),
                       ),
                       dividerColor: Colors.transparent,
-                      indicatorPadding: const EdgeInsets.symmetric(vertical: 6),
+                      indicator: compact
+                          ? ShapeDecoration(
+                              color: context.glass.selected,
+                              shape: AppShape.extraSmall,
+                            )
+                          : null,
+                      indicatorPadding: EdgeInsets.symmetric(
+                        vertical: compact ? 8 : 6,
+                      ),
+                      labelPadding: EdgeInsets.symmetric(
+                        horizontal: compact ? 12 : 16,
+                      ),
+                      splashBorderRadius: compact
+                          ? AppRadius.extraSmall
+                          : AppRadius.full,
                       isScrollable: true,
                       tabAlignment: TabAlignment.start,
                       tabs: [
@@ -265,7 +282,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
             child: LayoutBuilder(
               builder: (_, constraints) {
                 final columns = getProxiesColumns(
-                  max(constraints.maxWidth - 32, 0),
+                  max(constraints.maxWidth - (compact ? 24 : 32), 0),
                   proxiesLayout,
                 );
                 return TabBarView(
@@ -281,6 +298,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                         group: group,
                         columns: columns,
                         cardType: state.proxyCardType,
+                        compact: compact,
                       ),
                   ],
                 );
@@ -297,12 +315,14 @@ class ProxyGroupView extends ConsumerStatefulWidget {
   final Group group;
   final int columns;
   final ProxyCardType cardType;
+  final bool compact;
 
   const ProxyGroupView({
     super.key,
     required this.group,
     required this.columns,
     required this.cardType,
+    required this.compact,
   });
 
   @override
@@ -340,12 +360,13 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
     }
     _controller.animateTo(
       min(
-        16 +
+        (widget.compact ? 12 : 16) +
             getScrollToSelectedOffset(
               ref: ref,
               groupName: widget.group.name,
               proxies: widget.group.all,
               columns: widget.columns,
+              compact: widget.compact,
             ),
         _controller.position.maxScrollExtent,
       ),
@@ -364,16 +385,19 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
         key: _getPageStorageKey(),
         controller: _controller,
         padding: EdgeInsets.only(
-          top: 16,
-          left: 16,
-          right: 16,
-          bottom: 16 + BottomInsetScope.of(context),
+          top: widget.compact ? 12 : 16,
+          left: widget.compact ? 12 : 16,
+          right: widget.compact ? 12 : 16,
+          bottom: (widget.compact ? 12 : 16) + BottomInsetScope.of(context),
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: widget.columns,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          mainAxisExtent: getItemHeight(widget.cardType),
+          mainAxisSpacing: widget.compact ? 6 : 8,
+          crossAxisSpacing: widget.compact ? 6 : 8,
+          mainAxisExtent: getItemHeight(
+            widget.cardType,
+            compact: widget.compact,
+          ),
         ),
         itemCount: proxies.length,
         itemBuilder: (_, index) {
@@ -384,6 +408,7 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
             type: widget.cardType,
             proxy: proxy,
             groupName: group.name,
+            compact: widget.compact,
           );
         },
       ),

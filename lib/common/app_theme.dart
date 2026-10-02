@@ -52,7 +52,7 @@ ThemeData buildAppTheme({
       backgroundColor: glass.glassStrong,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      shape: AppShape.extraLarge.copyWith(side: floatingSide),
+      shape: AppShape.small.copyWith(side: floatingSide),
       barrierColor: colorScheme.modalScrim,
     ),
     bottomSheetTheme: BottomSheetThemeData(
@@ -67,7 +67,7 @@ ThemeData buildAppTheme({
     inputDecorationTheme: _inputTheme(glass, colorScheme),
     filledButtonTheme: const FilledButtonThemeData(
       style: ButtonStyle(
-        shape: WidgetStatePropertyAll(AppShape.full),
+        shape: WidgetStatePropertyAll(AppShape.small),
         elevation: WidgetStatePropertyAll(0),
         padding: WidgetStatePropertyAll(
           EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -76,7 +76,7 @@ ThemeData buildAppTheme({
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(AppShape.full),
+        shape: const WidgetStatePropertyAll(AppShape.small),
         backgroundColor: WidgetStatePropertyAll(glass.fill),
         side: const WidgetStatePropertyAll(BorderSide.none),
         padding: const WidgetStatePropertyAll(
@@ -85,11 +85,11 @@ ThemeData buildAppTheme({
       ),
     ),
     textButtonTheme: const TextButtonThemeData(
-      style: ButtonStyle(shape: WidgetStatePropertyAll(AppShape.full)),
+      style: ButtonStyle(shape: WidgetStatePropertyAll(AppShape.small)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(AppShape.full),
+        shape: const WidgetStatePropertyAll(AppShape.small),
         elevation: const WidgetStatePropertyAll(0),
         backgroundColor: WidgetStatePropertyAll(glass.fill),
       ),
@@ -101,11 +101,11 @@ ThemeData buildAppTheme({
       focusElevation: 0,
       hoverElevation: 0,
       highlightElevation: 0,
-      shape: AppShape.full,
+      shape: AppShape.small,
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(AppShape.full),
+        shape: const WidgetStatePropertyAll(AppShape.extraSmall),
         side: const WidgetStatePropertyAll(BorderSide.none),
         backgroundColor: WidgetStateProperty.resolveWith(
           (states) =>
@@ -172,16 +172,9 @@ ThemeData buildAppTheme({
       indicatorSize: TabBarIndicatorSize.tab,
       indicator: ShapeDecoration(
         color: glass.thumb,
-        shape: AppShape.full,
-        shadows: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: glass.isDark ? 0.3 : 0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        shape: AppShape.extraSmall,
       ),
-      splashBorderRadius: AppRadius.full,
+      splashBorderRadius: AppRadius.extraSmall,
       labelColor: colorScheme.onSurface,
       unselectedLabelColor: glass.secondaryLabel,
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -243,8 +236,7 @@ SwitchThemeData _switchTheme(GlassStyle glass, ColorScheme scheme) {
 extension GlassSchemeExt on ColorScheme {
   Color get modalScrim => scrim.withValues(alpha: 0.2);
 
-  /// Neutral Apple grouped surfaces in place of the seeded, tinted ones, so
-  /// the accent is the only color a screen carries.
+  /// Neutral grouped surfaces keep the accent as the only strong color.
   ColorScheme toGlass(GlassStyle glass) {
     final dark = glass.isDark;
     return copyWith(
@@ -256,14 +248,14 @@ extension GlassSchemeExt on ColorScheme {
       surfaceContainerLow: glass.card,
       surfaceContainer: glass.card,
       surfaceContainerHigh: dark
-          ? const Color(0xFF2C2C2E)
-          : const Color(0xFFF2F2F7),
+          ? const Color(0xFF303136)
+          : const Color(0xFFEFEFF1),
       surfaceContainerHighest: dark
-          ? const Color(0xFF3A3A3C)
-          : const Color(0xFFE5E5EA),
-      outline: dark ? const Color(0xFF545458) : const Color(0xFFC6C6C8),
+          ? const Color(0xFF393A40)
+          : const Color(0xFFE5E6E9),
+      outline: dark ? const Color(0xFF505159) : const Color(0xFFD0D2D6),
       outlineVariant: glass.separator,
-      secondaryContainer: primary.withValues(alpha: dark ? 0.24 : 0.14),
+      secondaryContainer: primary.withValues(alpha: dark ? 0.18 : 0.10),
       onSecondaryContainer: primary,
     );
   }

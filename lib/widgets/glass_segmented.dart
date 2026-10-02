@@ -23,13 +23,15 @@ class GlassSegmented<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glass = context.glass;
+    final compact = MediaQuery.sizeOf(context).width >= 600;
+    final shape = compact ? AppShape.extraSmall : AppShape.full;
     final index = values.indexOf(selected);
     final count = values.length;
     final duration = context.motionDuration(Durations.medium2);
     return SizedBox(
       height: height,
       child: DecoratedBox(
-        decoration: ShapeDecoration(color: glass.fill, shape: AppShape.full),
+        decoration: ShapeDecoration(color: glass.fill, shape: shape),
         child: Padding(
           padding: const EdgeInsets.all(3),
           child: Stack(
@@ -49,16 +51,18 @@ class GlassSegmented<T> extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: ShapeDecoration(
                         color: glass.thumb,
-                        shape: AppShape.full,
-                        shadows: [
-                          BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: glass.isDark ? 0.3 : 0.12,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        shape: shape,
+                        shadows: compact
+                            ? const []
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withValues(
+                                    alpha: glass.isDark ? 0.3 : 0.12,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                       ),
                     ),
                   ),
@@ -74,6 +78,9 @@ class GlassSegmented<T> extends StatelessWidget {
                           label: labelOf(value),
                           icon: iconOf?.call(value),
                           selected: value == selected,
+                          borderRadius: compact
+                              ? AppRadius.extraSmall
+                              : AppRadius.full,
                           onTap: () {
                             if (value != selected) {
                               onChanged(value);
@@ -97,12 +104,14 @@ class _Segment extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.selected,
+    required this.borderRadius,
     required this.onTap,
   });
 
   final String label;
   final IconData? icon;
   final bool selected;
+  final BorderRadius borderRadius;
   final VoidCallback onTap;
 
   @override
@@ -114,7 +123,7 @@ class _Segment extends StatelessWidget {
       selected: selected,
       child: InkWell(
         onTap: onTap,
-        customBorder: AppShape.full,
+        customBorder: AppShape.of(borderRadius),
         overlayColor: WidgetStatePropertyAll(
           color.withValues(alpha: selected ? 0 : 0.04),
         ),

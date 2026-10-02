@@ -241,6 +241,9 @@ class CommonScaffoldState extends State<CommonScaffold> {
                 : appLocalizations.selectedCountTitle(
                     '${_appBarState.value.editState?.editCount ?? 0}',
                   ),
+            style: MediaQuery.sizeOf(context).width < 600
+                ? null
+                : context.textTheme.headlineSmall?.copyWith(fontSize: 22),
           );
   }
 
@@ -271,6 +274,15 @@ class CommonScaffoldState extends State<CommonScaffold> {
   List<Widget> _toolbarGroup(List<Widget> actions) {
     if (actions.isEmpty) {
       return const [];
+    }
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
+    if (!isMobile) {
+      return [
+        Center(
+          child: Row(mainAxisSize: MainAxisSize.min, children: actions),
+        ),
+        const SizedBox(width: 10),
+      ];
     }
     return [
       Center(
@@ -313,6 +325,16 @@ class CommonScaffoldState extends State<CommonScaffold> {
                           ? false
                           : true,
                       animateColor: true,
+                      backgroundColor: MediaQuery.sizeOf(context).width >= 600
+                          ? context.glass.background
+                          : null,
+                      shape: MediaQuery.sizeOf(context).width >= 600
+                          ? Border(
+                              bottom: BorderSide(
+                                color: context.glass.separator,
+                              ),
+                            )
+                          : null,
                       centerTitle: widget.centerTitle ?? false,
                       leading: _buildLeading(backAction),
                       title: _buildTitle(state.searchState),

@@ -318,7 +318,7 @@ void main() {
     expect(tester.takeException(), null);
   });
 
-  testWidgets('proxies renders populated tab and list layouts', (tester) async {
+  testWidgets('proxies renders the grouped desktop layout', (tester) async {
     tester.view.physicalSize = const Size(1400, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -365,13 +365,8 @@ void main() {
     await tester.pump();
 
     expect(container.read(proxiesTabStateProvider).groups, [group]);
-    expect(find.byType(ProxiesTabView), findsOneWidget);
-    expect(find.byType(ProxyGroupView), findsOneWidget);
-
-    container
-        .read(proxiesStyleSettingProvider.notifier)
-        .update((state) => state.copyWith(type: ProxiesType.list));
-    await tester.pump();
+    expect(find.byType(ProxiesTabView), findsNothing);
+    expect(find.byType(ProxyGroupView), findsNothing);
     expect(find.byType(ProxiesListView), findsOneWidget);
 
     final scrollables = find.byType(Scrollable);

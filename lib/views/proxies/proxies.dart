@@ -26,7 +26,19 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   List<Widget> _buildActions(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return [
-      if (_isTab)
+      if (!context.isMobileView)
+        IconButton(
+          tooltip: appLocalizations.delayTest,
+          onPressed: () async {
+            final proxies = ref
+                .read(groupsProvider)
+                .expand((group) => group.all)
+                .toList();
+            await ref.read(proxiesActionProvider.notifier).delayTest(proxies);
+          },
+          icon: const Icon(Icons.network_ping_rounded),
+        ),
+      if (_isTab && context.isMobileView)
         IconButton(
           tooltip: context.appLocalizations.scrollToSelected,
           onPressed: () {
@@ -77,14 +89,15 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     ];
   }
 
-  Widget? _buildFAB() {
-    return _isTab
-        ? DelayTestButton(
-            onClick: () async {
-              await _proxiesTabKey.currentState?.delayTestCurrentGroup();
-            },
-          )
-        : null;
+  Widget? _buildFAB(BuildContext context) {
+    if (!context.isMobileView || !_isTab) {
+      return null;
+    }
+    return DelayTestButton(
+      onClick: () async {
+        await _proxiesTabKey.currentState?.delayTestCurrentGroup();
+      },
+    );
   }
 
   void _onSearch(String value) {
@@ -128,14 +141,16 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     return CommonScaffold(
       isLoading: isLoading,
       resizeToAvoidBottomInset: false,
-      floatingActionButton: _buildFAB(),
+      floatingActionButton: _buildFAB(context),
       actions: _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
-      body: switch (proxiesType) {
-        ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
-        ProxiesType.list => const ProxiesListView(),
-      },
+      body: !context.isMobileView
+          ? const ProxiesListView()
+          : switch (proxiesType) {
+              ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
+              ProxiesType.list => const ProxiesListView(),
+            },
     );
   }
 }

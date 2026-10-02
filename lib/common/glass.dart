@@ -47,38 +47,38 @@ class GlassStyle extends ThemeExtension<GlassStyle> {
     if (scheme.brightness == Brightness.dark) {
       return GlassStyle(
         brightness: Brightness.dark,
-        background: pureBlack ? Colors.black : const Color(0xFF1C1C1E),
-        card: pureBlack ? const Color(0xFF1C1C1E) : const Color(0xFF2C2C2E),
-        fill: const Color(0x3D767680),
-        thumb: const Color(0xFF636366),
-        glass: pureBlack ? const Color(0x8C1E1E20) : const Color(0x99343437),
+        background: pureBlack ? Colors.black : const Color(0xFF1E1F22),
+        card: pureBlack ? const Color(0xFF191A1C) : const Color(0xFF27282C),
+        fill: const Color(0xFF313238),
+        thumb: const Color(0xFF3A3B40),
+        glass: pureBlack ? const Color(0xE61B1C1F) : const Color(0xF02A2B2F),
         glassStrong: pureBlack
-            ? const Color(0xE62C2C2E)
-            : const Color(0xEB38383B),
-        rimLight: Colors.white.withValues(alpha: 0.26),
-        rimShade: Colors.white.withValues(alpha: 0.06),
-        separator: const Color(0x99545458),
-        shadow: Colors.black.withValues(alpha: 0.5),
-        selected: Colors.white.withValues(alpha: 0.1),
-        secondaryLabel: const Color(0x99EBEBF5),
-        blurSigma: 24,
+            ? const Color(0xFA202124)
+            : const Color(0xFA2A2B2F),
+        rimLight: Colors.white.withValues(alpha: 0.10),
+        rimShade: Colors.white.withValues(alpha: 0.04),
+        separator: const Color(0xFF3A3B40),
+        shadow: Colors.black.withValues(alpha: 0.22),
+        selected: scheme.primary.withValues(alpha: 0.18),
+        secondaryLabel: const Color(0xFF9A9CA3),
+        blurSigma: 16,
       );
     }
     return GlassStyle(
       brightness: Brightness.light,
-      background: const Color(0xFFF2F2F7),
+      background: const Color(0xFFF5F5F5),
       card: Colors.white,
-      fill: const Color(0x1F767680),
+      fill: const Color(0xFFEDEDED),
       thumb: Colors.white,
-      glass: Colors.white.withValues(alpha: 0.62),
-      glassStrong: const Color(0xEBF9F9FB),
-      rimLight: Colors.white.withValues(alpha: 0.95),
-      rimShade: Colors.white.withValues(alpha: 0.4),
-      separator: const Color(0x2E3C3C43),
-      shadow: Colors.black.withValues(alpha: 0.1),
-      selected: Colors.black.withValues(alpha: 0.06),
-      secondaryLabel: const Color(0x993C3C43),
-      blurSigma: 24,
+      glass: const Color(0xFFF7F7F7),
+      glassStrong: const Color(0xFFFFFFFF),
+      rimLight: Colors.white,
+      rimShade: const Color(0xFFE5E5E5),
+      separator: const Color(0xFFE1E1E1),
+      shadow: Colors.black.withValues(alpha: 0.06),
+      selected: scheme.primary.withValues(alpha: 0.12),
+      secondaryLabel: const Color(0xFF8A8A8A),
+      blurSigma: 16,
     );
   }
 
@@ -145,7 +145,7 @@ enum GlassTone {
   pink;
 
   (Color, Color) get lightAndDark => switch (this) {
-    GlassTone.accent => (const Color(0xFF007AFF), const Color(0xFF0A84FF)),
+    GlassTone.accent => (const Color(0xFF1677FF), const Color(0xFF4096FF)),
     GlassTone.success => (const Color(0xFF34C759), const Color(0xFF30D158)),
     GlassTone.warning => (const Color(0xFFFF9500), const Color(0xFFFF9F0A)),
     GlassTone.danger => (const Color(0xFFFF3B30), const Color(0xFFFF453A)),

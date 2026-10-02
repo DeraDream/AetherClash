@@ -141,7 +141,9 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('arrow right traverses every ListHeader action', (tester) async {
+  testWidgets('desktop ListHeader keeps delay and expand actions in its row', (
+    tester,
+  ) async {
     await pumpListLayout(tester);
 
     for (var i = 0; i < 10 && !focusInHeaderCard(); i++) {
@@ -153,14 +155,27 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pump();
     expect(focusedHeaderActionIndex(), 0);
-
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-    await tester.pump();
-    expect(focusedHeaderActionIndex(), 1);
-
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-    await tester.pump();
-    expect(focusedHeaderActionIndex(), 2);
+    expect(
+      find.descendant(
+        of: find.byType(ListHeader),
+        matching: find.byType(IconButton),
+      ),
+      findsNWidgets(2),
+    );
+    expect(
+      find.descendant(
+        of: find.byType(ListHeader),
+        matching: find.byIcon(Icons.network_ping_rounded),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(ListHeader),
+        matching: find.byIcon(Icons.my_location_rounded),
+      ),
+      findsNothing,
+    );
 
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpWidget(const SizedBox());
@@ -180,13 +195,17 @@ void main() {
     await tester.pump();
     expect(focusedHeaderActionIndex(), 0);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
-    expect(focusedHeaderActionIndex(), 2);
+    expect(focusedHeaderActionIndex(), 1);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
-    expect(focusedHeaderActionIndex(), 0);
+    expect(focusedHeaderActionIndex(), 1);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(focusedHeaderActionIndex(), 1);
 
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpWidget(const SizedBox());

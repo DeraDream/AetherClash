@@ -20,11 +20,28 @@ import 'config/advanced.dart';
 import 'developer.dart';
 import 'theme.dart';
 
-/// Settings as a board of glass tiles, grouped by what they change.
+/// Settings keep the app shell visible on desktop: sub-pages are pushed into
+/// this local navigator instead of appearing as a narrow modal side sheet.
 class ToolsView extends ConsumerWidget {
   const ToolsView({super.key});
 
-  static const _maxWidth = 720.0;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMobile = ref.watch(isMobileViewProvider);
+    if (isMobile) {
+      return const _ToolsBoard();
+    }
+    return Navigator(
+      onGenerateRoute: (_) =>
+          MaterialPageRoute<void>(builder: (_) => const _ToolsBoard()),
+    );
+  }
+}
+
+class _ToolsBoard extends ConsumerWidget {
+  const _ToolsBoard();
+
+  static const _maxWidth = 980.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +69,7 @@ class ToolsView extends ConsumerWidget {
         appLocalizations.appearance,
         [
           _SettingTile.page(
-            icon: Icons.palette_rounded,
+            icon: Icons.palette_outlined,
             tone: GlassTone.indigo,
             title: appLocalizations.theme,
             subtitle: appLocalizations.themeDesc,
@@ -66,13 +83,13 @@ class ToolsView extends ConsumerWidget {
         [
           _SettingTile.page(
             icon: Icons.tune_rounded,
-            tone: GlassTone.neutral,
+            tone: GlassTone.accent,
             title: appLocalizations.basicConfig,
             subtitle: appLocalizations.basicConfigDesc,
             page: const ConfigView(),
           ),
           _SettingTile.page(
-            icon: Icons.build_rounded,
+            icon: Icons.build_outlined,
             tone: GlassTone.neutral,
             title: appLocalizations.advancedConfig,
             subtitle: appLocalizations.advancedConfigDesc,
@@ -80,7 +97,7 @@ class ToolsView extends ConsumerWidget {
           ),
           if (system.isAndroid)
             _SettingTile.page(
-              icon: Icons.apps_rounded,
+              icon: Icons.apps_outlined,
               tone: GlassTone.success,
               title: appLocalizations.accessControl,
               subtitle: appLocalizations.accessControlDesc,
@@ -103,7 +120,7 @@ class ToolsView extends ConsumerWidget {
         appLocalizations.system,
         [
           _SettingTile.page(
-            icon: Icons.settings_rounded,
+            icon: Icons.settings_outlined,
             tone: GlassTone.neutral,
             title: appLocalizations.application,
             subtitle: appLocalizations.applicationDesc,
@@ -111,21 +128,21 @@ class ToolsView extends ConsumerWidget {
           ),
           if (system.isDesktop)
             _SettingTile.page(
-              icon: Icons.keyboard_rounded,
+              icon: Icons.keyboard_outlined,
               tone: GlassTone.neutral,
               title: appLocalizations.hotkeyManagement,
               subtitle: appLocalizations.hotkeyManagementDesc,
               page: const HotKeyView(),
             ),
           _SettingTile.page(
-            icon: Icons.cloud_sync_rounded,
+            icon: Icons.cloud_sync_outlined,
             tone: GlassTone.teal,
             title: appLocalizations.backupAndRestore,
             subtitle: appLocalizations.backupAndRestoreDesc,
             page: const BackupAndRestore(),
           ),
           _SettingTile.page(
-            icon: Icons.storage_rounded,
+            icon: Icons.storage_outlined,
             tone: GlassTone.warning,
             title: appLocalizations.resources,
             subtitle: appLocalizations.resourcesDesc,
@@ -139,13 +156,13 @@ class ToolsView extends ConsumerWidget {
           const _DisclaimerTile(),
           if (developerMode)
             _SettingTile.page(
-              icon: Icons.developer_board_rounded,
+              icon: Icons.developer_board_outlined,
               tone: GlassTone.neutral,
               title: appLocalizations.developerMode,
               page: const DeveloperView(),
             ),
           _SettingTile.page(
-            icon: Icons.info_rounded,
+            icon: Icons.info_outline_rounded,
             tone: GlassTone.accent,
             title: appLocalizations.about,
             subtitle: appName,
@@ -159,9 +176,9 @@ class ToolsView extends ConsumerWidget {
       body: ListView(
         key: toolsStoreKey,
         padding: EdgeInsets.fromLTRB(
-          16,
+          isMobile ? 16 : 20,
           0,
-          16,
+          isMobile ? 16 : 20,
           24 + BottomInsetScope.of(context),
         ),
         children: [
@@ -194,6 +211,8 @@ class _TileSection extends StatelessWidget {
       children: [
         GlassSectionLabel(title),
         GlassSurface(
+          borderRadius: AppRadius.small,
+          elevated: false,
           child: Material(
             type: MaterialType.transparency,
             child: Column(
@@ -227,7 +246,13 @@ class _SettingTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     required Widget page,
-  }) : onTap = ((context) => showExtend(context, builder: (_) => page));
+  }) : onTap = ((context) {
+         if (context.isMobileView) {
+           showExtend(context, builder: (_) => page);
+           return;
+         }
+         BaseNavigator.push(context, _DesktopSettingsPage(child: page));
+       });
 
   final IconData icon;
   final GlassTone tone;
@@ -239,13 +264,33 @@ class _SettingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
     final glass = context.glass;
+    final desktop = MediaQuery.sizeOf(context).width >= 600;
+    final toneColor = context.toneColor(tone);
+    final leading = desktop
+        ? DecoratedBox(
+            decoration: BoxDecoration(
+              color: toneColor.withValues(alpha: 0.12),
+              borderRadius: AppRadius.all(7),
+            ),
+            child: SizedBox.square(
+              dimension: 36,
+              child: Icon(icon, size: 20, color: toneColor),
+            ),
+          )
+        : GlassIconBadge(icon: icon, color: toneColor);
     return InkWell(
       onTap: () => onTap(context),
+      borderRadius: AppRadius.extraSmall,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
+        padding: EdgeInsets.fromLTRB(
+          desktop ? 14 : 16,
+          desktop ? 12 : 10,
+          desktop ? 12 : 10,
+          desktop ? 12 : 10,
+        ),
         child: Row(
           children: [
-            GlassIconBadge(icon: icon, color: context.toneColor(tone)),
+            leading,
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -255,9 +300,14 @@ class _SettingTile extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.textTheme.bodyLarge,
+                    style: desktop
+                        ? context.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          )
+                        : context.textTheme.bodyLarge,
                   ),
-                  if (subtitle != null)
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
                     Text(
                       subtitle,
                       maxLines: 1,
@@ -266,12 +316,14 @@ class _SettingTile extends StatelessWidget {
                         color: glass.secondaryLabel,
                       ),
                     ),
+                  ],
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: glass.secondaryLabel.withValues(alpha: 0.5),
+              size: desktop ? 20 : 24,
+              color: glass.secondaryLabel.withValues(alpha: 0.55),
             ),
           ],
         ),
@@ -300,17 +352,26 @@ class _LocaleTile extends ConsumerWidget {
       title: appLocalizations.language,
       subtitle: _labelOf(context, locale),
       onTap: (context) async {
+        final options = [
+          const _LocaleChoice(null),
+          for (final locale in AppLocalizations.delegate.supportedLocales)
+            _LocaleChoice(locale),
+        ];
         final result = await dialogs.showCommonDialog<_LocaleChoice>(
-          child: OptionsDialog<_LocaleChoice>(
-            title: appLocalizations.language,
-            options: [
-              const _LocaleChoice(null),
-              for (final locale in AppLocalizations.delegate.supportedLocales)
-                _LocaleChoice(locale),
-            ],
-            textBuilder: (choice) => _labelOf(context, choice.locale),
-            value: _LocaleChoice(locale),
-          ),
+          context: context,
+          child: MediaQuery.sizeOf(context).width >= 600
+              ? _DesktopLocaleDialog(
+                  title: appLocalizations.language,
+                  options: options,
+                  value: _LocaleChoice(locale),
+                  labelOf: (choice) => _labelOf(context, choice.locale),
+                )
+              : OptionsDialog<_LocaleChoice>(
+                  title: appLocalizations.language,
+                  options: options,
+                  textBuilder: (choice) => _labelOf(context, choice.locale),
+                  value: _LocaleChoice(locale),
+                ),
         );
         if (result == null) {
           return;
@@ -356,6 +417,130 @@ class _DisclaimerTile extends ConsumerWidget {
           await ref.read(systemActionProvider.notifier).handleExit();
         }
       },
+    );
+  }
+}
+
+class _DesktopSettingsPage extends StatelessWidget {
+  const _DesktopSettingsPage({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: context.glass.background,
+      child: SizedBox.expand(child: child),
+    );
+  }
+}
+
+class _DesktopLocaleDialog extends StatelessWidget {
+  const _DesktopLocaleDialog({
+    required this.title,
+    required this.options,
+    required this.value,
+    required this.labelOf,
+  });
+
+  final String title;
+  final List<_LocaleChoice> options;
+  final _LocaleChoice value;
+  final String Function(_LocaleChoice choice) labelOf;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = context.glass;
+    return Dialog(
+      backgroundColor: context.colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.all(AppCorner.largeIncreased),
+        side: BorderSide(color: glass.separator),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 360, maxWidth: 420),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                title,
+                style: context.textTheme.headlineSmall?.copyWith(fontSize: 24),
+              ),
+              const SizedBox(height: 14),
+              for (final choice in options)
+                _DesktopLocaleOption(
+                  label: labelOf(choice),
+                  selected: choice == value,
+                  onTap: () => Navigator.of(context).pop(choice),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopLocaleOption extends StatelessWidget {
+  const _DesktopLocaleOption({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final glass = context.glass;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.extraSmall,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: Durations.short3,
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? colorScheme.primary : glass.secondaryLabel,
+                  width: selected ? 2.5 : 2,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: selected
+                  ? Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorScheme.primary,
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            Text(
+              label,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

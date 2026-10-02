@@ -52,7 +52,7 @@ class HomePage extends ConsumerWidget {
 class _GlassShell extends ConsumerWidget {
   const _GlassShell({required this.child});
 
-  static const _gutter = 12.0;
+  static const _gutter = 8.0;
 
   final Widget child;
 
@@ -228,7 +228,6 @@ class _PageEntranceState extends State<PageEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _opacity;
-  late final Animation<double> _scale;
   late final Animation<Offset> _slide;
 
   @override
@@ -244,9 +243,8 @@ class _PageEntranceState extends State<PageEntrance>
       curve: Easing.emphasizedDecelerate,
     );
     _opacity = curve;
-    _scale = Tween(begin: 0.97, end: 1.0).animate(curve);
     _slide = Tween(
-      begin: const Offset(0, 0.02),
+      begin: const Offset(0, 0.012),
       end: Offset.zero,
     ).animate(curve);
     if (widget.enabled && widget.active) {
@@ -272,10 +270,7 @@ class _PageEntranceState extends State<PageEntrance>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _opacity,
-      child: SlideTransition(
-        position: _slide,
-        child: ScaleTransition(scale: _scale, child: widget.child),
-      ),
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }

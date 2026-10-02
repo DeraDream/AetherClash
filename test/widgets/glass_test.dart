@@ -178,7 +178,7 @@ void main() {
           .ancestor(of: find.text('floor'), matching: find.byType(ColoredBox))
           .first,
     );
-    expect(box.color, const Color(0xFFF2F2F7));
+    expect(box.color, const Color(0xFFF5F5F5));
   });
 
   test('glass follows the brightness and system colors follow suit', () {
@@ -191,7 +191,7 @@ void main() {
     );
     expect(light.isDark, isFalse);
     expect(dark.isDark, isTrue);
-    expect(dark.background, const Color(0xFF1C1C1E));
+    expect(dark.background, const Color(0xFF1E1F22));
     expect(
       GlassStyle.of(
         ColorScheme.fromSeed(

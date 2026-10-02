@@ -148,8 +148,12 @@ class CommonCard extends StatelessWidget {
   Color? _buildBackgroundColor(BuildContext context) {
     final glass = context.glass;
     if (isSelected) {
+      final isMobileView = MediaQuery.sizeOf(context).width < 600;
+      final alpha = isMobileView
+          ? (glass.isDark ? 0.2 : 0.1)
+          : (glass.isDark ? 0.16 : 0.12);
       return Color.alphaBlend(
-        context.colorScheme.primary.withValues(alpha: glass.isDark ? 0.2 : 0.1),
+        context.colorScheme.primary.withValues(alpha: alpha),
         glass.card,
       );
     }
@@ -186,7 +190,8 @@ class CommonCard extends StatelessWidget {
     Widget childWidget,
     FocusNode? focusNode,
   ) {
-    const defaultRadius = AppCorner.medium;
+    final isMobileView = MediaQuery.sizeOf(context).width < 600;
+    final defaultRadius = isMobileView ? AppCorner.medium : AppCorner.small;
     return switch (type == CommonCardType.filled) {
       true => FilledButton(
         focusNode: focusNode,

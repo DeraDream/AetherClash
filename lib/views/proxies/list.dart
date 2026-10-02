@@ -19,6 +19,7 @@ const _enterStaggerStep = Duration(milliseconds: 20);
 const _enterSlideBase = 32.0;
 const _enterSlideStep = 8.0;
 final _enterWindow = Durations.medium2 + _enterStaggerStep * _enterStaggerLimit;
+const _desktopGroupHeaderHeight = 72.0;
 
 class ProxiesListView extends ConsumerStatefulWidget {
   const ProxiesListView({super.key});
@@ -53,8 +54,12 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
     _enterGroupName = null;
   }
 
-  void _handleChange(Set<String> currentUnfoldSet, String groupName) {
-    _autoScrollToGroup(groupName);
+  void _handleChange(
+    Set<String> currentUnfoldSet,
+    String groupName, {
+    required bool compact,
+  }) {
+    _autoScrollToGroup(groupName, compact: compact);
     final tempUnfoldSet = Set<String>.from(currentUnfoldSet);
     if (tempUnfoldSet.contains(groupName)) {
       tempUnfoldSet.remove(groupName);
@@ -73,13 +78,15 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
     required int columns,
     required Set<String> currentUnfoldSet,
     required ProxyCardType cardType,
+    required bool compact,
   }) {
     final offsets = <double>[];
-    final rowExtent = getItemHeight(cardType) + 8;
+    final rowExtent = getItemHeight(cardType, compact: compact) + 8;
+    final headerHeight = compact ? _desktopGroupHeaderHeight : listHeaderHeight;
     var currentOffset = 0.0;
     for (final group in groups) {
       offsets.add(currentOffset);
-      currentOffset += listHeaderHeight + 8;
+      currentOffset += headerHeight + 8;
       if (currentUnfoldSet.contains(group.name)) {
         final rowCount = (group.all.length + columns - 1) ~/ columns;
         currentOffset += rowCount * rowExtent;
@@ -94,6 +101,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
     required int rowIndex,
     required int columns,
     required ProxyCardType cardType,
+    required bool compact,
   }) {
     final groupName = group.name;
     final enterAnimated = _enterGroupName == groupName;
@@ -101,7 +109,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
         .map<Widget>((entry) {
           final (columnIndex, proxy) = entry;
           final card = SizedBox(
-            height: getItemHeight(cardType),
+            height: getItemHeight(cardType, compact: compact),
             child: ProxyCard(
               testUrl: group.testUrl,
               type: cardType,
@@ -109,6 +117,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
               key: ValueKey('$groupName.${proxy.name}'),
               proxy: proxy,
               groupName: groupName,
+              compact: compact,
             ),
           );
           if (!enterAnimated) {
@@ -129,7 +138,11 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
         .fill(columns, filler: (_) => const Flexible(child: SizedBox()))
         .separated(const SizedBox(width: 8));
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+      padding: EdgeInsets.only(
+        left: compact ? 12 : 16,
+        right: compact ? 12 : 16,
+        bottom: 8,
+      ),
       child: Row(children: children.toList()),
     );
   }
@@ -140,6 +153,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
     required Set<String> currentUnfoldSet,
     required int columns,
     required ProxyCardType cardType,
+    required bool compact,
   }) {
     final groupName = group.name;
     final isExpand = currentUnfoldSet.contains(groupName);
@@ -152,19 +166,32 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
           child: ColoredBox(
             color: context.colorScheme.surface,
             child: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+              padding: EdgeInsets.only(
+                left: compact ? 12 : 16,
+                right: compact ? 12 : 16,
+                bottom: 8,
+              ),
               child: SizedBox(
-                height: listHeaderHeight,
+                height: compact ? _desktopGroupHeaderHeight : listHeaderHeight,
                 child: ListHeader(
                   enterAnimated: false,
                   onScrollToSelected: (groupName) {
-                    _scrollToGroupSelected(groupName, columns);
+                    _scrollToGroupSelected(
+                      groupName,
+                      columns,
+                      compact: compact,
+                    );
                   },
                   key: ValueKey(groupName),
                   isExpand: isExpand,
                   group: group,
+                  compact: compact,
                   onChange: (groupName) {
-                    _handleChange(currentUnfoldSet, groupName);
+                    _handleChange(
+                      currentUnfoldSet,
+                      groupName,
+                      compact: compact,
+                    );
                   },
                 ),
               ),
@@ -173,7 +200,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
         ),
         if (isExpand)
           SliverFixedExtentList(
-            itemExtent: getItemHeight(cardType) + 8,
+            itemExtent: getItemHeight(cardType, compact: compact) + 8,
             delegate: SliverChildBuilderDelegate(
               (_, index) => _buildProxyRow(
                 group: group,
@@ -181,6 +208,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                 rowIndex: index,
                 columns: columns,
                 cardType: cardType,
+                compact: compact,
               ),
               childCount: rows.length,
             ),
@@ -237,18 +265,22 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
     _controller.jumpTo(targetScrollOffset);
   }
 
-  void _autoScrollToGroup(String groupName) {
+  void _autoScrollToGroup(String groupName, {required bool compact}) {
     final pixels = _controller.position.pixels;
     final offset = _getGroupOffset(groupName);
     _scrollToMakeVisibleWithPadding(
       containerHeight: containerHeight,
       pixels: pixels,
       start: offset,
-      end: offset + listHeaderHeight,
+      end: offset + (compact ? _desktopGroupHeaderHeight : listHeaderHeight),
     );
   }
 
-  void _scrollToGroupSelected(String groupName, int columns) {
+  void _scrollToGroupSelected(
+    String groupName,
+    int columns, {
+    required bool compact,
+  }) {
     final currentInitOffset = _getGroupOffset(groupName);
     final proxies = _groupOffsets.groupOf(groupName)?.all;
     _jumpTo(
@@ -259,6 +291,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
             groupName: groupName,
             proxies: proxies ?? [],
             columns: columns,
+            compact: compact,
           ),
     );
   }
@@ -294,8 +327,9 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
           ),
           child: LayoutBuilder(
             builder: (_, constraints) {
+              final compact = !context.isMobileView;
               final columns = getProxiesColumns(
-                max(constraints.maxWidth - 32, 0),
+                max(constraints.maxWidth - (compact ? 24 : 32), 0),
                 proxiesLayout,
               );
               _groupOffsets = _getGroupOffsets(
@@ -303,6 +337,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                 currentUnfoldSet: state.currentUnfoldSet,
                 columns: columns,
                 cardType: state.proxyCardType,
+                compact: compact,
               );
               containerHeight = max(constraints.maxHeight - 16, 0);
               return CommonScrollBar(
@@ -310,7 +345,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                 thumbVisibility: true,
                 trackVisibility: true,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 16),
+                  padding: EdgeInsets.only(top: compact ? 10 : 16),
                   child: ScrollConfiguration(
                     behavior: const HiddenBarScrollBehavior(),
                     child: CustomScrollView(
@@ -324,6 +359,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                             currentUnfoldSet: state.currentUnfoldSet,
                             columns: columns,
                             cardType: state.proxyCardType,
+                            compact: compact,
                           ),
                         SliverToBoxAdapter(
                           child: SizedBox(
@@ -351,6 +387,7 @@ class ListHeader extends ConsumerStatefulWidget {
   final bool isExpand;
 
   final bool enterAnimated;
+  final bool compact;
 
   const ListHeader({
     super.key,
@@ -359,6 +396,7 @@ class ListHeader extends ConsumerStatefulWidget {
     required this.onChange,
     required this.onScrollToSelected,
     required this.isExpand,
+    this.compact = false,
   });
 
   @override
@@ -399,22 +437,34 @@ class _ListHeaderState extends ConsumerState<ListHeader> {
       enterAnimated: widget.enterAnimated,
       key: widget.key,
       type: CommonCardType.filled,
+      radius: widget.compact ? AppCorner.extraSmall : null,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: widget.compact ? 14 : 16,
+          vertical: widget.compact ? 11 : 12,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(
               child: Row(
                 children: [
-                  _GroupIcon(src: icon),
-                  Flexible(child: _GroupSummary(groupName: groupName)),
+                  _GroupIcon(src: icon, compact: widget.compact),
+                  Flexible(
+                    child: _GroupSummary(
+                      groupName: groupName,
+                      groupType: groupType,
+                      compact: widget.compact,
+                    ),
+                  ),
                 ],
               ),
             ),
             _GroupActions(
               isExpand: isExpand,
               groupType: groupType,
+              count: widget.group.all.length,
+              compact: widget.compact,
               onScrollToSelected: () {
                 widget.onScrollToSelected(groupName);
               },
@@ -434,15 +484,30 @@ class _ListHeaderState extends ConsumerState<ListHeader> {
 }
 
 class _GroupIcon extends ConsumerWidget {
-  const _GroupIcon({required this.src});
+  const _GroupIcon({required this.src, required this.compact});
 
   final String src;
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final iconStyle = ref.watch(
       proxiesStyleSettingProvider.select((state) => state.iconStyle),
     );
+    if (compact) {
+      if (iconStyle == ProxiesIconStyle.none) {
+        return const SizedBox(width: 2);
+      }
+      return Container(
+        width: 30,
+        margin: const EdgeInsets.only(right: 10),
+        alignment: Alignment.center,
+        child: IconTheme.merge(
+          data: const IconThemeData(size: 21),
+          child: CommonTargetIcon(src: src),
+        ),
+      );
+    }
     return switch (iconStyle) {
       ProxiesIconStyle.standard => LayoutBuilder(
         builder: (_, constraints) {
@@ -486,19 +551,67 @@ class _GroupIcon extends ConsumerWidget {
 }
 
 class _GroupSummary extends StatelessWidget {
-  const _GroupSummary({required this.groupName});
+  const _GroupSummary({
+    required this.groupName,
+    required this.groupType,
+    required this.compact,
+  });
 
   final String groupName;
+  final String groupType;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    if (!compact) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          EmojiText(groupName, style: context.textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Flexible(flex: 1, child: _SelectedProxyName(groupName: groupName)),
+        ],
+      );
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        EmojiText(groupName, style: context.textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Flexible(flex: 1, child: _SelectedProxyName(groupName: groupName)),
+        EmojiText(
+          groupName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Row(
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: context.colorScheme.primary.withValues(alpha: 0.05),
+                borderRadius: AppRadius.all(4),
+                border: Border.all(
+                  color: context.colorScheme.primary.withValues(alpha: 0.45),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                child: Text(
+                  groupType,
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: context.colorScheme.primary,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(child: _SelectedProxyName(groupName: groupName)),
+          ],
+        ),
       ],
     );
   }
@@ -530,6 +643,8 @@ class _GroupActions extends StatelessWidget {
   const _GroupActions({
     required this.isExpand,
     required this.groupType,
+    required this.count,
+    required this.compact,
     required this.onScrollToSelected,
     required this.onDelayTest,
     required this.onToggle,
@@ -541,12 +656,63 @@ class _GroupActions extends StatelessWidget {
 
   final bool isExpand;
   final String groupType;
+  final int count;
+  final bool compact;
   final VoidCallback onScrollToSelected;
   final VoidCallback onDelayTest;
   final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: context.colorScheme.primary.withValues(alpha: 0.08),
+              borderRadius: AppRadius.all(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              child: Text(
+                '$count',
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: context.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            tooltip: context.appLocalizations.delayTest,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            iconSize: 18,
+            style: _shrinkWrap,
+            onPressed: onDelayTest,
+            icon: const Icon(Icons.network_ping_rounded),
+          ),
+          const SizedBox(width: 2),
+          IconButton(
+            tooltip: isExpand
+                ? context.appLocalizations.showLess
+                : context.appLocalizations.showMore,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            iconSize: 20,
+            style: _shrinkWrap,
+            onPressed: onToggle,
+            icon: Icon(
+              isExpand
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+            ),
+          ),
+        ],
+      );
+    }
     return Row(
       children: [
         if (isExpand) ...[
