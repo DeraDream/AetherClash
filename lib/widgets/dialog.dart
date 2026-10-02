@@ -36,7 +36,7 @@ class CommonDialog extends ConsumerWidget {
         title,
         style: desktop
             ? Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
               )
             : null,
@@ -54,16 +54,16 @@ class CommonDialog extends ConsumerWidget {
       elevation: 0,
       shape: desktop
           ? RoundedRectangleBorder(
-              borderRadius: AppRadius.small,
-              side: BorderSide(color: context.glass.separator),
+              borderRadius: AppRadius.all(AppCorner.largeIncreased),
+              side: BorderSide(color: context.glass.separator.withValues(alpha: 0.8)),
             )
           : null,
       content: Container(
         constraints: BoxConstraints(
           maxHeight: min(size.height - 56, desktop ? 560 : 500),
-          maxWidth: desktop ? 380 : 300,
+          maxWidth: desktop ? 420 : 300,
         ),
-        width: min(size.width - 48, desktop ? 380 : 300),
+        width: min(size.width - 48, desktop ? 420 : 300),
         child: !overrideScroll ? SingleChildScrollView(child: child) : child,
       ),
     );
