@@ -157,7 +157,7 @@ void main() {
     expect(focusedHeaderActionIndex(), 0);
     expect(
       find.descendant(
-        of: find.byType<ListHeader>(),
+        of: find.byType(ListHeader),
         matching: find.byType(IconButton),
       ),
       findsOneWidget,
