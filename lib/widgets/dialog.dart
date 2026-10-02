@@ -35,7 +35,7 @@ class CommonDialog extends ConsumerWidget {
       title: Text(
         title,
         style: desktop
-            ? context.textTheme.titleLarge?.copyWith(
+            ? Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               )
