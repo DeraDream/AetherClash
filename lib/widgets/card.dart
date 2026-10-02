@@ -151,7 +151,7 @@ class CommonCard extends StatelessWidget {
       final isMobileView = MediaQuery.sizeOf(context).width < 600;
       final alpha = isMobileView
           ? (glass.isDark ? 0.2 : 0.1)
-          : (glass.isDark ? 0.12 : 0.06);
+          : (glass.isDark ? 0.16 : 0.12);
       return Color.alphaBlend(
         context.colorScheme.primary.withValues(alpha: alpha),
         glass.card,
