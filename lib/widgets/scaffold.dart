@@ -272,11 +272,12 @@ class CommonScaffoldState extends State<CommonScaffold> {
     if (actions.isEmpty) {
       return const [];
     }
+    final isMobile = context.isMobileView;
     return [
       Center(
         child: GlassSurface(
           kind: GlassKind.panel,
-          borderRadius: AppRadius.full,
+          borderRadius: isMobile ? AppRadius.full : AppRadius.extraSmall,
           elevated: false,
           padding: const EdgeInsets.all(2),
           child: Material(
@@ -285,7 +286,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
           ),
         ),
       ),
-      const SizedBox(width: 12),
+      SizedBox(width: isMobile ? 12 : 8),
     ];
   }
 
