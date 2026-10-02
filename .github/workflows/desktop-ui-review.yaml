@@ -38,7 +38,11 @@ jobs:
         run: flutter pub get
 
       - name: Check format
-        run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
+        shell: bash
+        run: |
+          dart format lib test tool plugins setup.dart
+          git diff --check
+          git diff --exit-code
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos
