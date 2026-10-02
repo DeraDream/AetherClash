@@ -32,9 +32,8 @@ class ToolsView extends ConsumerWidget {
       return const _ToolsBoard();
     }
     return Navigator(
-      onGenerateRoute: (_) => MaterialPageRoute<void>(
-        builder: (_) => const _ToolsBoard(),
-      ),
+      onGenerateRoute: (_) =>
+          MaterialPageRoute<void>(builder: (_) => const _ToolsBoard()),
     );
   }
 }
