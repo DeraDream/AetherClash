@@ -51,7 +51,7 @@ void main() {
       final theme = _build();
       final glass = theme.extension<GlassStyle>()!;
       expect(theme.scaffoldBackgroundColor, Colors.transparent);
-      expect(theme.colorScheme.surface, const Color(0xFFF2F2F7));
+      expect(theme.colorScheme.surface, const Color(0xFFF3F3F3));
       expect(theme.colorScheme.surfaceContainer, Colors.white);
       expect(theme.colorScheme.onSurface, Colors.black);
       expect(theme.cardTheme.color, glass.card);
@@ -62,9 +62,9 @@ void main() {
       expect(_build().materialTapTargetSize, MaterialTapTargetSize.shrinkWrap);
     });
 
-    test('dark glass is macOS gray and switches turn system green', () {
+    test('dark glass uses the desktop neutral and switches turn system green', () {
       final dark = _build(brightness: Brightness.dark);
-      expect(dark.colorScheme.surface, const Color(0xFF1C1C1E));
+      expect(dark.colorScheme.surface, const Color(0xFF1E1F22));
       expect(dark.extension<GlassStyle>()!.isDark, isTrue);
       final track = dark.switchTheme.trackColor!.resolve({
         WidgetState.selected,
