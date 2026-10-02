@@ -26,6 +26,14 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   List<Widget> _buildActions(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return [
+      if (_isTab && !context.isMobileView)
+        IconButton(
+          tooltip: appLocalizations.delayTest,
+          onPressed: () {
+            _proxiesTabKey.currentState?.delayTestCurrentGroup();
+          },
+          icon: const Icon(Icons.network_ping_rounded),
+        ),
       if (_isTab)
         IconButton(
           tooltip: context.appLocalizations.scrollToSelected,
@@ -77,14 +85,15 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     ];
   }
 
-  Widget? _buildFAB() {
-    return _isTab
-        ? DelayTestButton(
-            onClick: () async {
-              await _proxiesTabKey.currentState?.delayTestCurrentGroup();
-            },
-          )
-        : null;
+  Widget? _buildFAB(BuildContext context) {
+    if (!context.isMobileView || !_isTab) {
+      return null;
+    }
+    return DelayTestButton(
+      onClick: () async {
+        await _proxiesTabKey.currentState?.delayTestCurrentGroup();
+      },
+    );
   }
 
   void _onSearch(String value) {
@@ -128,7 +137,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     return CommonScaffold(
       isLoading: isLoading,
       resizeToAvoidBottomInset: false,
-      floatingActionButton: _buildFAB(),
+      floatingActionButton: _buildFAB(context),
       actions: _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
