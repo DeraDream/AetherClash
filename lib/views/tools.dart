@@ -211,7 +211,7 @@ class _TileSection extends StatelessWidget {
       children: [
         GlassSectionLabel(title),
         GlassSurface(
-          borderRadius: AppRadius.small,
+          borderRadius: AppRadius.all(AppCorner.largeIncreased),
           elevated: false,
           child: Material(
             type: MaterialType.transparency,
