@@ -62,15 +62,18 @@ void main() {
       expect(_build().materialTapTargetSize, MaterialTapTargetSize.shrinkWrap);
     });
 
-    test('dark glass uses the desktop neutral and switches turn system green', () {
-      final dark = _build(brightness: Brightness.dark);
-      expect(dark.colorScheme.surface, const Color(0xFF1E1F22));
-      expect(dark.extension<GlassStyle>()!.isDark, isTrue);
-      final track = dark.switchTheme.trackColor!.resolve({
-        WidgetState.selected,
-      });
-      expect(track, GlassTone.success.on(Brightness.dark));
-    });
+    test(
+      'dark glass uses the desktop neutral and switches turn system green',
+      () {
+        final dark = _build(brightness: Brightness.dark);
+        expect(dark.colorScheme.surface, const Color(0xFF1E1F22));
+        expect(dark.extension<GlassStyle>()!.isDark, isTrue);
+        final track = dark.switchTheme.trackColor!.resolve({
+          WidgetState.selected,
+        });
+        expect(track, GlassTone.success.on(Brightness.dark));
+      },
+    );
   });
 
   group('seededColorScheme', () {
