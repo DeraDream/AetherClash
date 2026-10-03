@@ -30,6 +30,16 @@ void main() {
     }
   });
 
+  test('Windows silent updates relaunch the app as the desktop user', () {
+    final script = File(
+      'windows/packaging/exe/inno_setup.iss',
+    ).readAsStringSync();
+
+    expect(script, contains('Check: IsSilentInstall'));
+    expect(script, contains('runasoriginaluser nowait'));
+    expect(script, isNot(contains('skipifsilent')));
+  });
+
   test('rpm keeps the Core bytes the Helper was built against', () {
     final config =
         loadYaml(

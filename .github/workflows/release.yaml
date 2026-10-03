@@ -26,7 +26,47 @@ env:
   NDK_VERSION: r28c
 
 jobs:
+  brand-assets:
+    name: Brand assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install icon tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin webp
+          flutter pub get
+
+      - name: Generate AetherClash icons
+        run: bash tool/generate_app_icons.sh
+
+      - name: Upload generated brand assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-brand-assets
+          path: |
+            assets/images/icon.png
+            assets/images/icon.ico
+            assets/images/tray/unix/
+            assets/images/tray/windows/
+            android/app/src/main/ic_launcher-playstore.png
+            android/app/src/main/res/mipmap-*/
+            android/app/src/main/res/mipmap-television-*/
+            macos/Runner/Assets.xcassets/AppIcon.appiconset/
+            windows/runner/resources/app_icon.ico
+          overwrite: true
+
   build:
+    needs: [ brand-assets ]
     name: ${{ matrix.platform }}${{ matrix.arch && format('-{0}', matrix.arch) }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -54,6 +94,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Download generated brand assets
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-brand-assets
+          path: .
 
       - name: Check release tag
         if: startsWith(github.ref, 'refs/tags/')
@@ -148,6 +194,6 @@ jobs:
           mapfile -t files < <(find dist -type f \( -name '*.exe' -o -name '*.zip' -o -name '*.dmg' -o -name '*.apk' \))
           files+=(scripts/install-macos.sh)
           if ! gh release view "$TAG" > /dev/null 2>&1; then
-            gh release create "$TAG" --title "po0-clash $TAG" --notes-file docs/release-notes.md
+            gh release create "$TAG" --title "AetherClash $TAG" --notes-file docs/release-notes.md
           fi
           gh release upload "$TAG" "${files[@]}" --clobber

@@ -1,30 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 1024 1024">
   <defs>
-    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4AA8FF"/>
-      <stop offset="1" stop-color="#0057D9"/>
-    </linearGradient>
-    <radialGradient id="shine" cx="0.25" cy="0.12" r="0.75">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.32"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.08"/>
-    </linearGradient>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
-      <stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.12"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.55"/>
-    </linearGradient>
-    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.82"/>
+      <stop offset="0.58" stop-color="#FAF9F7"/>
+      <stop offset="1" stop-color="#F4F0F4"/>
     </linearGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="20"/>
-    </filter>
+    <radialGradient id="wash" cx="0.22" cy="0.8" r="0.75">
+      <stop offset="0" stop-color="#8171F2" stop-opacity="0.12"/>
+      <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFAA86" stop-opacity="0.07"/>
+    </radialGradient>
   </defs>
-  <rect width="1024" height="1024" fill="url(#base)"/>
-  <rect width="1024" height="1024" fill="url(#shine)"/>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#wash)"/>
 </svg>

@@ -60,6 +60,16 @@ begin
   Result := True;
 end;
 
+function IsSilentInstall(): Boolean;
+begin
+  Result := WizardSilent;
+end;
+
+function IsInteractiveInstall(): Boolean;
+begin
+  Result := not WizardSilent;
+end;
+
 [Languages]
 {% for locale in LOCALES %}
 {% if locale.lang == 'en' %}Name: "english"; MessagesFile: "compiler:Default.isl"{% endif %}
@@ -101,4 +111,8 @@ Source: "{{SOURCE_DIR}}\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdi
 Name: "{autoprograms}\\{{DISPLAY_NAME}}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"
 Name: "{autodesktop}\\{{DISPLAY_NAME}}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"; Tasks: desktopicon
 [Run]
-Filename: "{app}\\{{EXECUTABLE_NAME}}"; Description: "{cm:LaunchProgram,{{DISPLAY_NAME}}}"; Flags: {% if PRIVILEGES_REQUIRED == 'admin' %}runascurrentuser{% endif %} nowait postinstall skipifsilent
+; Interactive installs keep the normal final-page launch option.
+Filename: "{app}\\{{EXECUTABLE_NAME}}"; Description: "{cm:LaunchProgram,{{DISPLAY_NAME}}}"; Flags: runasoriginaluser nowait postinstall; Check: IsInteractiveInstall
+; Self-update uses /VERYSILENT, so it needs a separate unconditional relaunch.
+; runasoriginaluser prevents the updated app from inheriting the updater's UAC token.
+Filename: "{app}\\{{EXECUTABLE_NAME}}"; Flags: runasoriginaluser nowait; Check: IsSilentInstall

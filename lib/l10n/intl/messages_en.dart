@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
   static String m0(code) =>
-      "Windows refused to run Po0ClashCore.exe (error ${code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow po0-clash in that policy or turn it off, then try again.";
+      "Windows refused to run Po0ClashCore.exe (error ${code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow AetherClash in that policy or turn it off, then try again.";
 
   static String m1(name) =>
       "The app failed to finish launching twice in a row. To break the loop, the profile ${name} has been deselected and automatic setup was skipped. You can select it again at any time.";
@@ -352,7 +352,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Core"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start po0-clash again. Smart App Control cannot be turned back on without reinstalling Windows.",
+      "Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start AetherClash again. Smart App Control cannot be turned back on without reinstalling Windows.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Core status"),
     "country": MessageLookupByLibrary.simpleMessage("Region"),
@@ -518,7 +518,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Cache the changes?",
     ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
-      "Helper service unavailable; TUN mode cannot be enabled. Reinstall po0-clash to restore it.",
+      "Helper service unavailable; TUN mode cannot be enabled. Reinstall AetherClash to restore it.",
     ),
     "hideFromList": MessageLookupByLibrary.simpleMessage("Hide from list"),
     "hidePassword": MessageLookupByLibrary.simpleMessage("Hide password"),
@@ -786,7 +786,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0AddToken": MessageLookupByLibrary.simpleMessage("Add token"),
     "po0AutoWhitelist": MessageLookupByLibrary.simpleMessage("Auto whitelist"),
     "po0AutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
-      "Checks the whitelist at the refresh interval while po0-clash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on",
+      "Checks the whitelist at the refresh interval while AetherClash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on",
     ),
     "po0ChipApplied": MessageLookupByLibrary.simpleMessage("Whitelisted"),
     "po0ChipDisabled": MessageLookupByLibrary.simpleMessage("Firewall off"),
@@ -795,7 +795,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0ChipRejected": MessageLookupByLibrary.simpleMessage("Rejected"),
     "po0CurrentExit": MessageLookupByLibrary.simpleMessage("Current exit"),
     "po0DirectTip": MessageLookupByLibrary.simpleMessage(
-      "Requests go straight to 124.221.69.228. While enabled, po0-clash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy\'s. On Android, restart the VPN once after enabling.",
+      "Requests go straight to 124.221.69.228. While enabled, AetherClash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy\'s. On Android, restart the VPN once after enabling.",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("Edit token"),
     "po0Exit": m24,
@@ -1237,7 +1237,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Traffic usage"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunAuthorizationFallbackTip": MessageLookupByLibrary.simpleMessage(
-      "TUN was not authorized, so po0-clash switched to the system proxy. Turn TUN on again to retry the authorization.",
+      "TUN was not authorized, so AetherClash switched to the system proxy. Turn TUN on again to retry the authorization.",
     ),
     "tunDesc": MessageLookupByLibrary.simpleMessage(
       "Only effective in administrator mode",

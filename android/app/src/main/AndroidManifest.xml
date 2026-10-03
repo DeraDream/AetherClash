@@ -65,6 +65,7 @@
                 <data android:scheme="clash" />
                 <data android:scheme="clashmeta" />
                 <data android:scheme="po0clash" />
+                <data android:scheme="aetherclash" />
 
                 <data android:host="install-config" />
             </intent-filter>

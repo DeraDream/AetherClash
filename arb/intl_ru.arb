@@ -462,9 +462,9 @@
   "expectedStatus": "Ожидаемый статус",
   "selectProxies": "Выбрать прокси",
   "inputProxyGroupName": "Введите название группы прокси",
-  "helperCorruptTip": "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите po0-clash.",
-  "coreBlockedByPolicyTip": "Windows отказалась запускать Po0ClashCore.exe (ошибка {code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите po0-clash в этой политике или отключите её и повторите попытку.",
-  "coreBlockedBySmartAppControlTip": "Smart App Control в Windows заблокировал неподписанный Po0ClashCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите po0-clash. Повторно включить Smart App Control без переустановки Windows нельзя.",
+  "helperCorruptTip": "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите AetherClash.",
+  "coreBlockedByPolicyTip": "Windows отказалась запускать Po0ClashCore.exe (ошибка {code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите AetherClash в этой политике или отключите её и повторите попытку.",
+  "coreBlockedBySmartAppControlTip": "Smart App Control в Windows заблокировал неподписанный Po0ClashCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите AetherClash. Повторно включить Smart App Control без переустановки Windows нельзя.",
   "hideFromList": "Скрыть из списка",
   "testWhenUsed": "Тестировать при использовании",
   "disableUDP": "Отключить UDP",
@@ -617,7 +617,7 @@
   "po0Firewall": "Белый список po0",
   "po0FirewallDesc": "Держать выходной IP этой сети в белом списке брандмауэра po0",
   "po0AutoWhitelist": "Автодобавление",
-  "po0AutoWhitelistDesc": "Пока po0-clash открыт, независимо от состояния прокси, проверяет белый список с заданным интервалом и сразу добавляет выход, если его там нет. На Android проверка идёт только при включённом экране",
+  "po0AutoWhitelistDesc": "Пока AetherClash открыт, независимо от состояния прокси, проверяет белый список с заданным интервалом и сразу добавляет выход, если его там нет. На Android проверка идёт только при включённом экране",
   "po0Tokens": "Токены",
   "po0TokensEmpty": "Не настроено",
   "po0TokensInvalid": "Токен начинается с pgnfw_ и не содержит пробелов и разделителей",
@@ -632,7 +632,7 @@
   "po0ResultRejected": "Отклонено: {message}",
   "po0ResultError": "Ошибка запроса: {message}",
   "po0Usage": "Занято {used}/{limit}",
-  "po0DirectTip": "Запросы идут напрямую на 124.221.69.228. Пока функция включена, po0-clash направляет этот адрес DIRECT и исключает его из TUN, поэтому в белый список попадает реальный выход, а не прокси. На Android после включения один раз перезапустите VPN.",
+  "po0DirectTip": "Запросы идут напрямую на 124.221.69.228. Пока функция включена, AetherClash направляет этот адрес DIRECT и исключает его из TUN, поэтому в белый список попадает реальный выход, а не прокси. На Android после включения один раз перезапустите VPN.",
   "po0Nav": "po0",
   "po0StatusOff": "Автодобавление выключено",
   "po0StatusNoToken": "Добавьте токен, чтобы начать",
@@ -666,5 +666,5 @@
   "currentProxy": "Текущий узел",
   "appearance": "Оформление",
   "networkAndCore": "Сеть и ядро",
-  "tunAuthorizationFallbackTip": "TUN не получил разрешение, поэтому po0-clash переключился на системный прокси. Включите TUN снова, чтобы повторить запрос."
+  "tunAuthorizationFallbackTip": "TUN не получил разрешение, поэтому AetherClash переключился на системный прокси. Включите TUN снова, чтобы повторить запрос."
 }

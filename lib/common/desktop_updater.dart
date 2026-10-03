@@ -112,7 +112,7 @@ final class DesktopUpdater {
     }
 
     final updateDirectory = await Directory.systemTemp.createTemp(
-      'po0-clash-update-',
+      'aetherclash-update-',
     );
     final package = File(path.join(updateDirectory.path, asset.name));
     onProgress(
@@ -219,7 +219,7 @@ final class DesktopUpdater {
 \$installDir = ${_powerShellQuote(installDirectory)}
 \$updateRoot = ${_powerShellQuote(updateDirectory.path)}
 \$readyFile = ${_powerShellQuote(readyFile.path)}
-\$logRoot = Join-Path \$env:LOCALAPPDATA 'po0-clash'
+\$logRoot = Join-Path \$env:LOCALAPPDATA 'AetherClash'
 \$logPath = Join-Path \$logRoot 'update.log'
 
 New-Item -ItemType Directory -Path \$logRoot -Force | Out-Null
@@ -253,8 +253,8 @@ try {
     ('/DIR=' + \$installDir),
     ('/LOG=' + \$logPath)
   )
-  & \$installer @installerArgs
-  \$installerExitCode = \$LASTEXITCODE
+  \$installerProcess = Start-Process -FilePath \$installer -ArgumentList \$installerArgs -Wait -PassThru
+  \$installerExitCode = \$installerProcess.ExitCode
   Write-UpdateLog ("Installer exit code: " + \$installerExitCode)
   if (\$installerExitCode -ne 0) {
     throw "installer exited with code \$installerExitCode"
@@ -262,13 +262,24 @@ try {
   if (-not (Test-Path -LiteralPath \$target)) {
     throw "updated executable is missing: \$target"
   }
-  Write-UpdateLog ("Restarting: " + \$target)
-  Start-Process -FilePath \$target -WorkingDirectory \$installDir
+
+  # The Inno installer relaunches the app as the original desktop user even
+  # during /VERYSILENT updates. Give that launch a moment, then use Explorer as
+  # a non-elevated fallback if it did not happen.
+  Start-Sleep -Seconds 2
+  \$targetProcessName = [System.IO.Path]::GetFileNameWithoutExtension(\$target)
+  \$running = Get-Process -Name \$targetProcessName -ErrorAction SilentlyContinue
+  if (-not \$running) {
+    Write-UpdateLog 'Installer did not relaunch the application; using shell fallback.'
+    Start-Process -FilePath 'explorer.exe' -ArgumentList @(\$target)
+  } else {
+    Write-UpdateLog 'Application relaunched by the installer.'
+  }
   Write-UpdateLog 'Update completed successfully.'
 } catch {
   Write-UpdateLog ("Update failed: " + \$_.Exception.Message)
   if (Test-Path -LiteralPath \$target) {
-    Start-Process -FilePath \$target -WorkingDirectory \$installDir
+    Start-Process -FilePath 'explorer.exe' -ArgumentList @(\$target)
   }
   exit 1
 } finally {

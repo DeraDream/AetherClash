@@ -8,7 +8,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:material_ui/material_ui.dart';
 
-const appName = 'po0-clash';
+const appName = 'AetherClash';
 const appHelperService = 'Po0ClashHelperService';
 const tunDeviceName = 'Po0Clash';
 const coreManifestName = 'manifest.json';
@@ -83,7 +83,8 @@ const systemDnsRecordKey = 'system_dns_record';
 const bootRecordKey = 'boot_record';
 const defaultSystemDnsFallback = '223.5.5.5';
 const double dialogCommonWidth = 300;
-const repository = 'DeraDream/po0-clash';
+const repository = 'DeraDream/AetherClash';
+const legacyRepository = 'DeraDream/po0-clash';
 const upstreamRepository = 'chen08209/FlClash';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;

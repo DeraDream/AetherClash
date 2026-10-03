@@ -462,9 +462,9 @@
   "expectedStatus": "Expected status",
   "selectProxies": "Select proxies",
   "inputProxyGroupName": "Enter the proxy group name",
-  "helperCorruptTip": "Helper service unavailable; TUN mode cannot be enabled. Reinstall po0-clash to restore it.",
-  "coreBlockedByPolicyTip": "Windows refused to run Po0ClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow po0-clash in that policy or turn it off, then try again.",
-  "coreBlockedBySmartAppControlTip": "Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start po0-clash again. Smart App Control cannot be turned back on without reinstalling Windows.",
+  "helperCorruptTip": "Helper service unavailable; TUN mode cannot be enabled. Reinstall AetherClash to restore it.",
+  "coreBlockedByPolicyTip": "Windows refused to run Po0ClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow AetherClash in that policy or turn it off, then try again.",
+  "coreBlockedBySmartAppControlTip": "Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start AetherClash again. Smart App Control cannot be turned back on without reinstalling Windows.",
   "hideFromList": "Hide from list",
   "testWhenUsed": "Test when used",
   "disableUDP": "Disable UDP",
@@ -617,7 +617,7 @@
   "po0Firewall": "po0 firewall whitelist",
   "po0FirewallDesc": "Keep this network's exit IP on the po0 firewall whitelist",
   "po0AutoWhitelist": "Auto whitelist",
-  "po0AutoWhitelistDesc": "Checks the whitelist at the refresh interval while po0-clash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on",
+  "po0AutoWhitelistDesc": "Checks the whitelist at the refresh interval while AetherClash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on",
   "po0Tokens": "Tokens",
   "po0TokensEmpty": "Not configured",
   "po0TokensInvalid": "A token starts with pgnfw_ and has no spaces or separators",
@@ -632,7 +632,7 @@
   "po0ResultRejected": "Rejected: {message}",
   "po0ResultError": "Request failed: {message}",
   "po0Usage": "{used}/{limit} used",
-  "po0DirectTip": "Requests go straight to 124.221.69.228. While enabled, po0-clash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy's. On Android, restart the VPN once after enabling.",
+  "po0DirectTip": "Requests go straight to 124.221.69.228. While enabled, AetherClash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy's. On Android, restart the VPN once after enabling.",
   "po0Nav": "po0",
   "po0StatusOff": "Auto whitelist is off",
   "po0StatusNoToken": "Add a token to start",
@@ -666,5 +666,5 @@
   "currentProxy": "Current proxy",
   "appearance": "Appearance",
   "networkAndCore": "Network & core",
-  "tunAuthorizationFallbackTip": "TUN was not authorized, so po0-clash switched to the system proxy. Turn TUN on again to retry the authorization."
+  "tunAuthorizationFallbackTip": "TUN was not authorized, so AetherClash switched to the system proxy. Turn TUN on again to retry the authorization."
 }

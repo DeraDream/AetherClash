@@ -1,18 +1,24 @@
 #!/usr/bin/env bash
-# Install po0-clash on macOS from a GitHub Release dmg.
+# Install AetherClash on macOS from a GitHub Release dmg.
 #
 #   PO0CLASH_VERSION  release tag to install (default: latest release)
 #   PO0CLASH_DMG      local dmg path or URL; skips the release lookup
-#   PO0CLASH_REPO     owner/repo (default: DeraDream/po0-clash)
+#   AETHERCLASH_*     preferred variable names; PO0CLASH_* remain supported for compatibility
+#   AETHERCLASH_REPO  owner/repo (default: DeraDream/AetherClash)
 #   GH_TOKEN          token for a private repository when gh is unavailable
 set -euo pipefail
 # macOS ships bash 3.2, where "${a[@]}" on an empty array trips set -u;
 # arrays below expand as ${a[@]+"${a[@]}"}.
 
-repo="${PO0CLASH_REPO:-DeraDream/po0-clash}"
-version="${PO0CLASH_VERSION:-latest}"
+repo="${AETHERCLASH_REPO:-${PO0CLASH_REPO:-DeraDream/AetherClash}}"
+version="${AETHERCLASH_VERSION:-${PO0CLASH_VERSION:-latest}}"
+custom_dmg="${AETHERCLASH_DMG:-${PO0CLASH_DMG:-}}"
 app_name="po0-clash.app"
-target="/Applications/$app_name"
+target="/Applications/AetherClash.app"
+legacy_target="/Applications/po0-clash.app"
+if [ -d "$legacy_target" ] && [ ! -d "$target" ]; then
+  target="$legacy_target"
+fi
 
 die() {
   echo "error: $*" >&2
@@ -37,15 +43,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
-dmg="$workdir/po0-clash.dmg"
+dmg="$workdir/AetherClash.dmg"
 
 download_with_gh() {
   local tag_args=()
   [ "$version" = "latest" ] || tag_args=("$version")
   gh release download ${tag_args[@]+"${tag_args[@]}"} -R "$repo" \
-    -p "po0-clash-*-macos-$arch.dmg" -D "$workdir" --clobber
+    -p "*-macos-$arch.dmg" -D "$workdir" --clobber
   local found
-  found="$(find "$workdir" -maxdepth 1 -name "po0-clash-*-macos-$arch.dmg" | head -n 1)"
+  found="$(find "$workdir" -maxdepth 1 -name "*-macos-$arch.dmg" | head -n 1)"
   [ -n "$found" ] || return 1
   mv "$found" "$dmg"
 }
@@ -65,22 +71,22 @@ download_with_api() {
   asset_url="$(osascript -l JavaScript -e '
     function run(argv) {
       const assets = JSON.parse(argv[0]).assets || [];
-      const asset = assets.find((a) => a.name.startsWith("po0-clash-") && a.name.endsWith("-macos-" + argv[1] + ".dmg"));
+      const asset = assets.find((a) => a.name.endsWith("-macos-" + argv[1] + ".dmg"));
       return asset ? asset.url : "";
     }' "$release" "$arch")"
-  [ -n "$asset_url" ] || die "no po0-clash-*-macos-$arch.dmg asset in release $version"
+  [ -n "$asset_url" ] || die "no compatible macOS dmg asset in release $version"
   curl -fL --progress-bar ${auth[@]+"${auth[@]}"} -H "Accept: application/octet-stream" \
     -o "$dmg" "$asset_url"
 }
 
-if [ -n "${PO0CLASH_DMG:-}" ]; then
-  case "$PO0CLASH_DMG" in
-    http://* | https://*) curl -fL --progress-bar -o "$dmg" "$PO0CLASH_DMG" ;;
-    *) cp "$PO0CLASH_DMG" "$dmg" ;;
+if [ -n "$custom_dmg" ]; then
+  case "$custom_dmg" in
+    http://* | https://*) curl -fL --progress-bar -o "$dmg" "$custom_dmg" ;;
+    *) cp "$custom_dmg" "$dmg" ;;
   esac
 elif command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   echo "Downloading $repo $version (macos-$arch) with gh..."
-  download_with_gh || die "no po0-clash-*-macos-$arch.dmg asset in release $version"
+  download_with_gh || die "no compatible macOS dmg asset in release $version"
 else
   echo "Downloading $repo $version (macos-$arch)..."
   download_with_api
@@ -91,8 +97,8 @@ hdiutil attach "$dmg" -nobrowse -readonly -quiet -mountpoint "$mountpoint"
 [ -d "$mountpoint/$app_name" ] || die "$app_name not found in the dmg"
 
 if pgrep -x po0-clash >/dev/null 2>&1; then
-  echo "Quitting the running po0-clash..."
-  osascript -e 'quit app "po0-clash"' >/dev/null 2>&1 || true
+  echo "Quitting the running AetherClash process..."
+  osascript -e 'quit app "AetherClash"' >/dev/null 2>&1 || true
   sleep 2
   pkill -x po0-clash >/dev/null 2>&1 || true
 fi
@@ -108,5 +114,5 @@ ${sudo_cmd[@]+"${sudo_cmd[@]}"} ditto "$mountpoint/$app_name" "$target"
 # The build is not notarized; without this Gatekeeper refuses the first launch.
 ${sudo_cmd[@]+"${sudo_cmd[@]}"} xattr -dr com.apple.quarantine "$target" 2>/dev/null || true
 
-echo "po0-clash installed. Opening..."
+echo "AetherClash installed. Opening..."
 open "$target" || true

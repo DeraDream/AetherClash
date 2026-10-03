@@ -1,8 +1,8 @@
-display_name: po0-clash
+display_name: AetherClash
 package_name: po0-clash
 maintainer:
-  name: yuuuki-creation
-  email: 335111808+yuuuki-creation@users.noreply.github.com
+  name: DeraDream
+  email: 42810994+DeraDream@users.noreply.github.com
 
 priority: optional
 section: x11
@@ -26,14 +26,16 @@ supported_mime_type:
   - x-scheme-handler/clash
   - x-scheme-handler/clashmeta
   - x-scheme-handler/po0clash
+  - x-scheme-handler/aetherclash
 
 keywords:
+  - AetherClash
   - po0-clash
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: po0-clash
+generic_name: AetherClash
 
 categories:
   - Network

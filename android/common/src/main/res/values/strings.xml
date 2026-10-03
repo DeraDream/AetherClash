@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">po0-clash</string>
-    <string name="service_channel_name">po0-clash Service</string>
+    <string name="app_name">AetherClash</string>
+    <string name="service_channel_name">AetherClash Service</string>
 </resources>

@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ru';
 
   static String m0(code) =>
-      "Windows отказалась запускать Po0ClashCore.exe (ошибка ${code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите po0-clash в этой политике или отключите её и повторите попытку.";
+      "Windows отказалась запускать Po0ClashCore.exe (ошибка ${code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите AetherClash в этой политике или отключите её и повторите попытку.";
 
   static String m1(name) =>
       "Приложение два раза подряд не смогло завершить запуск. Чтобы разорвать цикл, профиль ${name} снят с выбора, а автоматическая настройка пропущена. Вы можете выбрать его снова в любой момент.";
@@ -360,7 +360,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Ядро"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Smart App Control в Windows заблокировал неподписанный Po0ClashCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите po0-clash. Повторно включить Smart App Control без переустановки Windows нельзя.",
+      "Smart App Control в Windows заблокировал неподписанный Po0ClashCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите AetherClash. Повторно включить Smart App Control без переустановки Windows нельзя.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Статус ядра"),
     "country": MessageLookupByLibrary.simpleMessage("Регион"),
@@ -532,7 +532,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Кэшировать изменения?",
     ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
-      "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите po0-clash.",
+      "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите AetherClash.",
     ),
     "hideFromList": MessageLookupByLibrary.simpleMessage("Скрыть из списка"),
     "hidePassword": MessageLookupByLibrary.simpleMessage("Скрыть пароль"),
@@ -812,7 +812,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0AddToken": MessageLookupByLibrary.simpleMessage("Добавить токен"),
     "po0AutoWhitelist": MessageLookupByLibrary.simpleMessage("Автодобавление"),
     "po0AutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
-      "Пока po0-clash открыт, независимо от состояния прокси, проверяет белый список с заданным интервалом и сразу добавляет выход, если его там нет. На Android проверка идёт только при включённом экране",
+      "Пока AetherClash открыт, независимо от состояния прокси, проверяет белый список с заданным интервалом и сразу добавляет выход, если его там нет. На Android проверка идёт только при включённом экране",
     ),
     "po0ChipApplied": MessageLookupByLibrary.simpleMessage("В списке"),
     "po0ChipDisabled": MessageLookupByLibrary.simpleMessage("Выключен"),
@@ -821,7 +821,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0ChipRejected": MessageLookupByLibrary.simpleMessage("Отклонено"),
     "po0CurrentExit": MessageLookupByLibrary.simpleMessage("Текущий выход"),
     "po0DirectTip": MessageLookupByLibrary.simpleMessage(
-      "Запросы идут напрямую на 124.221.69.228. Пока функция включена, po0-clash направляет этот адрес DIRECT и исключает его из TUN, поэтому в белый список попадает реальный выход, а не прокси. На Android после включения один раз перезапустите VPN.",
+      "Запросы идут напрямую на 124.221.69.228. Пока функция включена, AetherClash направляет этот адрес DIRECT и исключает его из TUN, поэтому в белый список попадает реальный выход, а не прокси. На Android после включения один раз перезапустите VPN.",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("Изменить токен"),
     "po0Exit": m24,
@@ -1293,7 +1293,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Статистика трафика"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunAuthorizationFallbackTip": MessageLookupByLibrary.simpleMessage(
-      "TUN не получил разрешение, поэтому po0-clash переключился на системный прокси. Включите TUN снова, чтобы повторить запрос.",
+      "TUN не получил разрешение, поэтому AetherClash переключился на системный прокси. Включите TUN снова, чтобы повторить запрос.",
     ),
     "tunDesc": MessageLookupByLibrary.simpleMessage(
       "Работает только в режиме администратора",

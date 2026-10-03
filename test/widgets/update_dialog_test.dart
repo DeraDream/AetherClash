@@ -66,7 +66,7 @@ Future<void> tapCancel(WidgetTester tester) async {
 void main() {
   setUpAll(() {
     globalState.packageInfo = PackageInfo(
-      appName: 'po0-clash',
+      appName: 'AetherClash',
       packageName: 'io.github.yuuukicreation.po0clash',
       version: _runningVersion,
       buildNumber: '1',

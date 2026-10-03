@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'zh_CN';
 
   static String m0(code) =>
-      "Windows 拒绝运行 Po0ClashCore.exe（错误 ${code}）。智能应用控制、AppLocker 等应用控制策略会拦截未签名程序，请在该策略中放行 po0-clash 或关闭策略后重试。";
+      "Windows 拒绝运行 Po0ClashCore.exe（错误 ${code}）。智能应用控制、AppLocker 等应用控制策略会拦截未签名程序，请在该策略中放行 AetherClash 或关闭策略后重试。";
 
   static String m1(name) =>
       "应用连续两次未能完成启动。为打断崩溃循环，已取消选中配置 ${name}，并跳过本次自动配置，你可以随时重新选中它。";
@@ -256,7 +256,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("内核"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows 智能应用控制拦截了未签名的 Po0ClashCore.exe。请打开 Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置，选择「关闭」后重新启动 po0-clash。智能应用控制关闭后无法再开启，除非重装 Windows。",
+      "Windows 智能应用控制拦截了未签名的 Po0ClashCore.exe。请打开 Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置，选择「关闭」后重新启动 AetherClash。智能应用控制关闭后无法再开启，除非重装 Windows。",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("核心状态"),
     "country": MessageLookupByLibrary.simpleMessage("区域"),
@@ -376,7 +376,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "goToConfigureScript": MessageLookupByLibrary.simpleMessage("前往配置脚本"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage("是否缓存修改"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
-      "Helper 服务不可用，无法启用 TUN 模式，请重新安装 po0-clash。",
+      "Helper 服务不可用，无法启用 TUN 模式，请重新安装 AetherClash。",
     ),
     "hideFromList": MessageLookupByLibrary.simpleMessage("从列表中隐藏"),
     "hidePassword": MessageLookupByLibrary.simpleMessage("隐藏密码"),
@@ -563,7 +563,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0AddToken": MessageLookupByLibrary.simpleMessage("添加 token"),
     "po0AutoWhitelist": MessageLookupByLibrary.simpleMessage("自动加白"),
     "po0AutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
-      "po0-clash 打开期间（无论代理是否开启）按刷新间隔检查白名单，出口不在名单时立即加白；安卓仅在亮屏时检查",
+      "AetherClash 打开期间（无论代理是否开启）按刷新间隔检查白名单，出口不在名单时立即加白；安卓仅在亮屏时检查",
     ),
     "po0ChipApplied": MessageLookupByLibrary.simpleMessage("已加白"),
     "po0ChipDisabled": MessageLookupByLibrary.simpleMessage("未启用"),
@@ -572,7 +572,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0ChipRejected": MessageLookupByLibrary.simpleMessage("被拒绝"),
     "po0CurrentExit": MessageLookupByLibrary.simpleMessage("当前出口"),
     "po0DirectTip": MessageLookupByLibrary.simpleMessage(
-      "加白请求直连 124.221.69.228。开启后 po0-clash 会为该地址添加直连规则并将其排除出 TUN，确保加白的是真实出口而非代理 IP。安卓首次开启后请重启一次 VPN。",
+      "加白请求直连 124.221.69.228。开启后 AetherClash 会为该地址添加直连规则并将其排除出 TUN，确保加白的是真实出口而非代理 IP。安卓首次开启后请重启一次 VPN。",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("编辑 token"),
     "po0Exit": m24,

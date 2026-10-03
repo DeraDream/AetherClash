@@ -9,6 +9,7 @@ import 'package:fl_clash/widgets/list.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 @immutable
 class Contributor {
@@ -125,8 +126,8 @@ class AboutView extends ConsumerWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(12),
-                        child: Image.asset(
-                          'assets/images/icon.png',
+                        child: SvgPicture.asset(
+                          'assets/images/aetherclash.svg',
                           width: 64,
                           height: 64,
                         ),

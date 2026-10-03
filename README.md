@@ -1,70 +1,59 @@
-# po0-clash
+# AetherClash
 
 [**简体中文**](README_zh_CN.md)
 
-A multi-platform proxy client based on [FlClash](https://github.com/chen08209/FlClash), with a built-in po0 firewall
-auto-whitelist (port of [po0fw](https://github.com/w0ven/po0fw)) and one Material 3 UI on Android, Windows and macOS.
+AetherClash is a multi-platform proxy client based on [FlClash](https://github.com/chen08209/FlClash) and ClashMeta (mihomo),
+with a built-in po0 firewall auto-whitelist and a unified Material 3 desktop/mobile experience.
 
-po0-clash is a standalone app with its own app id, installer, process and service names and data directory, so it
-installs and runs side by side with official FlClash.
+This repository is maintained as an independent AetherClash distribution. Upstream attribution and the GPL-3.0 license are
+preserved.
 
 <p align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/features/images/ui_po0_dark.png">
-        <img alt="The po0 page of po0-clash" src="docs/features/images/ui_po0_light.png" width="90%">
+        <img alt="AetherClash po0 page" src="docs/features/images/ui_po0_light.png" width="90%">
     </picture>
 </p>
 
 ## Features
 
-- **po0 auto-whitelist**: add a `pgnfw_` token for each po0 machine. While the app is open it checks the whitelist at
-  the refresh interval (5 seconds by default) and adds your exit IP as soon as it is missing, whether or not the proxy is
-  on. The request always goes direct, so the real exit is whitelisted rather than the proxy's.
-- **Material 3 on every platform**: the same Android-style design, navigation and motion on Android, Windows and macOS,
-  with dynamic color.
-- Everything FlClash already does: ClashMeta core, subscription import, WebDAV sync, dark mode and more.
+- **po0 auto-whitelist**: add a `pgnfw_` token for each po0 machine. While AetherClash is open it checks the whitelist at
+  the configured interval and adds the real exit IP as soon as it is missing.
+- **Material 3 across platforms**: a consistent Android, Windows and macOS interface with dynamic color.
+- **Desktop self-update**: Windows and macOS can download and install a compatible GitHub Release from inside the app.
+- Everything inherited from FlClash that remains in this distribution: ClashMeta core, subscriptions, WebDAV sync, dark mode and more.
 
 ## Install
 
-Download the file for your platform from [Releases](https://github.com/yuuuki-creation/po0-clash/releases).
+Download the build for your platform from [Releases](https://github.com/DeraDream/AetherClash/releases).
 
 | Platform | How |
 |---|---|
-| Windows | Run `po0-clash-<version>-windows-amd64-setup.exe`, or unzip the `.zip` for a portable copy. It does not touch an installed official FlClash |
-| macOS | Run the command below in Terminal; it picks Apple Silicon or Intel and installs `/Applications/po0-clash.app` |
-| Android | Install `po0-clash-<version>-android-arm64-v8a.apk`. No need to uninstall official FlClash; both can be installed |
-| Linux / iOS | Not provided |
+| Windows | Run `AetherClash-<version>-windows-amd64-setup.exe`, or use the matching portable `.zip` |
+| macOS | Run the command below; it chooses Apple Silicon or Intel automatically |
+| Android | Install the matching `AetherClash-<version>-android-*.apk` |
+| Linux / iOS | Not currently published by the standalone release workflow |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DeraDream/AetherClash/main/scripts/install-macos.sh | bash
 ```
 
-Set `PO0CLASH_VERSION` (a release tag such as `v5.0.0`) or `PO0CLASH_DMG` (a local dmg or URL) before `bash` to pick a
-specific build. The macOS build is not notarized; the script removes the quarantine attribute. More options are in
-[docs/install.md](docs/install.md) (Chinese).
+For macOS, `AETHERCLASH_VERSION`, `AETHERCLASH_DMG` and `AETHERCLASH_REPO` select a specific build or repository.
+The legacy `PO0CLASH_*` variable names are still accepted for upgrade compatibility.
 
-Only turn the system proxy or TUN on in one proxy client at a time; two clients fight over it.
+Existing po0-clash desktop installations are intentionally upgraded in place in v5.5.2. Some internal executable, helper,
+bundle and data-directory identifiers therefore remain unchanged so users keep their configuration and can upgrade without
+installing a second copy.
 
-### Coming from the old FlClash-po0 builds
-
-The `v0.8.98-po0.N` builds installed themselves as FlClash, and po0-clash does not replace them. Export a local backup
-file from **Backup and restore** in the old app and import it into po0-clash (or just re-enter your po0 tokens), then
-uninstall the old app yourself. It will not receive further updates.
-
-## Using the po0 whitelist
-
-1. Open **po0** in the main navigation.
-2. Add your tokens (optionally with a name) and turn on **Auto whitelist**.
-3. On Android, restart the VPN once after the first time you enable it so the direct route takes effect.
+Only enable the system proxy or TUN in one proxy client at a time.
 
 ## Development
 
-Goals, feature designs, build and release process are in [docs/](docs/README.md) (Chinese); coding rules are in
-[AGENTS.md](AGENTS.md).
+Project documentation lives in [docs/](docs/README.md); coding rules are in [AGENTS.md](AGENTS.md).
 
 ## Credits and license
 
-- [chen08209/FlClash](https://github.com/chen08209/FlClash): the upstream client
-- [w0ven/po0fw](https://github.com/w0ven/po0fw): the po0 firewall whitelist logic
+- [chen08209/FlClash](https://github.com/chen08209/FlClash): upstream client
+- [w0ven/po0fw](https://github.com/w0ven/po0fw): po0 firewall whitelist logic
 
 Released under [GPL-3.0](LICENSE), like upstream.

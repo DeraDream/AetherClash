@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "io.github.yuuukicreation" "\0"
-            VALUE "FileDescription", "po0-clash" "\0"
+            VALUE "CompanyName", "DeraDream" "\0"
+            VALUE "FileDescription", "AetherClash" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "po0-clash" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 io.github.yuuukicreation. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 DeraDream. All rights reserved." "\0"
             VALUE "OriginalFilename", "po0-clash.exe" "\0"
-            VALUE "ProductName", "po0-clash" "\0"
+            VALUE "ProductName", "AetherClash" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

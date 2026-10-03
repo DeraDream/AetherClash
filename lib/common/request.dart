@@ -70,22 +70,37 @@ class Request {
   }
 
   Future<Map<String, dynamic>?> checkForUpdate() async {
-    try {
-      final response = await dio.get(
-        'https://api.github.com/repos/$repository/releases/latest',
-        options: Options(responseType: ResponseType.json),
-      );
-      if (response.statusCode != 200) return null;
-      final data = response.data as Map<String, dynamic>;
-      final remoteVersion = data['tag_name'];
-      final hasUpdate =
-          compareVersions(remoteVersion, globalState.packageInfo.version) > 0;
-      if (!hasUpdate) return null;
-      return data;
-    } catch (e) {
-      commonPrint.log('checkForUpdate failed', logLevel: LogLevel.warning);
-      return null;
+    for (final updateRepository in [repository, legacyRepository]) {
+      try {
+        final response = await dio.get(
+          'https://api.github.com/repos/$updateRepository/releases/latest',
+          options: Options(
+            responseType: ResponseType.json,
+            validateStatus: (status) => status == 200 || status == 404,
+          ),
+        );
+        if (response.statusCode == 404) {
+          continue;
+        }
+        if (response.statusCode != 200) {
+          return null;
+        }
+        final data = response.data as Map<String, dynamic>;
+        final remoteVersion = data['tag_name'];
+        final hasUpdate =
+            compareVersions(remoteVersion, globalState.packageInfo.version) > 0;
+        if (!hasUpdate) {
+          return null;
+        }
+        return data;
+      } catch (e) {
+        commonPrint.log(
+          'checkForUpdate failed for $updateRepository: ${compactError(e)}',
+          logLevel: LogLevel.warning,
+        );
+      }
     }
+    return null;
   }
 
   final Map<String, IpInfo Function(Map<String, dynamic>)> _ipInfoSources = {
