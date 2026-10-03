@@ -5,6 +5,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/control/connect_orb.dart';
 import 'package:fl_clash/views/control/control_center.dart';
 import 'package:fl_clash/views/control/tiles.dart';
+import 'package:fl_clash/views/network_info.dart';
 import 'package:fl_clash/views/po0_firewall.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -442,14 +443,48 @@ class _SidebarFooter extends ConsumerWidget {
           '↑ ${(traffic?.up ?? 0).traffic.show}/s   '
           '↓ ${(traffic?.down ?? 0).traffic.show}/s',
         ),
-        if (ipInfo != null) ...[
-          const SizedBox(height: 6),
-          line(
-            Icons.public_rounded,
-            '${ipInfo.countryCode} · ${ipInfo.ip}',
-            fontFamily: FontFamily.jetBrainsMono.value,
+        const SizedBox(height: 6),
+        GlassButton(
+          plain: true,
+          elevated: false,
+          borderRadius: AppRadius.extraSmall,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          tooltip: Localizations.localeOf(context).languageCode == 'zh'
+              ? '网络信息'
+              : 'Network info',
+          onTap: () => BaseNavigator.push(context, const NetworkInfoView()),
+          child: Row(
+            children: [
+              Icon(
+                Icons.public_rounded,
+                size: 14,
+                color: glass.secondaryLabel,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  ipInfo == null
+                      ? (Localizations.localeOf(context).languageCode == 'zh'
+                            ? '网络信息'
+                            : 'Network info')
+                      : '${ipInfo.countryCode} · ${ipInfo.ip}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: style?.copyWith(
+                    fontFamily: ipInfo == null
+                        ? null
+                        : FontFamily.jetBrainsMono.value,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 16,
+                color: glass.secondaryLabel.withValues(alpha: 0.65),
+              ),
+            ],
           ),
-        ],
+        ),
       ],
     );
   }

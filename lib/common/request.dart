@@ -69,6 +69,35 @@ class Request {
     }
   }
 
+  Future<int?> probeLatency(
+    String url, {
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    try {
+      await _clashDio
+          .get<String>(
+            url,
+            options: Options(
+              responseType: ResponseType.plain,
+              sendTimeout: timeout,
+              receiveTimeout: timeout,
+              validateStatus: (status) =>
+                  status != null && status >= 200 && status < 500,
+            ),
+          )
+          .timeout(timeout + const Duration(seconds: 1));
+      stopwatch.stop();
+      return stopwatch.elapsedMilliseconds;
+    } catch (e) {
+      commonPrint.log(
+        'probeLatency($url) failed: ${compactError(e)}',
+        logLevel: LogLevel.info,
+      );
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> checkForUpdate() async {
     try {
       final response = await dio.get(
@@ -101,13 +130,35 @@ class Request {
     'https://ipinfo.io/json': IpInfo.fromIpInfoIoJson,
   };
 
-  Future<Result<IpInfo?>> checkIp({CancelToken? cancelToken}) async {
+  Map<String, String> get ipInfoSourceLabels => const {
+    'https://api.ip.sb/geoip': 'IP.SB',
+    'https://ipwho.is': 'ipwho.is',
+    'https://ipapi.co/json': 'ipapi.co',
+    'https://ipinfo.io/json': 'ipinfo.io',
+    'https://ident.me/json': 'ident.me',
+    'https://api.myip.com': 'myip.com',
+    'http://ip-api.com/json': 'ip-api.com',
+  };
+
+  Future<Result<IpInfo?>> checkIp({
+    CancelToken? cancelToken,
+    String? sourceUrl,
+  }) async {
+    final sources = sourceUrl == null
+        ? _ipInfoSources
+        : {
+            if (_ipInfoSources[sourceUrl] case final parser?)
+              sourceUrl: parser,
+          };
+    if (sources.isEmpty) {
+      return Result.error('unknown IP info source');
+    }
     var failureCount = 0;
     final token = cancelToken ?? CancelToken();
-    final futures = _ipInfoSources.entries.map((source) async {
+    final futures = sources.entries.map((source) async {
       final Completer<Result<IpInfo?>> completer = Completer();
       void handleFailRes() {
-        if (!completer.isCompleted && failureCount == _ipInfoSources.length) {
+        if (!completer.isCompleted && failureCount == sources.length) {
           completer.complete(Result.success(null));
         }
       }

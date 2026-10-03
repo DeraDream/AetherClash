@@ -54,13 +54,13 @@ class _RequestsViewState extends ConsumerState<RequestsView> {
       title: appLocalizations.requests,
       searchState: AppBarSearchState(onSearch: _listController.search),
       onKeywordsUpdate: _listController.updateKeywords,
-      floatingActionButton: ValueListenableBuilder(
-        valueListenable: _listController,
-        builder: (_, state, _) {
-          final autoScrollToEnd = state.autoScrollToEnd;
-          return FadeScaleBox(
-            child: FloatingActionButton(
-              key: ValueKey(autoScrollToEnd),
+      actions: [
+        ValueListenableBuilder<TrackerInfosState>(
+          valueListenable: _listController,
+          builder: (_, state, _) {
+            final autoScrollToEnd = state.autoScrollToEnd;
+            return IconButton(
+              tooltip: autoScrollToEnd ? '暂停自动跟随' : '恢复自动跟随',
               onPressed: () {
                 if (autoScrollToEnd) {
                   _listController.setAutoScrollToEnd(false);
@@ -70,13 +70,15 @@ class _RequestsViewState extends ConsumerState<RequestsView> {
                   );
                 }
               },
-              child: autoScrollToEnd
-                  ? const Icon(Icons.block)
-                  : const Icon(Icons.vertical_align_top),
-            ),
-          );
-        },
-      ),
+              icon: Icon(
+                autoScrollToEnd
+                    ? Icons.pause_circle_outline_rounded
+                    : Icons.play_circle_outline_rounded,
+              ),
+            );
+          },
+        ),
+      ],
       body: ValueListenableBuilder<TrackerInfosState>(
         valueListenable: _listController,
         builder: (context, state, _) {
