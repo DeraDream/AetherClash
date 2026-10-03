@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Renders every launcher, window and store icon from assets_source/images/icon.
-# Needs rsvg-convert (librsvg) and cwebp; tray icons come from
-# tool/generate_status_icons.dart, which this script runs last.
+# Needs rsvg-convert (librsvg), cwebp and python3.
+# This script intentionally avoids "dart run" so release icon generation never
+# triggers native build hooks or requires the Clash.Meta submodule.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -52,5 +53,82 @@ for density in "${!scale[@]}"; do
 done
 render "$src/banner.svg" 320 180 "$res/mipmap-xhdpi/ic_banner.png"
 
-dart run tool/generate_status_icons.dart
+write_ico() {
+  local output=$1
+  shift
+  python3 - "$output" "$@" <<'PY'
+import struct
+import sys
+
+output, *paths = sys.argv[1:]
+entries = []
+for p in paths:
+    data = open(p, "rb").read()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise SystemExit(f"not a PNG: {p}")
+    width, height = struct.unpack(">II", data[16:24])
+    if width != height or not 1 <= width <= 256:
+        raise SystemExit(f"invalid ICO source size {width}x{height}: {p}")
+    entries.append((width, data))
+
+entries.sort(key=lambda item: item[0])
+header = struct.pack("<HHH", 0, 1, len(entries))
+offset = 6 + 16 * len(entries)
+directory = bytearray()
+payload = bytearray()
+for size, data in entries:
+    dimension = 0 if size == 256 else size
+    directory += struct.pack(
+        "<BBBBHHII",
+        dimension,
+        dimension,
+        0,
+        0,
+        1,
+        32,
+        len(data),
+        offset,
+    )
+    payload += data
+    offset += len(data)
+
+with open(output, "wb") as f:
+    f.write(header)
+    f.write(directory)
+    f.write(payload)
+PY
+}
+
+# Tray/status icons. Keep the same scale/layout as the previous Dart generator.
+for name in status_1 status_2 status_3; do
+  tray_pngs=()
+  for scale_factor in 1 2 3 4; do
+    size=$((18 * scale_factor))
+    if [ "$scale_factor" -eq 1 ]; then
+      directory="assets/images/tray/unix"
+    else
+      directory="assets/images/tray/unix/${scale_factor}.0x"
+    fi
+    mkdir -p "$directory"
+    render "$src/$name.svg" "$size" "$size" "$directory/$name.png"
+  done
+
+  for size in 16 20 24 32 40 48 64; do
+    png="$tmp/${name}_${size}.png"
+    render "$src/$name.svg" "$size" "$size" "$png"
+    tray_pngs+=("$png")
+  done
+  mkdir -p assets/images/tray/windows
+  write_ico "assets/images/tray/windows/$name.ico" "${tray_pngs[@]}"
+done
+
+# Windows application icon with all shell-requested sizes.
+app_pngs=()
+for size in 16 20 24 32 40 48 64 96 128 256; do
+  png="$tmp/app_${size}.png"
+  render "$tmp/rounded.svg" "$size" "$size" "$png"
+  app_pngs+=("$png")
+done
+mkdir -p windows/runner/resources
+write_ico windows/runner/resources/app_icon.ico "${app_pngs[@]}"
 cp windows/runner/resources/app_icon.ico assets/images/icon.ico
