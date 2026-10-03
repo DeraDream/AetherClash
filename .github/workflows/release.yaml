@@ -72,17 +72,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: android
-            os: ubuntu-latest
+          # Android packaging is temporarily disabled.
+          # - platform: android
+          #   os: ubuntu-latest
           - platform: windows
             os: windows-2022
             arch: amd64
           - platform: macos
             os: macos-latest
             arch: arm64
-          - platform: macos
-            os: macos-15-intel
-            arch: amd64
+          # macOS Intel packaging is temporarily disabled.
+          # - platform: macos
+          #   os: macos-15-intel
+          #   arch: amd64
 
     steps:
       - name: Enable git long paths (Windows)

@@ -59,14 +59,22 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
             icon: Icons.tune,
             label: appLocalizations.settings,
             onPressed: () {
+              final isMobile = context.isMobileView;
               showSheet(
                 context: context,
-                props: const SheetProps(isScrollControlled: true),
+                props: SheetProps(
+                  isScrollControlled: true,
+                  maxWidth: isMobile ? null : 320,
+                  backgroundColor: isMobile ? null : context.glass.glassStrong,
+                ),
                 builder: (_) {
-                  return AdaptiveSheetScaffold(
-                    body: const ProxiesSetting(),
-                    title: appLocalizations.settings,
-                  );
+                  if (isMobile) {
+                    return AdaptiveSheetScaffold(
+                      body: const ProxiesSetting(),
+                      title: appLocalizations.settings,
+                    );
+                  }
+                  return const ProxiesSettingsSidePanel();
                 },
               );
             },

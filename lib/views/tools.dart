@@ -451,33 +451,91 @@ class _DesktopLocaleDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glass = context.glass;
+    final colorScheme = context.colorScheme;
     return Dialog(
-      backgroundColor: context.colorScheme.surface,
+      backgroundColor: glass.glassStrong,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.all(AppCorner.largeIncreased),
-        side: BorderSide(color: glass.separator),
+        borderRadius: AppRadius.all(AppCorner.large),
+        side: BorderSide(color: glass.separator.withValues(alpha: 0.85)),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 360, maxWidth: 420),
+        constraints: const BoxConstraints(minWidth: 320, maxWidth: 352),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                title,
-                style: context.textTheme.headlineSmall?.copyWith(fontSize: 24),
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.all(8),
+                    ),
+                    child: Icon(
+                      Icons.translate_rounded,
+                      size: 18,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.appLocalizations.close,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: glass.secondaryLabel,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 14),
-              for (final choice in options)
-                _DesktopLocaleOption(
-                  label: labelOf(choice),
-                  selected: choice == value,
-                  onTap: () => Navigator.of(context).pop(choice),
+              const SizedBox(height: 10),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: glass.fill.withValues(alpha: glass.isDark ? 0.7 : 0.8),
+                  borderRadius: AppRadius.all(11),
+                  border: Border.all(
+                    color: glass.separator.withValues(alpha: 0.55),
+                  ),
                 ),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Column(
+                    children: [
+                      for (final (index, choice) in options.indexed) ...[
+                        if (index > 0)
+                          Divider(
+                            height: 1,
+                            indent: 42,
+                            color: glass.separator.withValues(alpha: 0.45),
+                          ),
+                        _DesktopLocaleOption(
+                          label: labelOf(choice),
+                          selected: choice == value,
+                          onTap: () => Navigator.of(context).pop(choice),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -501,44 +559,59 @@ class _DesktopLocaleOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final glass = context.glass;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.extraSmall,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration: Durations.short3,
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? colorScheme.primary : glass.secondaryLabel,
-                  width: selected ? 2.5 : 2,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.all(8),
+        child: AnimatedContainer(
+          duration: Durations.short3,
+          curve: Curves.easeOutCubic,
+          minHeight: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected
+                ? colorScheme.primary.withValues(
+                    alpha: glass.isDark ? 0.16 : 0.10,
+                  )
+                : Colors.transparent,
+            borderRadius: AppRadius.all(8),
+          ),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: Durations.short3,
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? colorScheme.primary : Colors.transparent,
+                  border: Border.all(
+                    color: selected
+                        ? colorScheme.primary
+                        : glass.secondaryLabel.withValues(alpha: 0.7),
+                    width: 1.7,
+                  ),
+                ),
+                child: selected
+                    ? Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: colorScheme.onPrimary,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
                 ),
               ),
-              alignment: Alignment.center,
-              child: selected
-                  ? Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: colorScheme.primary,
-                      ),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 14),
-            Text(
-              label,
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
