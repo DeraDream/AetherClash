@@ -567,7 +567,7 @@ class _DesktopLocaleOption extends StatelessWidget {
         child: AnimatedContainer(
           duration: Durations.short3,
           curve: Curves.easeOutCubic,
-          minHeight: 42,
+          constraints: const BoxConstraints(minHeight: 42),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
             color: selected
