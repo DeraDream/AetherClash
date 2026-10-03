@@ -25,7 +25,7 @@ preserved.
 
 ## Install
 
-Download the build for your platform from [Releases](https://github.com/DeraDream/AetherClash/releases).
+Download the build for your platform from [Releases](https://github.com/DeraDream/po0-clash/releases).
 
 | Platform | How |
 |---|---|
@@ -35,7 +35,7 @@ Download the build for your platform from [Releases](https://github.com/DeraDrea
 | Linux / iOS | Not currently published by the standalone release workflow |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeraDream/AetherClash/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DeraDream/po0-clash/main/scripts/install-macos.sh | bash
 ```
 
 For macOS, `AETHERCLASH_VERSION`, `AETHERCLASH_DMG` and `AETHERCLASH_REPO` select a specific build or repository.

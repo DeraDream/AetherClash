@@ -24,7 +24,7 @@ AetherClash 是基于 [FlClash](https://github.com/chen08209/FlClash) 与 ClashM
 
 ## 安装
 
-从 [Releases](https://github.com/DeraDream/AetherClash/releases) 下载对应平台产物。
+从 [Releases](https://github.com/DeraDream/po0-clash/releases) 下载对应平台产物。
 
 | 平台 | 安装方式 |
 |---|---|
@@ -34,7 +34,7 @@ AetherClash 是基于 [FlClash](https://github.com/chen08209/FlClash) 与 ClashM
 | Linux / iOS | 当前独立 Release 工作流暂不发布 |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeraDream/AetherClash/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DeraDream/po0-clash/main/scripts/install-macos.sh | bash
 ```
 
 macOS 可使用 `AETHERCLASH_VERSION`、`AETHERCLASH_DMG`、`AETHERCLASH_REPO` 指定版本、DMG 或仓库；

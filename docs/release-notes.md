@@ -7,7 +7,7 @@ AetherClash v5.5.2：品牌升级与桌面在线升级自动重启修复。
 - 修复 Windows 在线升级安装完成后未自动启动新版本的问题
 - 静默升级完成后由 Inno Setup 使用原桌面用户身份重新启动 AetherClash，避免继承 UAC 管理员权限
 - PowerShell 升级器改为显式等待安装器退出，并在安装器未拉起应用时增加桌面 Shell 兜底启动
-- 更新 GitHub 项目与 Release 品牌链接到 DeraDream/AetherClash，并保留旧仓库更新地址作为重命名过渡兼容
+- 更新 GitHub 项目与 Release 品牌链接到 DeraDream/po0-clash，并保留旧仓库更新地址作为重命名过渡兼容
 - 保留原有内部进程名、Helper、应用 ID 和数据目录，确保现有 5.5.1 用户可原地升级且配置不丢失
 
 ## 升级说明

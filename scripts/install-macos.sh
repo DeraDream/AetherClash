@@ -4,13 +4,13 @@
 #   PO0CLASH_VERSION  release tag to install (default: latest release)
 #   PO0CLASH_DMG      local dmg path or URL; skips the release lookup
 #   AETHERCLASH_*     preferred variable names; PO0CLASH_* remain supported for compatibility
-#   AETHERCLASH_REPO  owner/repo (default: DeraDream/AetherClash)
+#   AETHERCLASH_REPO  owner/repo (default: DeraDream/po0-clash)
 #   GH_TOKEN          token for a private repository when gh is unavailable
 set -euo pipefail
 # macOS ships bash 3.2, where "${a[@]}" on an empty array trips set -u;
 # arrays below expand as ${a[@]+"${a[@]}"}.
 
-repo="${AETHERCLASH_REPO:-${PO0CLASH_REPO:-DeraDream/AetherClash}}"
+repo="${AETHERCLASH_REPO:-${PO0CLASH_REPO:-DeraDream/po0-clash}}"
 version="${AETHERCLASH_VERSION:-${PO0CLASH_VERSION:-latest}}"
 custom_dmg="${AETHERCLASH_DMG:-${PO0CLASH_DMG:-}}"
 app_name="po0-clash.app"
