@@ -209,6 +209,7 @@ final class DesktopUpdater {
     final executable = File(Platform.resolvedExecutable);
     final updateDirectory = installer.parent;
     final script = File(path.join(updateDirectory.path, 'update.ps1'));
+    final launcher = File(path.join(updateDirectory.path, 'update.vbs'));
     final readyFile = File(path.join(updateDirectory.path, 'ready'));
     final installDirectory = executable.parent.path;
     await script.writeAsString('''
@@ -291,11 +292,18 @@ try {
 exit 0
 ''');
 
+    final powerShellCommand =
+        'powershell.exe -NoLogo -NoProfile -NonInteractive '
+        '-WindowStyle Hidden -ExecutionPolicy Bypass -File '
+        '${_windowsCommandQuote(script.path)}';
+    await launcher.writeAsString(
+      'Set shell = CreateObject("WScript.Shell")\r\n'
+      'shell.Run ${_vbScriptQuote(powerShellCommand)}, 0, False\r\n',
+    );
+
     final launched = elevate(
-      'powershell.exe',
-      '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden '
-          '-ExecutionPolicy Bypass -File '
-          '${_windowsCommandQuote(script.path)}',
+      'wscript.exe',
+      '//B //Nologo ${_windowsCommandQuote(launcher.path)}',
     );
     if (!launched) {
       throw const MessageException(
@@ -403,6 +411,8 @@ trap - EXIT
     );
   }
 }
+
+String _vbScriptQuote(String value) => '"${value.replaceAll('"', '""')}"';
 
 String _powerShellQuote(String value) => "'${value.replaceAll("'", "''")}'";
 

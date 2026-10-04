@@ -32,6 +32,7 @@ void main() {
     expect(speedGroups, hasLength(1));
     expect(speedGroups.single['hidden'], isTrue);
     expect(speedGroups.single['include-all'], isTrue);
+    expect(speedGroups.single['proxies'], contains('DIRECT'));
 
     final listeners = List<dynamic>.from(config['listeners'] as List);
     final speedListeners = listeners
@@ -43,3 +44,22 @@ void main() {
     expect(speedListeners.single['proxy'], speedTestGroupName);
   });
 }
+
+
+test('SpeedTestServer derives classic Speedtest endpoints', () {
+  const server = SpeedTestServer(
+    id: '1',
+    name: 'Singapore',
+    country: 'Singapore',
+    sponsor: 'Example ISP',
+    url: 'https://example.com/speedtest/upload.php',
+    host: 'example.com:443',
+  );
+
+  expect(
+    server.downloadUri(1, 2).path,
+    '/speedtest/random4000x4000.jpg',
+  );
+  expect(server.latencyUri.path, '/speedtest/latency.txt');
+  expect(server.label, 'Example ISP · Singapore, Singapore');
+});
