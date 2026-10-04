@@ -139,13 +139,32 @@ class CommonAction extends _$CommonAction {
           await dialogs.showUpdateProgress(
             version: data['tag_name'] as String,
             task: (onProgress) async {
-              await desktopUpdater.prepareUpdate(
-                release: data,
-                dio: request.dio,
-                onProgress: onProgress,
-                launchElevated: windows?.runasHidden,
-              );
-              await ref.read(systemActionProvider.notifier).handleExit();
+              var recoverySaved = false;
+              try {
+                await desktopUpdater.prepareUpdate(
+                  release: data,
+                  dio: request.dio,
+                  onProgress: onProgress,
+                  launchElevated: windows?.runasHidden,
+                  beforeLaunch: () async {
+                    final recovery = UpdateRecoveryState.now(
+                      running: ref.read(isStartProvider),
+                      systemProxy: ref.read(networkSettingProvider).systemProxy,
+                      tun: ref.read(patchClashConfigProvider).tun.enable,
+                    );
+                    await updateRecovery.save(recovery);
+                    recoverySaved = true;
+                  },
+                );
+              } catch (_) {
+                if (recoverySaved) {
+                  await updateRecovery.clear();
+                }
+                rethrow;
+              }
+              await ref
+                  .read(systemActionProvider.notifier)
+                  .handleUpdateExit();
             },
           );
         } else {

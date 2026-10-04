@@ -52,6 +52,7 @@ export 'string.dart';
 export 'system.dart';
 export 'task.dart';
 export 'task_pool.dart';
+export 'update_recovery.dart';
 export 'text.dart';
 export 'webdav.dart';
 export 'yaml.dart';

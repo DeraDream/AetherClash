@@ -26,6 +26,17 @@ class SystemAction extends _$SystemAction {
   }
 
   Future<void> handleExit([bool needSave = true]) {
+    _clearManualDesktopConnectionState();
+    return _runExit(needSave);
+  }
+
+  /// Update installs preserve the current route switches so the one-shot
+  /// recovery marker can restore the exact pre-update state.
+  Future<void> handleUpdateExit([bool needSave = true]) {
+    return _runExit(needSave);
+  }
+
+  Future<void> _runExit(bool needSave) {
     final coordinator = _exitCoordinator ??= SystemExitCoordinator(
       watchdogDuration: exitWatchdogDuration,
       closeWindow: closeWindow,
@@ -33,6 +44,21 @@ class SystemAction extends _$SystemAction {
       exitApplication: exitApplication,
     );
     return coordinator.exit(cleanup: () => cleanupExitResources(needSave));
+  }
+
+  void _clearManualDesktopConnectionState() {
+    if (!system.isDesktop) return;
+
+    if (ref.read(networkSettingProvider).systemProxy) {
+      ref
+          .read(networkSettingProvider.notifier)
+          .update((state) => state.copyWith(systemProxy: false));
+    }
+    if (ref.read(patchClashConfigProvider).tun.enable) {
+      ref
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: false));
+    }
   }
 
   @protected

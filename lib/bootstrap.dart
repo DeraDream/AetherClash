@@ -34,6 +34,7 @@ class Bootstrap {
   }
 
   BootDecision _bootDecision = const BootDecision();
+  UpdateRecoveryState? _updateRecoveryState;
 
   Future<ProviderContainer> init(int version) async {
     globalState.appEnv = const String.fromEnvironment(
@@ -91,6 +92,11 @@ class Bootstrap {
   ) async {
     globalState.packageInfo = await PackageInfo.fromPlatform();
     var config = await migration.run();
+    _updateRecoveryState = system.isDesktop ? await updateRecovery.take() : null;
+    final recoveryState = _updateRecoveryState;
+    if (recoveryState != null) {
+      config = applyUpdateRecoveryState(config, recoveryState);
+    }
     _bootDecision = await bootGuard.evaluate(
       profileId: config.currentProfileId,
       crashlyticsEnabled: config.appSettingProps.crashlytics,
@@ -164,8 +170,20 @@ class Bootstrap {
     await _showCrashRecoveryTip();
     await _container.read(coreActionProvider.notifier).startCore();
     if (!_bootDecision.isDegraded) {
-      await _container.read(setupActionProvider.notifier).initStatus();
+      final setup = _container.read(setupActionProvider.notifier);
+      final recovery = _updateRecoveryState;
+      if (recovery == null) {
+        await setup.initStatus();
+      } else if (recovery.running) {
+        await setup.setRunning(true, initialize: true);
+      } else {
+        // Preserve an intentionally stopped Core across an update even if
+        // autoRun is enabled.
+        globalState.needInitStatus = false;
+        await globalState.safeRun(() => setup.applyProfile(force: true));
+      }
     }
+    _updateRecoveryState = null;
     _container.read(initProvider.notifier).value = true;
     await bootGuard.markRunning();
     permissions.check(_container.read);

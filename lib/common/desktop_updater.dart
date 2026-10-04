@@ -100,6 +100,7 @@ final class DesktopUpdater {
     required Dio dio,
     required void Function(DesktopUpdateProgress progress) onProgress,
     ElevatedLauncher? launchElevated,
+    Future<void> Function()? beforeLaunch,
   }) async {
     final target = await _target();
     final asset = findDesktopUpdateAsset(
@@ -150,6 +151,9 @@ final class DesktopUpdater {
           );
         }
       }
+      // Save any one-shot handoff state only after download + integrity
+      // checks succeed, but before the external updater can terminate us.
+      await beforeLaunch?.call();
       onProgress(
         DesktopUpdateProgress(
           stage: DesktopUpdateStage.installing,

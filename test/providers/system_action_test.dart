@@ -207,6 +207,34 @@ void main() {
       expect(action.cleanupNeedSave, [true]);
     });
 
+    test('manual exit clears desktop route switches before shutdown', () async {
+      container
+          .read(networkSettingProvider.notifier)
+          .update((state) => state.copyWith(systemProxy: true));
+      container
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: true));
+
+      await notifier().handleExit();
+
+      expect(container.read(networkSettingProvider).systemProxy, isFalse);
+      expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
+    });
+
+    test('update exit preserves desktop route switches for recovery', () async {
+      container
+          .read(networkSettingProvider.notifier)
+          .update((state) => state.copyWith(systemProxy: true));
+      container
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: true));
+
+      await notifier().handleUpdateExit();
+
+      expect(container.read(networkSettingProvider).systemProxy, isTrue);
+      expect(container.read(patchClashConfigProvider).tun.enable, isTrue);
+    });
+
     test('a later exit request never restarts a finished shutdown', () async {
       await notifier().handleExit();
       await notifier().handleExit();
