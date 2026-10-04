@@ -413,10 +413,18 @@ class HomeBackScopeContainer extends ConsumerWidget {
     return CommonPopScope(
       onPop: (context) async {
         final pageLabel = ref.read(currentPageLabelProvider);
+        final workspaceNavigator = workspaceNavigatorKey(
+          pageLabel,
+        ).currentState;
+        if (workspaceNavigator?.canPop() == true) {
+          workspaceNavigator!.pop();
+          return false;
+        }
+
+        // Mobile pages do not have nested workspace navigators.
         final realContext =
             GlobalObjectKey(pageLabel).currentContext ?? context;
-        final canPop = Navigator.canPop(realContext);
-        if (canPop) {
+        if (Navigator.canPop(realContext)) {
           Navigator.of(realContext).pop();
         } else {
           await ref.read(systemActionProvider.notifier).handleClose();
