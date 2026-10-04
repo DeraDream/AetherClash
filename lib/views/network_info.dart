@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -43,6 +44,16 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
   int _ipCheckVersion = 0;
   int _testVersion = 0;
 
+  String? _speedTestNode;
+  String _speedNodeSignature = '';
+  bool _speedTesting = false;
+  double _speedProgress = 0;
+  double? _speedMbps;
+  double? _speedMegabytesPerSecond;
+  int? _speedDelay;
+  String? _speedError;
+  HttpClient? _speedClient;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +63,184 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
       unawaited(_refreshIpDetails());
       unawaited(_loadLatencyTargets());
     });
+  }
+
+  @override
+  void dispose() {
+    _speedClient?.close(force: true);
+    super.dispose();
+  }
+
+  Group? _speedTestGroup(List<Group> groups) {
+    for (final group in groups) {
+      if (group.name == speedTestGroupName) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  List<String> _speedTestNodes(List<Group> groups) {
+    final group = _speedTestGroup(groups);
+    if (group == null) {
+      return const [];
+    }
+    final names = group.all
+        .map((proxy) => proxy.name)
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return names;
+  }
+
+  void _syncSpeedTestNodes(List<String> nodes, String? groupNow) {
+    final signature = nodes.join('\u0000');
+    if (signature == _speedNodeSignature) {
+      return;
+    }
+    _speedNodeSignature = signature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final oldNode = _speedTestNode;
+      final nextNode = oldNode != null && nodes.contains(oldNode)
+          ? oldNode
+          : (groupNow != null && nodes.contains(groupNow)
+                ? groupNow
+                : (nodes.isEmpty ? null : nodes.first));
+      setState(() {
+        _speedTestNode = nextNode;
+        if (oldNode != nextNode) {
+          _speedMbps = null;
+          _speedMegabytesPerSecond = null;
+          _speedDelay = null;
+          _speedError = null;
+          _speedProgress = 0;
+        }
+      });
+    });
+  }
+
+  Future<void> _runSpeedTest() async {
+    final node = _speedTestNode;
+    if (node == null || node.isEmpty || _speedTesting) {
+      return;
+    }
+
+    final groups = ref.read(groupsProvider);
+    final speedGroup = _speedTestGroup(groups);
+    if (speedGroup == null ||
+        !speedGroup.all.any((proxy) => proxy.name == node)) {
+      setState(() {
+        _speedError = _text(
+          context,
+          '测速节点已变化，请重新选择',
+          'The test node changed. Select a node again.',
+        );
+      });
+      ref.read(proxiesActionProvider.notifier).updateGroupsDebounce(
+        Duration.zero,
+      );
+      return;
+    }
+
+    const targetBytes = 64 * 1024 * 1024;
+    const maxTestDuration = Duration(seconds: 12);
+    final mixedPort = ref.read(patchClashConfigProvider).mixedPort;
+    final listenerPort = speedTestListenerPortFor(mixedPort);
+    final core = ref.read(coreHandlerProvider);
+
+    setState(() {
+      _speedTesting = true;
+      _speedProgress = 0;
+      _speedMbps = null;
+      _speedMegabytesPerSecond = null;
+      _speedDelay = null;
+      _speedError = null;
+    });
+
+    HttpClient? client;
+    try {
+      await core.changeProxy(
+        ChangeProxyParams(
+          groupName: speedTestGroupName,
+          proxyName: node,
+        ),
+      );
+
+      final delay = await core.getDelay(
+        'https://www.gstatic.com/generate_204',
+        node,
+      );
+      if (!mounted || _speedTestNode != node) return;
+      setState(() => _speedDelay = delay?.value);
+
+      client = HttpClient()
+        ..connectionTimeout = const Duration(seconds: 8)
+        ..autoUncompress = false
+        ..findProxy = (_) => 'PROXY 127.0.0.1:$listenerPort';
+      _speedClient = client;
+
+      final uri = Uri.parse(
+        'https://speed.cloudflare.com/__down'
+        '?bytes=$targetBytes&t=${DateTime.now().microsecondsSinceEpoch}',
+      );
+      final request = await client.getUrl(uri);
+      request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
+      request.headers.set(HttpHeaders.cacheControlHeader, 'no-store');
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException(
+          'Speed test server returned HTTP ${response.statusCode}',
+          uri: uri,
+        );
+      }
+
+      var received = 0;
+      final stopwatch = Stopwatch()..start();
+      await for (final chunk in response.timeout(const Duration(seconds: 8))) {
+        received += chunk.length;
+        if (mounted && _speedTestNode == node) {
+          setState(() {
+            _speedProgress = (received / targetBytes).clamp(0, 1).toDouble();
+          });
+        }
+        if (received >= targetBytes ||
+            stopwatch.elapsed >= maxTestDuration) {
+          break;
+        }
+      }
+      stopwatch.stop();
+
+      if (received <= 0 || stopwatch.elapsedMicroseconds <= 0) {
+        throw const HttpException('No speed-test data was received.');
+      }
+
+      final seconds = stopwatch.elapsedMicroseconds / 1000000.0;
+      final bytesPerSecond = received / seconds;
+      final mbps = bytesPerSecond * 8 / 1000000.0;
+      final megabytesPerSecond = bytesPerSecond / (1024 * 1024);
+
+      if (!mounted || _speedTestNode != node) return;
+      setState(() {
+        _speedMbps = mbps;
+        _speedMegabytesPerSecond = megabytesPerSecond;
+        _speedProgress = 1;
+      });
+    } catch (error) {
+      if (!mounted || _speedTestNode != node) return;
+      setState(() {
+        _speedError = compactError(error);
+      });
+    } finally {
+      if (identical(_speedClient, client)) {
+        _speedClient = null;
+      }
+      client?.close(force: true);
+      if (mounted) {
+        setState(() => _speedTesting = false);
+      }
+    }
   }
 
   Future<void> _refreshIp() async {
@@ -176,6 +365,11 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
 
   @override
   Widget build(BuildContext context) {
+    final groups = ref.watch(groupsProvider);
+    final speedGroup = _speedTestGroup(groups);
+    final speedNodes = _speedTestNodes(groups);
+    _syncSpeedTestNodes(speedNodes, speedGroup?.realNow);
+
     final detection = ref.watch(networkDetectionProvider);
     final usingAutoSource = _selectedIpSource == _autoSource;
     final publicIp = usingAutoSource ? detection.ipInfo : _sourceIpInfo;
@@ -265,6 +459,43 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
             icon: Icons.hub_rounded,
             tone: GlassTone.success,
             child: const NetworkTopologyView(),
+          ),
+          const SizedBox(height: 14),
+          _SectionCard(
+            title: _text(context, '节点测速', 'Node speed test'),
+            icon: Icons.speed_rounded,
+            tone: GlassTone.teal,
+            trailing: _SpeedTestNodeSelector(
+              nodes: speedNodes,
+              selected: speedNodes.contains(_speedTestNode)
+                  ? _speedTestNode
+                  : null,
+              enabled: !_speedTesting,
+              onChanged: (value) {
+                if (value == null || value == _speedTestNode) return;
+                setState(() {
+                  _speedTestNode = value;
+                  _speedMbps = null;
+                  _speedMegabytesPerSecond = null;
+                  _speedDelay = null;
+                  _speedError = null;
+                  _speedProgress = 0;
+                });
+              },
+            ),
+            child: _SpeedTestPanel(
+              node: _speedTestNode,
+              testing: _speedTesting,
+              progress: _speedProgress,
+              mbps: _speedMbps,
+              megabytesPerSecond: _speedMegabytesPerSecond,
+              delay: _speedDelay,
+              error: _speedError,
+              onStart: speedNodes.isEmpty || _speedTesting
+                  ? null
+                  : _runSpeedTest,
+              text: (zh, en) => _text(context, zh, en),
+            ),
           ),
           const SizedBox(height: 14),
           _SectionCard(
@@ -664,6 +895,227 @@ class _IpRow extends StatelessWidget {
               icon: const Icon(Icons.copy_rounded, size: 17),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SpeedTestNodeSelector extends StatelessWidget {
+  const _SpeedTestNodeSelector({
+    required this.nodes,
+    required this.selected,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final List<String> nodes;
+  final String? selected;
+  final bool enabled;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 220),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selected,
+          isDense: true,
+          isExpanded: true,
+          hint: Text(zh ? '选择测速节点' : 'Select test node'),
+          items: [
+            for (final node in nodes)
+              DropdownMenuItem<String>(
+                value: node,
+                child: Text(
+                  node,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: enabled && nodes.isNotEmpty ? onChanged : null,
+        ),
+      ),
+    );
+  }
+}
+
+class _SpeedTestPanel extends StatelessWidget {
+  const _SpeedTestPanel({
+    required this.node,
+    required this.testing,
+    required this.progress,
+    required this.mbps,
+    required this.megabytesPerSecond,
+    required this.delay,
+    required this.error,
+    required this.onStart,
+    required this.text,
+  });
+
+  final String? node;
+  final bool testing;
+  final double progress;
+  final double? mbps;
+  final double? megabytesPerSecond;
+  final int? delay;
+  final String? error;
+  final VoidCallback? onStart;
+  final String Function(String zh, String en) text;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = context.glass;
+    final colorScheme = context.colorScheme;
+    final hasResult = mbps != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                node == null
+                    ? text('暂无可用节点', 'No available nodes')
+                    : node!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            FilledButton.icon(
+              onPressed: onStart,
+              icon: testing
+                  ? const SizedBox.square(
+                      dimension: 16,
+                      child: CommonCircleLoading(),
+                    )
+                  : const Icon(Icons.play_arrow_rounded, size: 18),
+              label: Text(
+                testing
+                    ? text('测速中', 'Testing')
+                    : text('开始测速', 'Start test'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (testing) ...[
+          LinearProgressIndicator(value: progress > 0 ? progress : null),
+          const SizedBox(height: 8),
+          Text(
+            text(
+              '正在通过所选节点下载测试数据，最多约 12 秒',
+              'Downloading test data through the selected node for up to 12 seconds',
+            ),
+            style: context.textTheme.bodySmall?.copyWith(
+              color: glass.secondaryLabel,
+            ),
+          ),
+        ] else if (hasResult) ...[
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _SpeedMetric(
+                label: text('下载速度', 'Download'),
+                value: '${mbps!.toStringAsFixed(1)} Mbps',
+                icon: Icons.download_rounded,
+                color: colorScheme.primary,
+              ),
+              _SpeedMetric(
+                label: text('实际吞吐', 'Throughput'),
+                value:
+                    '${megabytesPerSecond!.toStringAsFixed(1)} MB/s',
+                icon: Icons.data_usage_rounded,
+                color: context.toneColor(GlassTone.teal),
+              ),
+              if (delay != null)
+                _SpeedMetric(
+                  label: text('节点延迟', 'Node latency'),
+                  value: '$delay ms',
+                  icon: Icons.bolt_rounded,
+                  color: getDelayColor(delay!) ?? colorScheme.primary,
+                ),
+            ],
+          ),
+        ] else
+          Text(
+            text(
+              '测速使用独立隐藏策略，不会切换你当前正在使用的代理节点。',
+              'The test uses an isolated hidden policy and does not switch your active proxy.',
+            ),
+            style: context.textTheme.bodySmall?.copyWith(
+              color: glass.secondaryLabel,
+            ),
+          ),
+        if (error != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            error!,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: colorScheme.error,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SpeedMetric extends StatelessWidget {
+  const _SpeedMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 145),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: context.glass.isDark ? 0.12 : 0.08),
+        borderRadius: AppRadius.all(8),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: context.glass.secondaryLabel,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -308,6 +308,10 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
     for (final cidr in directCidrs) 'IP-CIDR,$cidr,DIRECT,no-resolve',
     ...rules,
   ];
+  installSpeedTestRuntimeConfig(
+    rawConfig,
+    mixedPort: realPatchConfig.mixedPort,
+  );
   final yaml = await _encodeYaml(Map<String, dynamic>.from(rawConfig));
   return (yaml: yaml, md5: yaml.toMd5());
 }
