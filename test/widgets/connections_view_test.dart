@@ -70,7 +70,7 @@ void main() {
     final connections = buildConnections(100);
 
     await pumpConnections(tester, connectionsReader: () async => connections);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
     final builtItems = find.byType(TrackerInfoItem).evaluate().length;
     expect(builtItems, greaterThan(0));

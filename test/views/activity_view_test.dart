@@ -84,13 +84,13 @@ void main() {
     await pumpActivity(tester);
 
     await tester.tap(find.text('Logs'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
     expect(find.byType(LogsView), findsOneWidget);
 
     container
         .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(openLogs: false));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
     expect(find.text('Logs'), findsNothing);
     expect(find.byType(ConnectionsView), findsOneWidget);
 

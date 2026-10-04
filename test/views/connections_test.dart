@@ -140,7 +140,7 @@ void main() {
     await tester.pump();
 
     await tester.tap(find.textContaining('Closed'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
     expect(find.textContaining('alpha.test'), findsWidgets);
 
     await teardownView(tester);
@@ -171,7 +171,7 @@ void main() {
 
     await pumpConnections(tester);
     await tester.tap(find.byIcon(Icons.search));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
 
     final field = find.byType(TextField);
     await tester.enterText(field, '53123');

@@ -123,6 +123,9 @@ void main() {
     expect(find.byType(NetworkInfoView), findsOneWidget);
     expect(container.read(currentPageLabelProvider), initialPage);
     expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 11));
   });
 
   testWidgets('network info is independent from the selected sidebar page', (
@@ -153,6 +156,9 @@ void main() {
     expect(find.text('page:tools').hitTestable(), findsOneWidget);
     expect(container.read(currentPageLabelProvider), PageLabel.tools);
     expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 11));
   });
 
   testWidgets('the rail highlight sits exactly on the chosen destination', (

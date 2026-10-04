@@ -218,7 +218,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
 
     final result = List<TrackerInfo>.from(filtered);
     result.sort((a, b) {
-      final comparison = switch (_order) {
+      var comparison = switch (_order) {
         // Clash Party calls this "asc": newest first.
         _ConnectionOrder.time => b.start.compareTo(a.start),
         _ConnectionOrder.upload => a.upload.compareTo(b.upload),
@@ -228,6 +228,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         _ConnectionOrder.downloadSpeed =>
           (a.downloadSpeed ?? 0).compareTo(b.downloadSpeed ?? 0),
       };
+      if (comparison == 0) {
+        comparison = a.id.compareTo(b.id);
+      }
       return _ascending ? comparison : -comparison;
     });
     return result;
