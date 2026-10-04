@@ -68,6 +68,8 @@ class OutboundModeSwitch extends ConsumerWidget {
       values: Mode.values,
       selected: mode,
       labelOf: (mode) => mode.label,
+      selectedColor: context.colorScheme.primary,
+      selectedForegroundColor: context.colorScheme.onPrimary,
       onChanged: (mode) {
         ref.read(setupActionProvider.notifier).changeMode(mode);
       },
@@ -613,52 +615,48 @@ class _DesktopRouteCard extends StatelessWidget {
               : glass.separator.withValues(alpha: 0.55),
         ),
       ),
-      child: InkWell(
-        borderRadius: AppRadius.all(12),
-        onTap: () => onChanged(!value),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 8, 8, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 30,
-                child: Row(
-                  children: [
-                    Icon(
-                      icon,
-                      size: 19,
-                      color: value ? Colors.white : glass.secondaryLabel,
-                    ),
-                    const Spacer(),
-                    SizedBox(
-                      width: 38,
-                      height: 24,
-                      child: FittedBox(
-                        fit: BoxFit.fill,
-                        child: Switch(
-                          value: value,
-                          onChanged: onChanged,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 8, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 30,
+              child: Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 19,
+                    color: value ? Colors.white : glass.secondaryLabel,
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: 38,
+                    height: 24,
+                    child: FittedBox(
+                      fit: BoxFit.fill,
+                      child: Switch(
+                        value: value,
+                        onChanged: onChanged,
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              Text(
-                label,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.labelLarge?.copyWith(
-                  color: value ? Colors.white : context.colorScheme.onSurface,
-                  fontWeight: FontWeight.w800,
-                ),
+            ),
+            const Spacer(),
+            Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: value ? Colors.white : context.colorScheme.onSurface,
+                fontWeight: FontWeight.w800,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

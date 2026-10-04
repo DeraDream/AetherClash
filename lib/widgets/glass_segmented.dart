@@ -11,6 +11,8 @@ class GlassSegmented<T> extends StatelessWidget {
     required this.onChanged,
     this.iconOf,
     this.height = 40,
+    this.selectedColor,
+    this.selectedForegroundColor,
   });
 
   final List<T> values;
@@ -19,6 +21,8 @@ class GlassSegmented<T> extends StatelessWidget {
   final IconData Function(T value)? iconOf;
   final ValueChanged<T> onChanged;
   final double height;
+  final Color? selectedColor;
+  final Color? selectedForegroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,7 @@ class GlassSegmented<T> extends StatelessWidget {
                     heightFactor: 1,
                     child: DecoratedBox(
                       decoration: ShapeDecoration(
-                        color: glass.thumb,
+                        color: selectedColor ?? glass.thumb,
                         shape: shape,
                         shadows: compact
                             ? const []
@@ -78,6 +82,7 @@ class GlassSegmented<T> extends StatelessWidget {
                           label: labelOf(value),
                           icon: iconOf?.call(value),
                           selected: value == selected,
+                          selectedForegroundColor: selectedForegroundColor,
                           borderRadius: compact
                               ? AppRadius.extraSmall
                               : AppRadius.full,
@@ -104,6 +109,7 @@ class _Segment extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.selected,
+    required this.selectedForegroundColor,
     required this.borderRadius,
     required this.onTap,
   });
@@ -111,12 +117,16 @@ class _Segment extends StatelessWidget {
   final String label;
   final IconData? icon;
   final bool selected;
+  final Color? selectedForegroundColor;
   final BorderRadius borderRadius;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final color = context.colorScheme.onSurface;
+    final baseColor = context.colorScheme.onSurface;
+    final color = selected
+        ? (selectedForegroundColor ?? baseColor)
+        : baseColor;
     final icon = this.icon;
     return Semantics(
       button: true,

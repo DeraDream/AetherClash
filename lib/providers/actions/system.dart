@@ -135,10 +135,20 @@ class SystemAction extends _$SystemAction {
   }
 
   void useRoute(DesktopRoute route) {
-    _applyRoute((
-      tun: route == DesktopRoute.tun,
-      systemProxy: route == DesktopRoute.systemProxy,
-    ));
+    switch (route) {
+      case DesktopRoute.tun:
+        if (!ref.read(patchClashConfigProvider).tun.enable) {
+          ref
+              .read(patchClashConfigProvider.notifier)
+              .update((state) => state.copyWith.tun(enable: true));
+        }
+      case DesktopRoute.systemProxy:
+        if (!ref.read(networkSettingProvider).systemProxy) {
+          ref
+              .read(networkSettingProvider.notifier)
+              .update((state) => state.copyWith(systemProxy: true));
+        }
+    }
   }
 
   void reconcileRoute({DesktopRoute? changed}) {

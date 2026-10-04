@@ -120,21 +120,38 @@ void main() {
     expect(find.byType(AdaptiveSheetScaffold), findsOneWidget);
   });
 
-  testWidgets('the sidebar route cards are independent', (tester) async {
+  testWidgets('sidebar route cards only toggle from their switches', (
+    tester,
+  ) async {
     await pump(tester, const DesktopRouteCards());
     expect(find.byType(Switch), findsNWidgets(2));
+    expect(route(), (tun: false, systemProxy: true));
 
+    // Card labels/surfaces are display-only.
     await tester.tap(find.text('System proxy'));
+    await tester.pump();
+    expect(route(), (tun: false, systemProxy: true));
+
+    await tester.tap(find.text('TUN'));
+    await tester.pump();
+    expect(route(), (tun: false, systemProxy: true));
+
+    final switches = find.byType(Switch);
+
+    // The first switch controls only the system proxy.
+    await tester.tap(switches.at(0));
     await tester.pump();
     expect(route(), (tun: false, systemProxy: false));
 
-    await tester.tap(find.text('TUN'));
+    // The second switch controls only TUN and keeps system proxy unchanged.
+    await tester.tap(switches.at(1));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Enable'));
     await tester.pumpAndSettle();
     expect(route(), (tun: true, systemProxy: false));
 
-    await tester.tap(find.text('System proxy'));
+    // System proxy may be enabled while TUN stays enabled.
+    await tester.tap(switches.at(0));
     await tester.pump();
     expect(route(), (tun: true, systemProxy: true));
   });
