@@ -1,4 +1,4 @@
-AetherClash v5.5.4：重构桌面代理接管、网络拓扑与网络诊断，并新增运行时配置和流量嗅探。
+AetherClash v5.5.5：重构桌面代理接管、网络拓扑与网络诊断，并新增运行时配置和流量嗅探。
 
 ## 本次更新
 
@@ -31,6 +31,12 @@ AetherClash v5.5.4：重构桌面代理接管、网络拓扑与网络诊断，�
   - 修改后自动重新生成 mihomo 配置并持久保存
 - 网络信息页继续保持在桌面工作区内打开，左侧主菜单始终可见
 - Release 继续只构建 Windows amd64 与 macOS arm64
+- 修复本轮发布前检查发现的问题
+  - 修复网络信息页缺少枚举导入导致的 FontFamily / MessageLevel 编译失败
+  - 修复桌面系统代理 / 虚拟网卡卡片在部分尺寸下纵向溢出
+  - 更新独立 TUN 行为对应的测试
+  - 更新 AetherClash User-Agent 测试与请求页暂停 / 恢复图标测试
+  - Release 增加 Preflight：Analyze 与测试通过后才进入 Windows / macOS 正式打包
 
 ## 桌面在线升级
 
