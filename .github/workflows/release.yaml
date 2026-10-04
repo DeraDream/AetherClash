@@ -213,7 +213,7 @@ jobs:
 
   release:
     needs: [ build ]
-    if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
+    if: ${{ startsWith(github.ref, 'refs/tags/') || inputs.tag != '' || (github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release-build]')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -229,11 +229,25 @@ jobs:
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag != '' && inputs.tag || github.ref_name }}
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
+          if [[ -n "$INPUT_TAG" ]]; then
+            TAG="$INPUT_TAG"
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            VERSION="$(awk '/^version:/ {print $2; exit}' pubspec.yaml)"
+            VERSION="${VERSION%%+*}"
+            TAG="v$VERSION"
+          fi
+
           mapfile -t files < <(find dist -type f \( -name '*.exe' -o -name '*.zip' -o -name '*.dmg' -o -name '*.apk' \))
           files+=(scripts/install-macos.sh)
+
           if ! gh release view "$TAG" > /dev/null 2>&1; then
-            gh release create "$TAG" --title "AetherClash $TAG" --notes-file docs/release-notes.md
+            gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title "AetherClash $TAG" \
+              --notes-file docs/release-notes.md
           fi
           gh release upload "$TAG" "${files[@]}" --clobber
