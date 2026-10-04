@@ -73,6 +73,21 @@ class VPNItem extends ConsumerWidget {
   }
 }
 
+Future<bool> confirmTunEnable(BuildContext context) async {
+  final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+  return await dialogs.showMessage(
+        context: context,
+        title: isChinese ? '启用虚拟网卡？' : 'Enable virtual network adapter?',
+        message: TextSpan(
+          text: isChinese
+              ? '启用虚拟网卡（TUN）会接管系统网络流量，并自动关闭系统代理。确认继续吗？'
+              : 'Enabling the virtual network adapter (TUN) will take over system network traffic and automatically turn off the system proxy. Continue?',
+        ),
+        confirmText: isChinese ? '启用' : 'Enable',
+      ) ==
+      true;
+}
+
 class TUNItem extends ConsumerWidget {
   const TUNItem({super.key});
 
@@ -82,9 +97,15 @@ class TUNItem extends ConsumerWidget {
       title: (l) => l.tun,
       subtitle: (l) => l.tunDesc,
       selector: patchClashConfigProvider.select((state) => state.tun.enable),
-      onChanged: _tunWriter(
-        (state, value) => state.copyWith.tun(enable: value),
-      ),
+      onChanged: (ref, value) async {
+        final tunEnabled = ref.read(patchClashConfigProvider).tun.enable;
+        if (value && !tunEnabled && !await confirmTunEnable(context)) {
+          return;
+        }
+        ref
+            .read(patchClashConfigProvider.notifier)
+            .update((state) => state.copyWith.tun(enable: value));
+      },
     );
   }
 }

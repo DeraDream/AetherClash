@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -433,6 +434,20 @@ class _QuickToggle extends StatelessWidget {
   }
 }
 
+Future<void> _useDesktopRoute(
+  BuildContext context,
+  WidgetRef ref,
+  SystemAction systemAction,
+  DesktopRoute route,
+) async {
+  if (route == DesktopRoute.tun &&
+      !ref.read(patchClashConfigProvider).tun.enable &&
+      !await confirmTunEnable(context)) {
+    return;
+  }
+  systemAction.useRoute(route);
+}
+
 /// The routing switches with the detected exit beside them: on desktop TUN
 /// and the system proxy exclude each other, on Android it is the VPN.
 class QuickToggles extends ConsumerWidget {
@@ -487,7 +502,14 @@ class QuickToggles extends ConsumerWidget {
           selected: ref.watch(
             patchClashConfigProvider.select((state) => state.tun.enable),
           ),
-          onTap: () => systemAction.useRoute(DesktopRoute.tun),
+          onTap: () => unawaited(
+            _useDesktopRoute(
+              context,
+              ref,
+              systemAction,
+              DesktopRoute.tun,
+            ),
+          ),
         ),
         _QuickToggle(
           compact: compact,
@@ -533,7 +555,14 @@ class DesktopRouteSwitch extends ConsumerWidget {
         DesktopRoute.tun => appLocalizations.tun,
         DesktopRoute.systemProxy => appLocalizations.systemProxy,
       },
-      onChanged: ref.read(systemActionProvider.notifier).useRoute,
+      onChanged: (route) => unawaited(
+        _useDesktopRoute(
+          context,
+          ref,
+          ref.read(systemActionProvider.notifier),
+          route,
+        ),
+      ),
     );
   }
 }

@@ -407,6 +407,15 @@ class _SidebarItem extends ConsumerWidget {
 class _SidebarFooter extends ConsumerWidget {
   const _SidebarFooter();
 
+  void _openNetworkInfo(WidgetRef ref) {
+    final pageLabel = ref.read(currentPageLabelProvider);
+    final workspaceContext = GlobalObjectKey(pageLabel).currentContext;
+    if (workspaceContext == null) {
+      return;
+    }
+    BaseNavigator.push(workspaceContext, const NetworkInfoView());
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final glass = context.glass;
@@ -452,7 +461,7 @@ class _SidebarFooter extends ConsumerWidget {
           tooltip: Localizations.localeOf(context).languageCode == 'zh'
               ? '网络信息'
               : 'Network info',
-          onTap: () => BaseNavigator.push(context, const NetworkInfoView()),
+          onTap: () => _openNetworkInfo(ref),
           child: Row(
             children: [
               Icon(
