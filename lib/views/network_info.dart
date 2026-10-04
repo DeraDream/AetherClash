@@ -42,6 +42,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
   bool _testing = false;
   int _ipCheckVersion = 0;
   int _testVersion = 0;
+  String _latencyRouteSignature = '';
 
   List<SpeedTestServer> _speedServers = const [];
   String? _selectedSpeedServerId;
@@ -101,6 +102,17 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     final selected = ref.read(selectedProxyNameProvider(group.name));
     if (selected.isNotEmpty) return selected;
     return group.realNow.isEmpty ? null : group.realNow;
+  }
+
+  void _syncLatencyRoute({
+    required String signature,
+  }) {
+    if (signature == _latencyRouteSignature) return;
+    _latencyRouteSignature = signature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || signature != _latencyRouteSignature) return;
+      unawaited(_refreshLatency());
+    });
   }
 
   void _syncSpeedTestContext({
@@ -258,18 +270,18 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
         uploadDuration: const Duration(seconds: 15),
         onProgress: (progress) {
           if (!mounted || !identical(_speedEngine, engine)) return;
+          final previousPhase = _speedPhase;
+          final previousLiveMbps = _speedLiveMbps;
           setState(() {
+            if (progress.phase == SpeedTestPhase.upload &&
+                previousPhase == SpeedTestPhase.download &&
+                _speedDownloadMbps == null &&
+                previousLiveMbps > 0) {
+              _speedDownloadMbps = previousLiveMbps;
+            }
             _speedPhase = progress.phase;
             _speedProgress = progress.progress;
             _speedLiveMbps = progress.mbps;
-            if (progress.phase == SpeedTestPhase.upload &&
-                _speedDownloadMbps == null) {
-              // Preserve the final download live value when upload starts,
-              // while the engine computes its sustained result.
-              _speedDownloadMbps = progress.mbps > 0
-                  ? progress.mbps
-                  : _speedDownloadMbps;
-            }
           });
         },
       );
@@ -460,6 +472,11 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     _syncSpeedTestContext(
       signature: speedContextSignature,
       proxyName: currentProxyName,
+    );
+    _syncLatencyRoute(
+      signature:
+          '$profileId|${mode.name}|${currentGroup?.name ?? ''}|'
+          '${currentProxyName ?? ''}',
     );
 
     final detection = ref.watch(networkDetectionProvider);
