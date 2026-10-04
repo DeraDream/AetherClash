@@ -99,9 +99,15 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     final preferred = ref.read(currentProfileProvider)?.currentGroupName;
     final group = _leadingGroup(groups, preferred);
     if (group == null) return null;
+
     final selected = ref.read(selectedProxyNameProvider(group.name));
-    if (selected?.isNotEmpty == true) return selected;
-    return group.realNow.isEmpty ? null : group.realNow;
+    final rawName = selected?.isNotEmpty == true
+        ? selected
+        : (group.realNow.isEmpty ? null : group.realNow);
+    if (rawName == null || rawName.isEmpty) return null;
+
+    final resolved = ref.read(realSelectedProxyStateProvider(rawName));
+    return resolved.proxyName.isEmpty ? rawName : resolved.proxyName;
   }
 
   void _syncLatencyRoute({
@@ -456,11 +462,20 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     final selectedProxy = currentGroup == null
         ? null
         : ref.watch(selectedProxyNameProvider(currentGroup.name));
-    final currentProxyName = mode == Mode.direct
-        ? 'DIRECT'
-        : selectedProxy?.isNotEmpty == true
+    final rawCurrentProxyName = selectedProxy?.isNotEmpty == true
         ? selectedProxy
         : currentGroup?.realNow;
+    final currentProxyName = mode == Mode.direct
+        ? 'DIRECT'
+        : rawCurrentProxyName == null || rawCurrentProxyName.isEmpty
+        ? null
+        : ref.watch(
+            realSelectedProxyStateProvider(rawCurrentProxyName).select(
+              (state) => state.proxyName.isEmpty
+                  ? rawCurrentProxyName
+                  : state.proxyName,
+            ),
+          );
     final profileId = ref.watch(currentProfileIdProvider);
     final groupMembersSignature = currentGroup?.all
             .map((proxy) => proxy.name)
