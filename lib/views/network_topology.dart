@@ -88,11 +88,13 @@ class _NetworkTopologyViewState extends ConsumerState<NetworkTopologyView> {
           if (!_expandedDetailNodes.add(node.id)) {
             _expandedDetailNodes.remove(node.id);
           }
+          break;
         case _TopologyNodeType.group:
         case _TopologyNodeType.proxy:
           if (!_collapsedSummaryNodes.add(node.id)) {
             _collapsedSummaryNodes.remove(node.id);
           }
+          break;
         case _TopologyNodeType.port:
           break;
       }
@@ -485,7 +487,7 @@ class _TopologyCanvas extends StatelessWidget {
           viewportWidth: constraints.maxWidth,
           isExpanded: isExpanded,
         );
-        final viewportHeight = layout.size.height.clamp(300.0, 460.0);
+        final viewportHeight = layout.size.height.clamp(300.0, 460.0).toDouble();
         return Container(
           height: viewportHeight,
           decoration: BoxDecoration(
@@ -566,11 +568,7 @@ class _TopologyLayout {
     final rawEdges = <(_TopologyNode, _TopologyNode)>[];
     var nextY = paddingY + nodeBoxHeight / 2;
 
-    double visit(
-      _TopologyNode node,
-      int depth, [
-      _TopologyNode? parent,
-    ]) {
+    double visit(_TopologyNode node, int depth) {
       final visibleChildren = isExpanded(node) ? node.children : const <_TopologyNode>[];
       double y;
       if (visibleChildren.isEmpty) {
@@ -579,7 +577,7 @@ class _TopologyLayout {
       } else {
         final childYs = <double>[];
         for (final child in visibleChildren) {
-          childYs.add(visit(child, depth + 1, node));
+          childYs.add(visit(child, depth + 1));
           rawEdges.add((node, child));
         }
         y = (childYs.first + childYs.last) / 2;
@@ -602,17 +600,16 @@ class _TopologyLayout {
 
     final maxWidthPerDepth = <int, double>{};
     for (final entry in entries) {
-      maxWidthPerDepth[entry.depth] = math.max(
-        maxWidthPerDepth[entry.depth] ?? 0,
-        entry.width,
-      );
+      maxWidthPerDepth[entry.depth] = math
+          .max(maxWidthPerDepth[entry.depth] ?? 0.0, entry.width)
+          .toDouble();
     }
 
     final centerX = <int, double>{};
     var cursor = paddingX;
     final maxDepth = maxWidthPerDepth.keys.fold<int>(
       0,
-      (value, depth) => math.max(value, depth),
+      (value, depth) => value > depth ? value : depth,
     );
     for (var depth = 0; depth <= maxDepth; depth++) {
       final width = maxWidthPerDepth[depth] ?? 90;
@@ -660,18 +657,19 @@ class _TopologyLayout {
 
     final contentWidth = positioned.fold<double>(
       paddingX * 2,
-      (value, item) => math.max(
-        value,
-        item.center.dx + item.width / 2 + paddingX,
-      ),
+      (value, item) => math
+          .max(value, item.center.dx + item.width / 2 + paddingX)
+          .toDouble(),
     );
-    final contentHeight = math.max(
-      300.0,
-      nextY + paddingY - rowGap / 2,
-    );
+    final contentHeight = math
+        .max(300.0, nextY + paddingY - rowGap / 2)
+        .toDouble();
 
     return _TopologyLayout(
-      size: Size(math.max(viewportWidth, contentWidth), contentHeight),
+      size: Size(
+        math.max(viewportWidth, contentWidth).toDouble(),
+        contentHeight,
+      ),
       nodes: positioned,
       edges: edges,
     );
@@ -684,7 +682,7 @@ class _TopologyLayout {
   static double _nodeWidth(_TopologyNode node) {
     final textWidth = node.name.runes.length * 7.0;
     final collapseSpace = node.hasChildren ? 24.0 : 0.0;
-    return (textWidth + 28 + collapseSpace).clamp(88.0, 220.0);
+    return (textWidth + 28 + collapseSpace).clamp(88.0, 220.0).toDouble();
   }
 }
 
@@ -749,7 +747,7 @@ class _TopologyLinkPainter extends CustomPainter {
           edge.end.dx,
           edge.end.dy,
         );
-      final width = (edge.connections / 5).clamp(1.0, 4.0);
+      final width = (edge.connections / 5).clamp(1.0, 4.0).toDouble();
       canvas.drawPath(
         path,
         Paint()
