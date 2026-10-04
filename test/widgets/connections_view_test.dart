@@ -72,13 +72,22 @@ void main() {
     await pumpConnections(tester, connectionsReader: () async => connections);
     await tester.pump(const Duration(milliseconds: 50));
 
-    final builtItems = find.byType(TrackerInfoItem).evaluate().length;
-    expect(builtItems, greaterThan(0));
-    expect(builtItems, lessThan(connections.length));
-    expect(find.textContaining('host-0.com'), findsOneWidget);
+    final builtRows = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget.key is ValueKey<String> &&
+              (widget.key! as ValueKey<String>).value.startsWith(
+                'connection-row-',
+              ),
+        )
+        .evaluate()
+        .length;
+    expect(builtRows, greaterThan(0));
+    expect(builtRows, lessThan(connections.length));
+    expect(find.byKey(const Key('connection-row-0')), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.textContaining('host-99.com'),
+      find.byKey(const Key('connection-row-99')),
       800,
       scrollable: find.byWidgetPredicate(
         (widget) =>
@@ -88,7 +97,7 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('host-99.com'), findsOneWidget);
+    expect(find.byKey(const Key('connection-row-99')), findsOneWidget);
     expect(tester.takeException(), null);
 
     await tester.pumpWidget(const SizedBox.shrink());
@@ -168,11 +177,15 @@ void main() {
 
     expect(readCount, 1);
 
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     await tester.pump(const Duration(seconds: 4));
 
     expect(readCount, 1);
 
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pump();
 
