@@ -402,10 +402,16 @@ void main() {
     });
 
     test(
-      'a failed authorization continues on the system proxy and resets',
+      'a failed authorization disables only TUN and resets authorization',
       () async {
         await AppLocalizations.load(const Locale('en'));
         action.authorizeResult = AuthorizeCode.error;
+        container
+            .read(networkSettingProvider.notifier)
+            .update((state) => state.copyWith(systemProxy: false));
+        container
+            .read(patchClashConfigProvider.notifier)
+            .update((state) => state.copyWith.tun(enable: true));
 
         expect(await action.requestAdmin(true), isTrue);
         expect(
@@ -413,7 +419,7 @@ void main() {
           TunAuthorizationState.none,
         );
         expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
-        expect(container.read(networkSettingProvider).systemProxy, isTrue);
+        expect(container.read(networkSettingProvider).systemProxy, isFalse);
       },
     );
   });
