@@ -63,20 +63,29 @@ void main() {
     );
   }
 
-  testWidgets('TUN and the system proxy exclude each other', (tester) async {
+  testWidgets('TUN and the system proxy toggle independently', (
+    tester,
+  ) async {
     await pump(tester, const QuickToggles());
+    expect(route(), (tun: false, systemProxy: true));
 
     await tester.tap(find.text('System proxy'));
     await tester.pump();
-    expect(route(), (tun: false, systemProxy: true));
+    expect(route(), (tun: false, systemProxy: false));
 
     await tester.tap(find.text('TUN'));
-    await tester.pump();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enable'));
+    await tester.pumpAndSettle();
     expect(route(), (tun: true, systemProxy: false));
 
+    await tester.tap(find.text('System proxy'));
+    await tester.pump();
+    expect(route(), (tun: true, systemProxy: true));
+
     await tester.tap(find.text('TUN'));
     await tester.pump();
-    expect(route(), (tun: true, systemProxy: false), reason: 'never both off');
+    expect(route(), (tun: false, systemProxy: true));
   });
 
   testWidgets('the exit IP sits beside the switches and rechecks on tap', (
@@ -111,14 +120,23 @@ void main() {
     expect(find.byType(AdaptiveSheetScaffold), findsOneWidget);
   });
 
-  testWidgets('the sidebar route switch drives the same rule', (tester) async {
-    await pump(tester, const DesktopRouteSwitch());
+  testWidgets('the sidebar route cards are independent', (tester) async {
+    await pump(tester, const DesktopRouteCards());
+    expect(find.byType(Switch), findsNWidgets(2));
+
     await tester.tap(find.text('System proxy'));
-    await tester.pumpAndSettle();
-    expect(route(), (tun: false, systemProxy: true));
+    await tester.pump();
+    expect(route(), (tun: false, systemProxy: false));
+
     await tester.tap(find.text('TUN'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Enable'));
+    await tester.pumpAndSettle();
     expect(route(), (tun: true, systemProxy: false));
+
+    await tester.tap(find.text('System proxy'));
+    await tester.pump();
+    expect(route(), (tun: true, systemProxy: true));
   });
 
   testWidgets('the control center lays out narrow and wide', (tester) async {
