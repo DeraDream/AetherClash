@@ -383,7 +383,23 @@ void main() {
 
     expect(config['dns']['enable'], true);
     expect(config['dns']['nameserver'], isNot(contains('system://')));
-    expect(config['proxy-groups'], hasLength(1));
+    final proxyGroups = config['proxy-groups'] as YamlList;
+    expect(proxyGroups, hasLength(2));
+    expect(
+      proxyGroups.where(
+        (item) => item is YamlMap && item['name'] == 'Select',
+      ),
+      hasLength(1),
+    );
+    expect(
+      proxyGroups.where(
+        (item) =>
+            item is YamlMap &&
+            item['name'] == speedTestGroupName &&
+            item['hidden'] == true,
+      ),
+      hasLength(1),
+    );
     expect(config['rules'], ['DOMAIN,custom.example,DIRECT']);
   });
 

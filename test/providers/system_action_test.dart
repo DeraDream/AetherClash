@@ -350,31 +350,47 @@ void main() {
 
     SystemAction action() => container.read(systemActionProvider.notifier);
 
-    test('useRoute turns on exactly the chosen route', () {
+    test('useRoute enables only the requested control', () {
+      container
+          .read(networkSettingProvider.notifier)
+          .update((state) => state.copyWith(systemProxy: false));
+      container
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: false));
+
       action().useRoute(DesktopRoute.tun);
       expect(route(), (tun: true, systemProxy: false));
+
       action().useRoute(DesktopRoute.systemProxy);
-      expect(route(), (tun: false, systemProxy: true));
+      expect(route(), (tun: true, systemProxy: true));
+
       action().useRoute(DesktopRoute.systemProxy);
-      expect(route(), (tun: false, systemProxy: true));
+      expect(route(), (tun: true, systemProxy: true));
     });
 
-    test('a fresh install starts on TUN once reconciled', () {
+    test('reconcile never forces a route on a fresh install', () {
       container
           .read(networkSettingProvider.notifier)
           .update((_) => defaultNetworkProps);
       expect(route(), (tun: false, systemProxy: false));
+
       action().reconcileRoute();
-      expect(route(), (tun: true, systemProxy: false));
+      expect(route(), (tun: false, systemProxy: false));
     });
 
-    test('flipping one route through its own setting moves the other', () {
-      action().useRoute(DesktopRoute.tun);
+    test('changing one route never moves the other', () {
+      container
+          .read(networkSettingProvider.notifier)
+          .update((state) => state.copyWith(systemProxy: false));
+      container
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: true));
+
       container
           .read(networkSettingProvider.notifier)
           .update((state) => state.copyWith(systemProxy: true));
       action().reconcileRoute(changed: DesktopRoute.systemProxy);
-      expect(route(), (tun: false, systemProxy: true));
+      expect(route(), (tun: true, systemProxy: true));
 
       action().updateSystemProxy();
       action().reconcileRoute(changed: DesktopRoute.systemProxy);
