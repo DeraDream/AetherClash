@@ -354,6 +354,11 @@ class SetupAction extends _$SetupAction {
     if (scriptContent?.isNotEmpty == true) {
       rawConfig = await handleEvaluate(scriptContent!, rawConfig);
     }
+    final snifferConfig = await preferences.getSnifferConfig();
+    rawConfig = {
+      ...rawConfig,
+      'sniffer': snifferConfig.toJson(),
+    };
     final directory = await appPath.profilesPath;
     final res = makeRealProfileTask(
       MakeRealProfileState(

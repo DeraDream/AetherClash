@@ -11,6 +11,7 @@ import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/views/config/config.dart';
 import 'package:fl_clash/views/hotkey.dart';
 import 'package:fl_clash/views/resources.dart';
+import 'package:fl_clash/views/sniffer.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,6 +88,17 @@ class _ToolsBoard extends ConsumerWidget {
             title: appLocalizations.basicConfig,
             subtitle: appLocalizations.basicConfigDesc,
             page: const ConfigView(),
+          ),
+          _SettingTile.page(
+            icon: Icons.manage_search_rounded,
+            tone: GlassTone.teal,
+            title: Localizations.localeOf(context).languageCode == 'zh'
+                ? '流量嗅探'
+                : 'Sniffer',
+            subtitle: Localizations.localeOf(context).languageCode == 'zh'
+                ? 'HTTP / TLS / QUIC 与嗅探规则'
+                : 'HTTP / TLS / QUIC and sniff rules',
+            page: const SnifferView(),
           ),
           _SettingTile.page(
             icon: Icons.build_outlined,

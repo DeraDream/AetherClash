@@ -151,6 +151,35 @@ class Preferences {
     await sharedPreferencesIns?.setString(bootRecordKey, json.encode(record));
   }
 
+  Future<Sniffer> getSnifferConfig() async {
+    try {
+      final sharedPreferencesIns = await sharedPreferencesCompleter.future;
+      final raw = sharedPreferencesIns?.getString('snifferConfig');
+      if (raw == null || raw.isEmpty) {
+        return const Sniffer();
+      }
+      final decoded = json.decode(raw);
+      if (decoded is! Map) {
+        return const Sniffer();
+      }
+      return Sniffer.fromJson(Map<String, Object?>.from(decoded));
+    } catch (e) {
+      commonPrint.log(
+        'getSnifferConfig error ${e.toString()}',
+        logLevel: LogLevel.warning,
+      );
+      return const Sniffer();
+    }
+  }
+
+  Future<void> saveSnifferConfig(Sniffer config) async {
+    final sharedPreferencesIns = await sharedPreferencesCompleter.future;
+    await sharedPreferencesIns?.setString(
+      'snifferConfig',
+      json.encode(config.toJson()),
+    );
+  }
+
   Future<void> clearPreferences() async {
     final sharedPreferencesIns = await sharedPreferencesCompleter.future;
     await sharedPreferencesIns?.clear();

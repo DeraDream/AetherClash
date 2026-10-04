@@ -20,6 +20,7 @@ class EditorPage extends ConsumerStatefulWidget {
   final List<Language> languages;
   final bool supportRemoteDownload;
   final bool titleEditable;
+  final List<Widget> actions;
   final Function(BuildContext context, String title, String content)? onSave;
   final Future<bool> Function(
     BuildContext context,
@@ -37,6 +38,7 @@ class EditorPage extends ConsumerStatefulWidget {
     this.onPop,
     this.supportRemoteDownload = false,
     this.languages = const [Language.yaml],
+    this.actions = const [],
   });
 
   @override
@@ -185,6 +187,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
             enabled: widget.titleEditable,
           ),
           actions: genActions([
+            ...widget.actions,
             if (!readOnly)
               _EditorSaveAction(
                 controller: _controller,

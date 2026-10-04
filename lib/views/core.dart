@@ -5,6 +5,7 @@ import 'package:fl_clash/core/desktop/core_manifest.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/views/runtime_config.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -207,6 +208,20 @@ class CoreView extends ConsumerWidget {
                           onTap: status == CoreStatus.connecting
                               ? null
                               : () => _handleCoreAction(context, ref, status),
+                        ),
+                        const Divider(height: 0.5, indent: 58),
+                        _CoreActionRow(
+                          icon: Icons.code_rounded,
+                          title: Localizations.localeOf(context).languageCode == 'zh'
+                              ? '运行时配置'
+                              : 'Runtime config',
+                          subtitle: Localizations.localeOf(context).languageCode == 'zh'
+                              ? '查看最终送入 mihomo 的 YAML 配置'
+                              : 'View the final YAML passed to mihomo',
+                          onTap: () => BaseNavigator.push(
+                            context,
+                            const RuntimeConfigView(),
+                          ),
                         ),
                         const Divider(height: 0.5, indent: 58),
                         _CoreActionRow(
