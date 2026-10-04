@@ -253,7 +253,7 @@ try {
     ('/DIR=' + \$installDir),
     ('/LOG=' + \$logPath)
   )
-  \$installerProcess = Start-Process -FilePath \$installer -ArgumentList \$installerArgs -Wait -PassThru
+  \$installerProcess = Start-Process -FilePath \$installer -ArgumentList \$installerArgs -WindowStyle Hidden -Wait -PassThru
   \$installerExitCode = \$installerProcess.ExitCode
   Write-UpdateLog ("Installer exit code: " + \$installerExitCode)
   if (\$installerExitCode -ne 0) {
@@ -288,11 +288,13 @@ try {
   Start-Sleep -Milliseconds 250
   Remove-Item -LiteralPath \$updateRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
+exit 0
 ''');
 
     final launched = elevate(
       'powershell.exe',
-      '-NoLogo -NoProfile -ExecutionPolicy Bypass -File '
+      '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden '
+          '-ExecutionPolicy Bypass -File '
           '${_windowsCommandQuote(script.path)}',
     );
     if (!launched) {

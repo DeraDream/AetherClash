@@ -174,7 +174,7 @@ class _NavigationPage extends StatelessWidget {
       child: isMobile
           ? scopedView
           : Navigator(
-              key: ValueKey('${item.label.name}_navigator'),
+              key: workspaceNavigatorKey(item.label),
               pages: [MaterialPage(child: scopedView)],
               onDidRemovePage: (_) {},
             ),

@@ -260,6 +260,18 @@ class Windows {
   }
 
   bool runas(String command, String arguments) {
+    return _runas(command, arguments, showWindow: true);
+  }
+
+  bool runasHidden(String command, String arguments) {
+    return _runas(command, arguments, showWindow: false);
+  }
+
+  bool _runas(
+    String command,
+    String arguments, {
+    required bool showWindow,
+  }) {
     final commandPtr = command.toNativeUtf16();
     final argumentsPtr = arguments.toNativeUtf16();
     final operationPtr = 'runas'.toNativeUtf16();
@@ -290,7 +302,7 @@ class Windows {
       commandPtr,
       argumentsPtr,
       nullptr,
-      1,
+      showWindow ? 1 : 0,
     );
 
     calloc.free(commandPtr);
@@ -298,7 +310,8 @@ class Windows {
     calloc.free(operationPtr);
 
     commonPrint.log(
-      'windows runas: $command $arguments resultCode:$result',
+      'windows runas(showWindow: $showWindow): '
+      '$command $arguments resultCode:$result',
       logLevel: LogLevel.warning,
     );
 

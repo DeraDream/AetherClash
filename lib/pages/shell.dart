@@ -409,11 +409,15 @@ class _SidebarFooter extends ConsumerWidget {
 
   void _openNetworkInfo(WidgetRef ref) {
     final pageLabel = ref.read(currentPageLabelProvider);
-    final workspaceContext = GlobalObjectKey(pageLabel).currentContext;
-    if (workspaceContext == null) {
+    final navigator = workspaceNavigatorKey(pageLabel).currentState;
+    if (navigator == null) {
       return;
     }
-    BaseNavigator.push(workspaceContext, const NetworkInfoView());
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => const NetworkInfoView(),
+      ),
+    );
   }
 
   @override

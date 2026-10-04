@@ -1,7 +1,20 @@
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/widgets/glass.dart';
 import 'package:material_ui/material_ui.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+final Map<PageLabel, GlobalKey<NavigatorState>> _workspaceNavigatorKeys = {};
+
+/// Stable nested navigator for each non-mobile workspace page.
+GlobalKey<NavigatorState> workspaceNavigatorKey(PageLabel label) {
+  return _workspaceNavigatorKeys.putIfAbsent(
+    label,
+    () => GlobalKey<NavigatorState>(
+      debugLabel: '${label.name}_workspace_navigator',
+    ),
+  );
+}
 
 /// Android animates pages along with the predictive back gesture; the other
 /// platforms use the fade-forwards transition it falls back to, with a clear
