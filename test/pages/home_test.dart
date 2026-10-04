@@ -118,7 +118,7 @@ void main() {
 
     final initialPage = container.read(currentPageLabelProvider);
     await tester.tap(find.byTooltip('Network info'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
 
     expect(find.byType(NetworkInfoView), findsOneWidget);
     expect(container.read(currentPageLabelProvider), initialPage);
@@ -141,14 +141,14 @@ void main() {
     expect(find.text('page:tools').hitTestable(), findsOneWidget);
 
     await tester.tap(find.byTooltip('Network info'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
     expect(find.byType(NetworkInfoView), findsOneWidget);
     expect(container.read(currentPageLabelProvider), PageLabel.tools);
 
     // Tapping the already-selected underlying page must still close the
     // independent network-info surface and restore that page immediately.
     await tester.tap(settings);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 250));
     expect(find.byType(NetworkInfoView), findsNothing);
     expect(find.text('page:tools').hitTestable(), findsOneWidget);
     expect(container.read(currentPageLabelProvider), PageLabel.tools);

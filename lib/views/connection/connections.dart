@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
+import 'package:fl_clash/core/event.dart';
 import 'package:fl_clash/core/method.dart';
 import 'package:fl_clash/features/features.dart';
 import 'package:fl_clash/models/models.dart';
@@ -35,7 +36,10 @@ class ConnectionsView extends ConsumerStatefulWidget {
 }
 
 class _ConnectionsViewState extends ConsumerState<ConnectionsView>
-    with WidgetsBindingObserver, ActivePollingMixin<ConnectionsView> {
+    with
+        WidgetsBindingObserver,
+        ActivePollingMixin<ConnectionsView>,
+        CoreEventListener {
   CoreController get _core => ref.read(coreHandlerProvider);
 
   final ScrollController _scrollController = ScrollController();
@@ -49,9 +53,29 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   String _query = '';
   List<String> _keywords = const [];
   DateTime? _lastSnapshotAt;
+  Timer? _requestRefreshTimer;
 
   @override
   Duration get pollInterval => const Duration(milliseconds: 500);
+
+  @override
+  void initState() {
+    super.initState();
+    coreEventManager.addListener(this);
+  }
+
+  @override
+  void onRequest(TrackerInfo connection) {
+    // The core already emits a request event as soon as a connection appears.
+    // Use it to wake the snapshot reader immediately; the 500ms poll remains
+    // responsible for speed deltas and detecting closed connections.
+    _requestRefreshTimer ??= Timer(const Duration(milliseconds: 80), () {
+      _requestRefreshTimer = null;
+      if (mounted) {
+        unawaited(_refreshConnections());
+      }
+    });
+  }
 
   String _text(String zh, String en) {
     return Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
@@ -194,20 +218,16 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
 
     final result = List<TrackerInfo>.from(filtered);
     result.sort((a, b) {
-      int comparison;
-      switch (_order) {
-        case _ConnectionOrder.time:
-          // Clash Party calls this "asc": newest first.
-          comparison = b.start.compareTo(a.start);
-        case _ConnectionOrder.upload:
-          comparison = a.upload.compareTo(b.upload);
-        case _ConnectionOrder.download:
-          comparison = a.download.compareTo(b.download);
-        case _ConnectionOrder.uploadSpeed:
-          comparison = (a.uploadSpeed ?? 0).compareTo(b.uploadSpeed ?? 0);
-        case _ConnectionOrder.downloadSpeed:
-          comparison = (a.downloadSpeed ?? 0).compareTo(b.downloadSpeed ?? 0);
-      }
+      final comparison = switch (_order) {
+        // Clash Party calls this "asc": newest first.
+        _ConnectionOrder.time => b.start.compareTo(a.start),
+        _ConnectionOrder.upload => a.upload.compareTo(b.upload),
+        _ConnectionOrder.download => a.download.compareTo(b.download),
+        _ConnectionOrder.uploadSpeed =>
+          (a.uploadSpeed ?? 0).compareTo(b.uploadSpeed ?? 0),
+        _ConnectionOrder.downloadSpeed =>
+          (a.downloadSpeed ?? 0).compareTo(b.downloadSpeed ?? 0),
+      };
       return _ascending ? comparison : -comparison;
     });
     return result;
@@ -344,7 +364,8 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
                 ),
                 if (_tab == _ConnectionTab.active)
                   Text(
-                    activeTraffic.speedText.replaceAll('/s', ''),
+                    '↑ ${activeTraffic.up.traffic.show}   '
+                    '↓ ${activeTraffic.down.traffic.show}',
                     style: context.textTheme.bodySmall?.copyWith(
                       color: context.colorScheme.onSurfaceVariant,
                     ),
@@ -419,6 +440,8 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
 
   @override
   void dispose() {
+    coreEventManager.removeListener(this);
+    _requestRefreshTimer?.cancel();
     _cachedClosedConnections = List.unmodifiable(_closedConnections);
     _scrollController.dispose();
     super.dispose();
