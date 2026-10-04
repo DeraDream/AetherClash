@@ -90,11 +90,10 @@ void main() {
       matching: find.byType(Scrollable),
     );
     expect(verticalScrollable, findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('connection-row-0')),
-      1200,
-      scrollable: verticalScrollable,
-    );
+    final position = tester
+        .state<ScrollableState>(verticalScrollable)
+        .position;
+    position.jumpTo(position.maxScrollExtent);
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('connection-row-0')), findsOneWidget);
