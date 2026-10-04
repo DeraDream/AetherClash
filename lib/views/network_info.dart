@@ -4,6 +4,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/views/network_topology.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,43 +107,9 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     return request.ipInfoSourceLabels[source] ?? source;
   }
 
-  _RouteSummary _routeSummary(WidgetRef ref) {
-    final mode = ref.watch(
-      patchClashConfigProvider.select((state) => state.mode),
-    );
-    if (mode == Mode.direct) {
-      return const _RouteSummary(label: 'DIRECT', direct: true);
-    }
-
-    final groups = ref.watch(currentGroupsStateProvider).value;
-    final preferred = ref.watch(
-      currentProfileProvider.select((state) => state?.currentGroupName),
-    );
-    Group? group;
-    if (preferred != null) {
-      for (final item in groups) {
-        if (item.name == preferred) {
-          group = item;
-          break;
-        }
-      }
-    }
-    group ??= groups.isEmpty ? null : groups.first;
-    if (group == null) {
-      return _RouteSummary(label: mode.label, direct: false);
-    }
-    final selected = ref.watch(selectedProxyNameProvider(group.name));
-    return _RouteSummary(
-      label: selected == null || selected.isEmpty ? group.name : selected,
-      direct: false,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final detection = ref.watch(networkDetectionProvider);
-    final localIp = ref.watch(localIpProvider);
-    final route = _routeSummary(ref);
     final usingAutoSource = _selectedIpSource == _autoSource;
     final publicIp = usingAutoSource ? detection.ipInfo : _sourceIpInfo;
     final ipLoading = usingAutoSource
@@ -210,42 +177,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
             title: _text(context, '网络拓扑', 'Network topology'),
             icon: Icons.hub_rounded,
             tone: GlassTone.success,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final nodes = [
-                  _TopologyData(
-                    icon: Icons.devices_rounded,
-                    title: _text(context, '本机', 'Device'),
-                    subtitle: (localIp == null || localIp.isEmpty)
-                        ? '—'
-                        : localIp,
-                  ),
-                  const _TopologyData(
-                    icon: Icons.route_rounded,
-                    title: 'AetherClash',
-                    subtitle: 'mihomo',
-                  ),
-                  _TopologyData(
-                    icon: route.direct
-                        ? Icons.arrow_forward_rounded
-                        : Icons.cloud_queue_rounded,
-                    title: route.label,
-                    subtitle: route.direct
-                        ? _text(context, '直连', 'Direct')
-                        : _text(context, '当前出口', 'Current route'),
-                  ),
-                  _TopologyData(
-                    icon: Icons.language_rounded,
-                    title: publicIp?.ip ?? '—',
-                    subtitle:
-                        publicIp?.countryCode ?? _text(context, '公网', 'Internet'),
-                  ),
-                ];
-                return constraints.maxWidth >= 720
-                    ? _HorizontalTopology(nodes: nodes)
-                    : _VerticalTopology(nodes: nodes);
-              },
-            ),
+            child: const NetworkTopologyView(),
           ),
           const SizedBox(height: 14),
           _SectionCard(
@@ -393,13 +325,6 @@ class _LatencyTarget {
   final String url;
 }
 
-class _RouteSummary {
-  const _RouteSummary({required this.label, required this.direct});
-
-  final String label;
-  final bool direct;
-}
-
 class _SectionCard extends StatelessWidget {
   const _SectionCard({
     required this.title,
@@ -512,108 +437,6 @@ class _IpRow extends StatelessWidget {
               icon: const Icon(Icons.copy_rounded, size: 17),
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _TopologyData {
-  const _TopologyData({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-}
-
-class _HorizontalTopology extends StatelessWidget {
-  const _HorizontalTopology({required this.nodes});
-
-  final List<_TopologyData> nodes;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (final (index, node) in nodes.indexed) ...[
-          Expanded(child: _TopologyNode(data: node)),
-          if (index != nodes.length - 1)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(Icons.arrow_forward_rounded, size: 18),
-            ),
-        ],
-      ],
-    );
-  }
-}
-
-class _VerticalTopology extends StatelessWidget {
-  const _VerticalTopology({required this.nodes});
-
-  final List<_TopologyData> nodes;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (final (index, node) in nodes.indexed) ...[
-          _TopologyNode(data: node),
-          if (index != nodes.length - 1)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 6),
-              child: Icon(Icons.arrow_downward_rounded, size: 18),
-            ),
-        ],
-      ],
-    );
-  }
-}
-
-class _TopologyNode extends StatelessWidget {
-  const _TopologyNode({required this.data});
-
-  final _TopologyData data;
-
-  @override
-  Widget build(BuildContext context) {
-    final glass = context.glass;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 74),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: glass.fill.withValues(alpha: glass.isDark ? 0.62 : 0.78),
-        borderRadius: AppRadius.all(10),
-        border: Border.all(color: glass.separator.withValues(alpha: 0.50)),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(data.icon, size: 20, color: context.colorScheme.primary),
-          const SizedBox(height: 5),
-          Text(
-            data.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: context.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            data.subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: glass.secondaryLabel,
-            ),
-          ),
         ],
       ),
     );
