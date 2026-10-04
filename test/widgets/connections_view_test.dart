@@ -83,10 +83,10 @@ void main() {
         .length;
     expect(builtRows, greaterThan(0));
     expect(builtRows, lessThan(connections.length));
-    expect(find.byKey(const Key('connection-row-0')), findsOneWidget);
+    expect(find.byKey(const Key('connection-row-99')), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.byKey(const Key('connection-row-99')),
+      find.byKey(const Key('connection-row-0')),
       800,
       scrollable: find.byWidgetPredicate(
         (widget) =>
@@ -96,7 +96,7 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const Key('connection-row-99')), findsOneWidget);
+    expect(find.byKey(const Key('connection-row-0')), findsOneWidget);
     expect(tester.takeException(), null);
 
     await tester.pumpWidget(const SizedBox.shrink());
