@@ -105,6 +105,10 @@ void main() {
 
         await tester.tap(find.byType(Switch));
         await tester.pumpAndSettle();
+        if (testCase.widget is TUNItem && !testCase.initial) {
+          await tester.tap(find.text('Enable'));
+          await tester.pumpAndSettle();
+        }
         expect(testCase.read(container), !testCase.initial);
 
         await tester.tap(find.byType(Switch));
