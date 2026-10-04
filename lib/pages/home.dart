@@ -91,11 +91,14 @@ class _GlassShellState extends ConsumerState<_GlassShell> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              ExcludeFocus(
-                excluding: _networkInfoOpen,
-                child: IgnorePointer(
-                  ignoring: _networkInfoOpen,
-                  child: widget.child,
+              Offstage(
+                offstage: _networkInfoOpen,
+                child: ExcludeFocus(
+                  excluding: _networkInfoOpen,
+                  child: IgnorePointer(
+                    ignoring: _networkInfoOpen,
+                    child: widget.child,
+                  ),
                 ),
               ),
               if (_networkInfoOpen) const NetworkInfoView(),

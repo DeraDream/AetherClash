@@ -146,6 +146,11 @@ void main() {
     await tester.tap(find.byTooltip('Network info'));
     await tester.pump(const Duration(milliseconds: 250));
     expect(find.byType(NetworkInfoView), findsOneWidget);
+    expect(
+      find.text('page:tools'),
+      findsNothing,
+      reason: 'the selected workspace must not paint below network info',
+    );
     expect(container.read(currentPageLabelProvider), PageLabel.tools);
 
     // Tapping the already-selected underlying page must still close the

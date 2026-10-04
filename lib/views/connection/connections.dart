@@ -14,17 +14,56 @@ import 'package:material_ui/material_ui.dart';
 
 enum _ConnectionTab { active, closed }
 
-enum _ConnectionOrder {
-  time,
-  upload,
-  download,
+enum _ConnectionColumn {
+  status,
+  establishTime,
+  connectionType,
+  host,
+  process,
+  rule,
+  proxyChain,
   uploadSpeed,
   downloadSpeed,
+  upload,
+  download,
+  remoteDestination,
 }
+
+class _ColumnSpec {
+  final _ConnectionColumn column;
+  final double width;
+
+  const _ColumnSpec(this.column, this.width);
+}
+
+const _connectionColumns = <_ColumnSpec>[
+  _ColumnSpec(_ConnectionColumn.status, 88),
+  _ColumnSpec(_ConnectionColumn.establishTime, 126),
+  _ColumnSpec(_ConnectionColumn.connectionType, 112),
+  _ColumnSpec(_ConnectionColumn.host, 220),
+  _ColumnSpec(_ConnectionColumn.process, 160),
+  _ColumnSpec(_ConnectionColumn.rule, 190),
+  _ColumnSpec(_ConnectionColumn.proxyChain, 240),
+  _ColumnSpec(_ConnectionColumn.uploadSpeed, 118),
+  _ColumnSpec(_ConnectionColumn.downloadSpeed, 118),
+  _ColumnSpec(_ConnectionColumn.upload, 108),
+  _ColumnSpec(_ConnectionColumn.download, 108),
+  _ColumnSpec(_ConnectionColumn.remoteDestination, 220),
+];
+
+const _actionColumnWidth = 52.0;
+const _minimumColumnWidth = 64.0;
 
 // Match Clash Party's page-level cache: recently closed entries remain when
 // the user leaves Activity and comes back, but never grow without bounds.
 List<TrackerInfo> _cachedClosedConnections = const [];
+String _cachedConnectionFilter = '';
+_ConnectionColumn _cachedSortColumn = _ConnectionColumn.establishTime;
+bool _cachedSortDescending = true;
+Set<_ConnectionColumn> _cachedVisibleColumns = {
+  for (final spec in _connectionColumns) spec.column,
+};
+Map<_ConnectionColumn, double> _cachedColumnWidths = {};
 
 class ConnectionsView extends ConsumerStatefulWidget {
   final Future<List<TrackerInfo>> Function()? connectionsReader;
@@ -42,19 +81,23 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         CoreEventListener {
   CoreController get _core => ref.read(coreHandlerProvider);
 
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
+  final ScrollController _horizontalController = ScrollController();
+  late final TextEditingController _filterController;
   final Map<String, TrackerInfo> _previousActive = {};
+  late final Map<_ConnectionColumn, double> _columnWidths;
+  late final Set<_ConnectionColumn> _visibleColumns;
 
   List<TrackerInfo> _activeConnections = const [];
   List<TrackerInfo> _closedConnections = List.of(_cachedClosedConnections);
   _ConnectionTab _tab = _ConnectionTab.active;
-  _ConnectionOrder _order = _ConnectionOrder.time;
-  bool _ascending = true;
-  String _query = '';
-  List<String> _keywords = const [];
+  _ConnectionColumn _sortColumn = _cachedSortColumn;
+  bool _sortDescending = _cachedSortDescending;
+  bool _trackingPaused = false;
+  bool _resetSpeedBaseline = false;
+  String _query = _cachedConnectionFilter;
   DateTime? _lastSnapshotAt;
   Timer? _requestRefreshTimer;
-  late final AppBarSearchState _searchState;
 
   @override
   Duration get pollInterval => const Duration(milliseconds: 500);
@@ -62,23 +105,20 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   @override
   void initState() {
     super.initState();
-    _searchState = AppBarSearchState(onSearch: _handleSearch);
+    _filterController = TextEditingController(text: _query);
+    _columnWidths = Map.of(_cachedColumnWidths);
+    _visibleColumns = Set.of(_cachedVisibleColumns);
     coreEventManager.addListener(this);
-  }
-
-  void _handleSearch(String query) {
-    if (!mounted) return;
-    setState(() => _query = query);
   }
 
   @override
   void onRequest(TrackerInfo connection) {
-    // The core already emits a request event as soon as a connection appears.
-    // Use it to wake the snapshot reader immediately; the 500ms poll remains
-    // responsible for speed deltas and detecting closed connections.
+    if (_trackingPaused) return;
+    // Core request events wake the snapshot immediately. The 500 ms polling
+    // remains responsible for speed deltas and closed-connection detection.
     _requestRefreshTimer ??= Timer(const Duration(milliseconds: 80), () {
       _requestRefreshTimer = null;
-      if (mounted) {
+      if (mounted && !_trackingPaused) {
         unawaited(_refreshConnections());
       }
     });
@@ -90,16 +130,18 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
 
   @override
   Future<void> poll(PollGuard isCurrent) async {
+    if (_trackingPaused) return;
     final trackerInfos = await _readConnections();
-    if (trackerInfos == null || !isCurrent()) {
+    if (trackerInfos == null || !isCurrent() || _trackingPaused) {
       return;
     }
     _applyConnections(trackerInfos);
   }
 
   Future<void> _refreshConnections() async {
+    if (_trackingPaused) return;
     final trackerInfos = await _readConnections();
-    if (trackerInfos == null || !mounted) {
+    if (trackerInfos == null || !mounted || _trackingPaused) {
       return;
     }
     _applyConnections(trackerInfos);
@@ -131,8 +173,6 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     final currentIds = snapshot.map((item) => item.id).toSet();
     final closed = List<TrackerInfo>.from(_closedConnections);
 
-    // Anything that existed in the previous snapshot but no longer exists is
-    // moved to Closed, preserving its last counters exactly like Clash Party.
     for (final previous in _previousActive.values) {
       if (currentIds.contains(previous.id)) continue;
       closed.removeWhere((item) => item.id == previous.id);
@@ -146,10 +186,10 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     final nextPrevious = <String, TrackerInfo>{};
     for (final current in snapshot) {
       final previous = _previousActive[current.id];
-      final downloadDelta = previous == null
+      final downloadDelta = previous == null || _resetSpeedBaseline
           ? 0
           : (current.download - previous.download).clamp(0, 1 << 62);
-      final uploadDelta = previous == null
+      final uploadDelta = previous == null || _resetSpeedBaseline
           ? 0
           : (current.upload - previous.upload).clamp(0, 1 << 62);
       final downloadSpeed = (downloadDelta * 1000 / elapsedMs).round();
@@ -160,8 +200,6 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       );
       active.add(withSpeed);
       nextPrevious[current.id] = withSpeed;
-
-      // A reused/reconnected id must not appear in both tabs.
       closed.removeWhere((item) => item.id == current.id);
     }
 
@@ -172,6 +210,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     _previousActive
       ..clear()
       ..addAll(nextPrevious);
+    _resetSpeedBaseline = false;
     _cachedClosedConnections = List.unmodifiable(closed);
 
     if (!mounted) return;
@@ -212,40 +251,131 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         ? _activeConnections
         : _closedConnections;
     final query = _query.trim().toLowerCase();
-    final keywords = _keywords
-        .map((item) => item.trim().toLowerCase())
-        .where((item) => item.isNotEmpty)
+    final result = source
+        .where(
+          (connection) =>
+              query.isEmpty || _searchBlob(connection).contains(query),
+        )
         .toList(growable: false);
 
-    final filtered = source.where((connection) {
-      final blob = _searchBlob(connection);
-      if (query.isNotEmpty && !blob.contains(query)) return false;
-      return keywords.every(blob.contains);
-    }).toList(growable: false);
-
-    final result = List<TrackerInfo>.from(filtered);
     result.sort((a, b) {
-      var comparison = switch (_order) {
-        // Clash Party calls this "asc": newest first.
-        _ConnectionOrder.time => b.start.compareTo(a.start),
-        _ConnectionOrder.upload => a.upload.compareTo(b.upload),
-        _ConnectionOrder.download => a.download.compareTo(b.download),
-        _ConnectionOrder.uploadSpeed =>
-          (a.uploadSpeed ?? 0).compareTo(b.uploadSpeed ?? 0),
-        _ConnectionOrder.downloadSpeed =>
-          (a.downloadSpeed ?? 0).compareTo(b.downloadSpeed ?? 0),
-      };
+      final comparison = _compareByColumn(a, b, _sortColumn);
       if (comparison == 0) {
-        comparison = a.id.compareTo(b.id);
+        return _sortDescending
+            ? b.id.compareTo(a.id)
+            : a.id.compareTo(b.id);
       }
-      return _ascending ? comparison : -comparison;
+      return _sortDescending ? -comparison : comparison;
     });
     return result;
   }
 
+  int _compareByColumn(
+    TrackerInfo a,
+    TrackerInfo b,
+    _ConnectionColumn column,
+  ) {
+    switch (column) {
+      case _ConnectionColumn.status:
+        final aStatus = _tab == _ConnectionTab.active ? 1 : 0;
+        final bStatus = _tab == _ConnectionTab.active ? 1 : 0;
+        return aStatus.compareTo(bStatus);
+      case _ConnectionColumn.establishTime:
+        return a.start.compareTo(b.start);
+      case _ConnectionColumn.connectionType:
+        return a.metadata.network.toLowerCase().compareTo(
+          b.metadata.network.toLowerCase(),
+        );
+      case _ConnectionColumn.host:
+        return _hostText(a).toLowerCase().compareTo(_hostText(b).toLowerCase());
+      case _ConnectionColumn.process:
+        return a.metadata.process.toLowerCase().compareTo(
+          b.metadata.process.toLowerCase(),
+        );
+      case _ConnectionColumn.rule:
+        return _ruleText(a).toLowerCase().compareTo(_ruleText(b).toLowerCase());
+      case _ConnectionColumn.proxyChain:
+        return _proxyChainText(a).toLowerCase().compareTo(
+          _proxyChainText(b).toLowerCase(),
+        );
+      case _ConnectionColumn.uploadSpeed:
+        return (a.uploadSpeed ?? 0).compareTo(b.uploadSpeed ?? 0);
+      case _ConnectionColumn.downloadSpeed:
+        return (a.downloadSpeed ?? 0).compareTo(b.downloadSpeed ?? 0);
+      case _ConnectionColumn.upload:
+        return a.upload.compareTo(b.upload);
+      case _ConnectionColumn.download:
+        return a.download.compareTo(b.download);
+      case _ConnectionColumn.remoteDestination:
+        return _remoteDestinationText(a).toLowerCase().compareTo(
+          _remoteDestinationText(b).toLowerCase(),
+        );
+    }
+  }
+
+  String _hostText(TrackerInfo connection) {
+    final host = connection.metadata.host;
+    return host.isNotEmpty ? host : connection.metadata.destinationIP;
+  }
+
+  String _ruleText(TrackerInfo connection) {
+    final payload = connection.rulePayload;
+    return payload.isEmpty ? connection.rule : '${connection.rule}($payload)';
+  }
+
+  String _proxyChainText(TrackerInfo connection) {
+    return connection.chains.reversed.join(' → ');
+  }
+
+  String _remoteDestinationText(TrackerInfo connection) {
+    final metadata = connection.metadata;
+    if (metadata.remoteDestination.isNotEmpty) {
+      return metadata.remoteDestination;
+    }
+    if (metadata.destinationIP.isEmpty) return '-';
+    if (metadata.destinationPort.isEmpty) return metadata.destinationIP;
+    return '${metadata.destinationIP}:${metadata.destinationPort}';
+  }
+
+  void _sortBy(_ConnectionColumn column) {
+    setState(() {
+      if (_sortColumn == column) {
+        _sortDescending = !_sortDescending;
+      } else {
+        _sortColumn = column;
+        // User-requested Clash Party behavior: every newly selected column
+        // starts high-to-low, then a second click toggles to ascending.
+        _sortDescending = true;
+      }
+      _cachedSortColumn = _sortColumn;
+      _cachedSortDescending = _sortDescending;
+    });
+  }
+
+  void _toggleTracking() {
+    final resume = _trackingPaused;
+    setState(() => _trackingPaused = !_trackingPaused);
+    _requestRefreshTimer?.cancel();
+    _requestRefreshTimer = null;
+    if (resume) {
+      // A long pause must not be interpreted as one giant 500 ms speed delta.
+      _resetSpeedBaseline = true;
+      _lastSnapshotAt = null;
+      // ActivePollingMixin polls immediately on start, so this both resumes
+      // the 500 ms loop and refreshes the current snapshot once.
+      restartPolling();
+    } else {
+      // Match Clash Party unsubscribe behavior: pause means no background
+      // connection snapshots are read until the user resumes tracking.
+      stopPolling();
+    }
+  }
+
   Future<void> _closeConnection(String id) async {
     await _core.closeConnection(id);
-    await _refreshConnections();
+    if (!_trackingPaused) {
+      await _refreshConnections();
+    }
   }
 
   Future<void> _closeVisible(List<TrackerInfo> visible) async {
@@ -260,16 +390,19 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       return;
     }
 
-    final filtering = _query.trim().isNotEmpty || _keywords.isNotEmpty;
-    if (!filtering) {
+    if (_query.trim().isEmpty) {
       await _core.closeConnections();
-      await _refreshConnections();
+      if (!_trackingPaused) {
+        await _refreshConnections();
+      }
       return;
     }
     await Future.wait([
       for (final connection in visible) _core.closeConnection(connection.id),
     ]);
-    await _refreshConnections();
+    if (!_trackingPaused) {
+      await _refreshConnections();
+    }
   }
 
   void _removeClosed(String id) {
@@ -281,170 +414,470 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     });
   }
 
-  String _orderLabel(_ConnectionOrder order) => switch (order) {
-    _ConnectionOrder.time => _text('时间', 'Time'),
-    _ConnectionOrder.upload => _text('上传总量', 'Upload amount'),
-    _ConnectionOrder.download => _text('下载总量', 'Download amount'),
-    _ConnectionOrder.uploadSpeed => _text('上传速度', 'Upload speed'),
-    _ConnectionOrder.downloadSpeed => _text('下载速度', 'Download speed'),
+  String _columnLabel(_ConnectionColumn column) => switch (column) {
+    _ConnectionColumn.status => _text('状态', 'Status'),
+    _ConnectionColumn.establishTime => _text('连接建立时间', 'Established'),
+    _ConnectionColumn.connectionType => _text('连接类型', 'Type'),
+    _ConnectionColumn.host => _text('主机', 'Host'),
+    _ConnectionColumn.process => _text('进程名', 'Process'),
+    _ConnectionColumn.rule => _text('规则', 'Rule'),
+    _ConnectionColumn.proxyChain => _text('代理链', 'Proxy chain'),
+    _ConnectionColumn.uploadSpeed => _text('上传速度', 'Upload speed'),
+    _ConnectionColumn.downloadSpeed => _text('下载速度', 'Download speed'),
+    _ConnectionColumn.upload => _text('上传量', 'Upload'),
+    _ConnectionColumn.download => _text('下载量', 'Download'),
+    _ConnectionColumn.remoteDestination => _text('远程目标', 'Remote target'),
   };
 
-  Widget _buildToolbar(List<TrackerInfo> visible) {
-    final activeTraffic = Traffic(
-      up: _activeConnections.fold<int>(
-        0,
-        (sum, item) => sum + item.upload,
-      ),
-      down: _activeConnections.fold<int>(
-        0,
-        (sum, item) => sum + item.download,
+  String _cellText(TrackerInfo connection, _ConnectionColumn column) {
+    final metadata = connection.metadata;
+    return switch (column) {
+      _ConnectionColumn.status => _tab == _ConnectionTab.active
+          ? _text('活动中', 'Active')
+          : _text('已关闭', 'Closed'),
+      _ConnectionColumn.establishTime =>
+        connection.start.getLastUpdateTimeDesc(context),
+      _ConnectionColumn.connectionType => metadata.network.toUpperCase(),
+      _ConnectionColumn.host => _hostText(connection),
+      _ConnectionColumn.process => metadata.process.isEmpty ? '-' : metadata.process,
+      _ConnectionColumn.rule => _ruleText(connection),
+      _ConnectionColumn.proxyChain =>
+        _proxyChainText(connection).isEmpty ? '-' : _proxyChainText(connection),
+      _ConnectionColumn.uploadSpeed =>
+        '${(connection.uploadSpeed ?? 0).traffic.show}/s',
+      _ConnectionColumn.downloadSpeed =>
+        '${(connection.downloadSpeed ?? 0).traffic.show}/s',
+      _ConnectionColumn.upload => connection.upload.traffic.show,
+      _ConnectionColumn.download => connection.download.traffic.show,
+      _ConnectionColumn.remoteDestination => _remoteDestinationText(connection),
+    };
+  }
+
+  bool _numericColumn(_ConnectionColumn column) {
+    return column == _ConnectionColumn.uploadSpeed ||
+        column == _ConnectionColumn.downloadSpeed ||
+        column == _ConnectionColumn.upload ||
+        column == _ConnectionColumn.download;
+  }
+
+  Widget _buildTabButton(_ConnectionTab tab) {
+    final selected = _tab == tab;
+    final count = tab == _ConnectionTab.active
+        ? _activeConnections.length
+        : _closedConnections.length;
+    final color = tab == _ConnectionTab.active
+        ? context.colorScheme.primary
+        : context.colorScheme.error;
+    final label = tab == _ConnectionTab.active
+        ? _text('活动中', 'Active')
+        : _text('已关闭', 'Closed');
+    return InkWell(
+      borderRadius: BorderRadius.circular(6),
+      onTap: () => setState(() => _tab = tab),
+      child: Container(
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              width: 2,
+              color: selected ? color : Colors.transparent,
+            ),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: selected ? color : context.colorScheme.onSurfaceVariant,
+                fontWeight: selected ? FontWeight.w600 : null,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected
+                    ? color.withValues(alpha: 0.14)
+                    : context.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Text(
+                '$count',
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: selected ? color : context.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
 
-    return Material(
-      color: Colors.transparent,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
+  double _columnWidth(_ColumnSpec spec) {
+    return _columnWidths[spec.column] ?? spec.width;
+  }
+
+  void _toggleColumn(_ConnectionColumn column) {
+    setState(() {
+      if (_visibleColumns.contains(column)) {
+        // Keep at least one data column visible.
+        if (_visibleColumns.length > 1) {
+          _visibleColumns.remove(column);
+        }
+      } else {
+        _visibleColumns.add(column);
+      }
+      _cachedVisibleColumns = Set.of(_visibleColumns);
+    });
+  }
+
+  Widget _buildColumnPicker() {
+    return PopupMenuButton<_ConnectionColumn>(
+      tooltip: _text('显示列', 'Columns'),
+      onSelected: _toggleColumn,
+      itemBuilder: (_) => [
+        for (final spec in _connectionColumns)
+          PopupMenuItem<_ConnectionColumn>(
+            value: spec.column,
+            child: Row(
               children: [
-                SizedBox(
-                  width: 230,
-                  child: GlassSegmented<_ConnectionTab>(
-                    height: 36,
-                    values: _ConnectionTab.values,
-                    selected: _tab,
-                    labelOf: (tab) => switch (tab) {
-                      _ConnectionTab.active =>
-                        '${_text('活动', 'Active')} '
-                            '(${_activeConnections.length})',
-                      _ConnectionTab.closed =>
-                        '${_text('已关闭', 'Closed')} '
-                            '(${_closedConnections.length})',
-                    },
-                    selectedColor: _tab == _ConnectionTab.active
-                        ? context.colorScheme.primary
-                        : context.colorScheme.error,
-                    selectedForegroundColor: _tab == _ConnectionTab.active
-                        ? context.colorScheme.onPrimary
-                        : context.colorScheme.onError,
-                    onChanged: (tab) => setState(() => _tab = tab),
-                  ),
+                Icon(
+                  _visibleColumns.contains(spec.column)
+                      ? Icons.check_box_rounded
+                      : Icons.check_box_outline_blank_rounded,
+                  size: 18,
                 ),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 190),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<_ConnectionOrder>(
-                      value: _order,
-                      isDense: true,
-                      isExpanded: true,
-                      items: [
-                        for (final order in _ConnectionOrder.values)
-                          DropdownMenuItem(
-                            value: order,
-                            child: Text(
-                              _orderLabel(order),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _order = value);
-                      },
-                    ),
-                  ),
-                ),
-                IconButton(
-                  tooltip: _ascending
-                      ? _text('切换为降序', 'Sort descending')
-                      : _text('切换为升序', 'Sort ascending'),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => setState(() => _ascending = !_ascending),
-                  icon: Icon(
-                    _ascending
-                        ? Icons.arrow_upward_rounded
-                        : Icons.arrow_downward_rounded,
-                  ),
-                ),
-                if (_tab == _ConnectionTab.active)
-                  Text(
-                    '↑ ${activeTraffic.up.traffic.show}   '
-                    '↓ ${activeTraffic.down.traffic.show}',
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                Badge(
-                  label: Text('${visible.length}'),
-                  child: IconButton(
-                    tooltip: _tab == _ConnectionTab.active
-                        ? _text('关闭当前结果', 'Close matching connections')
-                        : _text('删除当前记录', 'Delete matching records'),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: visible.isEmpty
-                        ? null
-                        : () => unawaited(_closeVisible(visible)),
-                    icon: Icon(
-                      _tab == _ConnectionTab.active
-                          ? Icons.close_rounded
-                          : Icons.delete_outline_rounded,
-                    ),
-                  ),
-                ),
+                const SizedBox(width: 8),
+                Text(_columnLabel(spec.column)),
               ],
             ),
           ),
-          const Divider(height: 0),
+      ],
+      child: Container(
+        key: const Key('connections-columns'),
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: context.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.tune_rounded, size: 18),
+            const SizedBox(width: 6),
+            Text(_text('显示列', 'Columns')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterBar() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 7, 12, 7),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: context.colorScheme.outlineVariant),
+        ),
+      ),
+      child: Row(
+        children: [
+          _buildTabButton(_ConnectionTab.active),
+          const SizedBox(width: 4),
+          _buildTabButton(_ConnectionTab.closed),
+          const SizedBox(width: 12),
+          Expanded(
+            child: SizedBox(
+              height: 34,
+              child: TextField(
+                key: const Key('connections-filter'),
+                controller: _filterController,
+                onChanged: (value) {
+                  _cachedConnectionFilter = value;
+                  setState(() => _query = value);
+                },
+                decoration: InputDecoration(
+                  hintText: _text('搜索连接', 'Search connections'),
+                  prefixIcon: const Icon(Icons.search_rounded, size: 19),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: _text('清除搜索', 'Clear search'),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () {
+                            _filterController.clear();
+                            _cachedConnectionFilter = '';
+                            setState(() => _query = '');
+                          },
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                        ),
+                  filled: true,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _buildColumnPicker(),
         ],
       ),
     );
   }
 
-  Widget _trailingFor(TrackerInfo connection) {
-    final uploadSpeed = connection.uploadSpeed ?? 0;
-    final downloadSpeed = connection.downloadSpeed ?? 0;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (_tab == _ConnectionTab.active)
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 118),
-            child: Text(
-              '↑ ${uploadSpeed.traffic.show}/s\n'
-              '↓ ${downloadSpeed.traffic.show}/s',
-              textAlign: TextAlign.end,
-              style: context.textTheme.labelSmall?.copyWith(
-                color: context.colorScheme.onSurfaceVariant,
+  Widget _buildHeaderCell(_ColumnSpec spec) {
+    final active = _sortColumn == spec.column;
+    final arrow = _sortDescending ? '↓' : '↑';
+    final width = _columnWidth(spec);
+    return SizedBox(
+      width: width,
+      height: 38,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: InkWell(
+              key: Key('connection-header-${spec.column.name}'),
+              onTap: () => _sortBy(spec.column),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Align(
+                  alignment: _numericColumn(spec.column)
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Text(
+                    '${_columnLabel(spec.column)}${active ? ' $arrow' : ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.textTheme.labelMedium?.copyWith(
+                      color: active
+                          ? context.colorScheme.onSurface
+                          : context.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        const SizedBox(width: 4),
-        IconButton(
-          tooltip: _tab == _ConnectionTab.active
-              ? _text('断开连接', 'Close connection')
-              : _text('删除记录', 'Delete record'),
-          visualDensity: VisualDensity.compact,
-          icon: Icon(
-            _tab == _ConnectionTab.active
-                ? Icons.close_rounded
-                : Icons.delete_outline_rounded,
-            size: 20,
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 8,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.resizeColumn,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragUpdate: (details) {
+                  setState(() {
+                    _columnWidths[spec.column] =
+                        (width + details.delta.dx).clamp(
+                          _minimumColumnWidth,
+                          520.0,
+                        ).toDouble();
+                    _cachedColumnWidths = Map.of(_columnWidths);
+                  });
+                },
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: 1,
+                    color: context.colorScheme.outlineVariant,
+                  ),
+                ),
+              ),
+            ),
           ),
-          onPressed: () {
-            if (_tab == _ConnectionTab.active) {
-              unawaited(_closeConnection(connection.id));
-            } else {
-              _removeClosed(connection.id);
-            }
-          },
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataCell(TrackerInfo connection, _ColumnSpec spec) {
+    if (spec.column == _ConnectionColumn.status) {
+      final active = _tab == _ConnectionTab.active;
+      final color = active ? context.colorScheme.primary : context.colorScheme.error;
+      return SizedBox(
+        width: _columnWidth(spec),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  _cellText(connection, spec.column),
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
         ),
-      ],
+      );
+    }
+
+    final value = _cellText(connection, spec.column);
+    return SizedBox(
+      width: _columnWidth(spec),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Align(
+          alignment: _numericColumn(spec.column)
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
+          child: Tooltip(
+            message: value,
+            waitDuration: const Duration(milliseconds: 500),
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.bodySmall,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openDetails(TrackerInfo connection) {
+    showExtend(
+      context,
+      builder: (_) => AdaptiveSheetScaffold(
+        sheetTransparentToolBar: true,
+        body: TrackerInfoDetailView(trackerInfo: connection),
+        title: context.appLocalizations.details(context.appLocalizations.connection),
+      ),
+    );
+  }
+
+  Widget _buildRow(TrackerInfo connection) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openDetails(connection),
+        child: Container(
+          key: Key('connection-row-${connection.id}'),
+          height: 44,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: context.colorScheme.outlineVariant),
+            ),
+          ),
+          child: Row(
+            children: [
+              for (final spec in _connectionColumns)
+                if (_visibleColumns.contains(spec.column))
+                  _buildDataCell(connection, spec),
+              SizedBox(
+                width: _actionColumnWidth,
+                child: IconButton(
+                  tooltip: _tab == _ConnectionTab.active
+                      ? _text('断开连接', 'Close connection')
+                      : _text('删除记录', 'Delete record'),
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 18,
+                  onPressed: () {
+                    if (_tab == _ConnectionTab.active) {
+                      unawaited(_closeConnection(connection.id));
+                    } else {
+                      _removeClosed(connection.id);
+                    }
+                  },
+                  icon: Icon(
+                    _tab == _ConnectionTab.active
+                        ? Icons.close_rounded
+                        : Icons.delete_outline_rounded,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTable(List<TrackerInfo> visible) {
+    final columns = _connectionColumns
+        .where((spec) => _visibleColumns.contains(spec.column))
+        .toList(growable: false);
+    final tableWidth = columns.fold<double>(
+      _actionColumnWidth,
+      (sum, spec) => sum + _columnWidth(spec),
+    );
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        final contentWidth = tableWidth > constraints.maxWidth
+            ? tableWidth
+            : constraints.maxWidth;
+        return Scrollbar(
+          controller: _horizontalController,
+          thumbVisibility: true,
+          notificationPredicate: (notification) =>
+              notification.metrics.axis == Axis.horizontal,
+          child: SingleChildScrollView(
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: contentWidth,
+              height: constraints.maxHeight,
+              child: Column(
+                children: [
+                  Container(
+                    height: 39,
+                    color: context.colorScheme.surfaceContainer,
+                    child: Row(
+                      children: [
+                        for (final spec in columns) _buildHeaderCell(spec),
+                        const SizedBox(width: _actionColumnWidth),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: visible.isEmpty
+                        ? NullStatus(
+                            label: _query.trim().isNotEmpty
+                                ? _text('没有匹配的连接', 'No matching connections')
+                                : _tab == _ConnectionTab.active
+                                ? _text('暂无活动连接', 'No active connections')
+                                : _text('暂无已关闭连接', 'No closed connections'),
+                            illustration: NullStatusIllustration.connections,
+                          )
+                        : ListView.builder(
+                            controller: _verticalController,
+                            padding: EdgeInsets.only(
+                              bottom: 16 + BottomInsetScope.of(context),
+                            ),
+                            itemCount: visible.length,
+                            itemBuilder: (_, index) => _buildRow(visible[index]),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -453,7 +886,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     coreEventManager.removeListener(this);
     _requestRefreshTimer?.cancel();
     _cachedClosedConnections = List.unmodifiable(_closedConnections);
-    _scrollController.dispose();
+    _verticalController.dispose();
+    _horizontalController.dispose();
+    _filterController.dispose();
     super.dispose();
   }
 
@@ -461,38 +896,56 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     final visible = _visibleConnections();
+    final activeTraffic = Traffic(
+      up: _activeConnections.fold<int>(0, (sum, item) => sum + item.upload),
+      down: _activeConnections.fold<int>(0, (sum, item) => sum + item.download),
+    );
 
     return CommonScaffold(
       title: appLocalizations.connections,
-      searchState: _searchState,
-      onKeywordsUpdate: (keywords) => setState(() => _keywords = keywords),
-      body: Column(
-        children: [
-          _buildToolbar(visible),
-          Expanded(
-            child: NullStatusSwitcher(
-              isEmpty: visible.isEmpty,
-              nullStatus: NullStatus(
-                label: _query.trim().isNotEmpty || _keywords.isNotEmpty
-                    ? _text('没有匹配的连接', 'No matching connections')
-                    : _tab == _ConnectionTab.active
-                    ? _text('暂无活动连接', 'No active connections')
-                    : _text('暂无已关闭连接', 'No closed connections'),
-                illustration: NullStatusIllustration.connections,
-              ),
-              child: TrackerInfoList(
-                controller: _scrollController,
-                trackerInfos: visible,
-                detailTitle: appLocalizations.details(
-                  appLocalizations.connection,
+      actions: [
+        if (_tab == _ConnectionTab.active)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Center(
+              child: Text(
+                '↑ ${activeTraffic.up.traffic.show}  ↓ ${activeTraffic.down.traffic.show}',
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: context.colorScheme.onSurfaceVariant,
                 ),
-                padding: EdgeInsets.only(
-                  bottom: 16 + BottomInsetScope.of(context),
-                ),
-                trailingBuilder: _trailingFor,
               ),
             ),
           ),
+        IconButton(
+          key: const Key('connections-pause'),
+          tooltip: _trackingPaused
+              ? _text('继续实时追踪', 'Resume live tracking')
+              : _text('暂停实时追踪', 'Pause live tracking'),
+          onPressed: _toggleTracking,
+          icon: Icon(
+            _trackingPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+          ),
+        ),
+        Badge(
+          label: Text('${visible.length}'),
+          child: IconButton(
+            key: const Key('connections-clear'),
+            tooltip: _tab == _ConnectionTab.active
+                ? _text('清除当前连接', 'Close current connections')
+                : _text('清除已关闭记录', 'Clear closed history'),
+            onPressed: visible.isEmpty ? null : () => unawaited(_closeVisible(visible)),
+            icon: Icon(
+              _tab == _ConnectionTab.active
+                  ? Icons.close_rounded
+                  : Icons.delete_outline_rounded,
+            ),
+          ),
+        ),
+      ],
+      body: Column(
+        children: [
+          _buildFilterBar(),
+          Expanded(child: _buildTable(visible)),
         ],
       ),
     );

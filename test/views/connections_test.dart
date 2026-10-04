@@ -84,6 +84,11 @@ void main() {
   }
 
   Future<void> teardownView(WidgetTester tester) async {
+    final filter = find.byKey(const Key('connections-filter'));
+    if (filter.evaluate().isNotEmpty) {
+      await tester.enterText(filter, '');
+      await tester.pump();
+    }
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 2));
   }
@@ -170,10 +175,8 @@ void main() {
     );
 
     await pumpConnections(tester);
-    await tester.tap(find.byIcon(Icons.search));
-    await tester.pump(const Duration(milliseconds: 250));
 
-    final field = find.byType(TextField);
+    final field = find.byKey(const Key('connections-filter'));
     await tester.enterText(field, '53123');
     await tester.pump();
     expect(find.textContaining('alpha.test'), findsWidgets);
@@ -200,19 +203,95 @@ void main() {
     );
 
     await pumpConnections(tester);
-    await tester.tap(find.byIcon(Icons.search));
-    await tester.pump(const Duration(milliseconds: 50));
-    await tester.enterText(find.byType(TextField), 'alpha');
+    final field = find.byKey(const Key('connections-filter'));
+    await tester.enterText(field, 'alpha');
 
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pump();
 
-    expect(find.byType(TextField), findsOneWidget);
+    expect(field, findsOneWidget);
     expect(
-      tester.widget<TextField>(find.byType(TextField)).controller?.text,
+      tester.widget<TextField>(field).controller?.text,
       'alpha',
     );
     expect(find.textContaining('alpha.test'), findsWidgets);
+
+    await teardownView(tester);
+  });
+
+  testWidgets('table column sort starts descending then toggles ascending', (
+    tester,
+  ) async {
+    var tick = 0;
+    when(core.getConnections).thenAnswer((_) async {
+      tick++;
+      return [
+        _tracker(
+          id: 'slow',
+          host: 'slow.test',
+          download: tick * 100,
+        ),
+        _tracker(
+          id: 'fast',
+          host: 'fast.test',
+          download: tick * 1000,
+        ),
+      ];
+    });
+
+    await pumpConnections(tester);
+    await tester.pump(const Duration(milliseconds: 550));
+    await tester.pump();
+
+    final header = find.byKey(
+      const Key('connection-header-downloadSpeed'),
+    );
+    await tester.tap(header);
+    await tester.pump();
+
+    final fastRow = find.byKey(const Key('connection-row-fast'));
+    final slowRow = find.byKey(const Key('connection-row-slow'));
+    expect(tester.getTopLeft(fastRow).dy, lessThan(tester.getTopLeft(slowRow).dy));
+    expect(find.textContaining('Download speed ↓'), findsOneWidget);
+
+    await tester.tap(header);
+    await tester.pump();
+
+    expect(tester.getTopLeft(fastRow).dy, greaterThan(tester.getTopLeft(slowRow).dy));
+    expect(find.textContaining('Download speed ↑'), findsOneWidget);
+
+    await teardownView(tester);
+  });
+
+  testWidgets('pause stops snapshots and resume restarts immediately', (
+    tester,
+  ) async {
+    var calls = 0;
+    when(core.getConnections).thenAnswer((_) async {
+      calls++;
+      return [
+        _tracker(
+          id: 'a',
+          host: 'alpha.test',
+          download: calls * 128,
+        ),
+      ];
+    });
+
+    await pumpConnections(tester);
+
+    final pause = find.byKey(const Key('connections-pause'));
+    await tester.tap(pause);
+    await tester.pump();
+    final pausedCalls = calls;
+
+    await tester.pump(const Duration(milliseconds: 1200));
+    expect(calls, pausedCalls);
+
+    await tester.tap(pause);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(calls, greaterThan(pausedCalls));
 
     await teardownView(tester);
   });
