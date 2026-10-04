@@ -121,29 +121,66 @@ void main() {
     await teardownView(tester);
   });
 
-  testWidgets('orders rows by total traffic, then newest first', (
+  testWidgets('moves vanished connections into the closed tab', (
     tester,
   ) async {
+    var call = 0;
+    when(core.getConnections).thenAnswer((_) async {
+      call++;
+      if (call == 1) {
+        return [_tracker(id: 'a', host: 'alpha.test', download: 100)];
+      }
+      return const <TrackerInfo>[];
+    });
+
+    await pumpConnections(tester);
+    expect(find.textContaining('alpha.test'), findsWidgets);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+
+    await tester.tap(find.textContaining('Closed'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('alpha.test'), findsWidgets);
+
+    await teardownView(tester);
+  });
+
+  testWidgets('search matches fields beyond host and process', (tester) async {
     when(core.getConnections).thenAnswer(
       (_) async => [
-        _tracker(id: 'a', host: 'alpha.test', download: 100),
-        _tracker(id: 'b', host: 'beta.test', upload: 300, download: 300),
-        _tracker(
-          id: 'c',
-          host: 'gamma.test',
-          download: 100,
-          start: DateTime.utc(2026, 2),
+        TrackerInfo(
+          id: 'needle-id',
+          start: DateTime.utc(2026),
+          metadata: const Metadata(
+            network: 'tcp',
+            host: 'alpha.test',
+            sourceIP: '10.0.0.8',
+            sourcePort: '53123',
+            destinationIP: '8.8.8.8',
+            destinationPort: '443',
+            process: 'chrome.exe',
+            processPath: r'C:\\Browser\\chrome.exe',
+          ),
+          chains: const ['Proxy-A'],
+          rule: 'DOMAIN-SUFFIX',
+          rulePayload: 'example.org',
         ),
       ],
     );
 
     await pumpConnections(tester);
+    await tester.tap(find.byIcon(Icons.search));
+    await tester.pumpAndSettle();
 
-    double topOf(String host) =>
-        tester.getTopLeft(find.textContaining(host).first).dy;
-    expect(topOf('beta.test'), lessThan(topOf('gamma.test')));
-    expect(topOf('gamma.test'), lessThan(topOf('alpha.test')));
-    expect(tester.takeException(), null);
+    final field = find.byType(TextField);
+    await tester.enterText(field, '53123');
+    await tester.pump();
+    expect(find.textContaining('alpha.test'), findsWidgets);
+
+    await tester.enterText(field, 'example.org');
+    await tester.pump();
+    expect(find.textContaining('alpha.test'), findsWidgets);
 
     await teardownView(tester);
   });

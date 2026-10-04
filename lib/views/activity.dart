@@ -6,11 +6,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'connection/connections.dart';
-import 'connection/requests.dart';
 import 'logs.dart';
 
-/// Live traffic in one place: connections, requests and, when enabled, logs,
-/// switched by the segmented control that takes the page title's place.
+/// Live traffic in one place. Connection history is folded into the
+/// connections page (active/closed) following Clash Party's model.
 class ActivityView extends ConsumerStatefulWidget {
   const ActivityView({super.key});
 
@@ -28,7 +27,6 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
     );
     final tabs = [
       PageLabel.connections,
-      PageLabel.requests,
       if (openLogs) PageLabel.logs,
     ];
     final current = tabs.contains(_current) ? _current : tabs.first;
@@ -48,7 +46,6 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
         child: KeyedSubtree(
           key: ValueKey(current),
           child: switch (current) {
-            PageLabel.requests => const RequestsView(),
             PageLabel.logs => const LogsView(),
             _ => const ConnectionsView(),
           },

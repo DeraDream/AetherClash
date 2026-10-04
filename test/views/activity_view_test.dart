@@ -3,7 +3,6 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/activity.dart';
 import 'package:fl_clash/views/connection/connections.dart';
-import 'package:fl_clash/views/connection/requests.dart';
 import 'package:fl_clash/views/logs.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -47,7 +46,7 @@ void main() {
     await tester.pump(const Duration(seconds: 11));
   }
 
-  testWidgets('the segmented switch takes the title and swaps the pages', (
+  testWidgets('the segmented switch keeps connections and optional logs only', (
     tester,
   ) async {
     await pumpActivity(tester);
@@ -70,10 +69,8 @@ void main() {
     expect(find.byType(ConnectionsView), findsOneWidget);
     expect(find.text('Logs'), findsNothing);
 
-    await tester.tap(find.text('Requests'));
-    await tester.pumpAndSettle();
-    expect(find.byType(RequestsView), findsOneWidget);
-    expect(find.byType(ConnectionsView), findsNothing);
+    expect(find.text('Requests'), findsNothing);
+    expect(find.byType(ConnectionsView), findsOneWidget);
 
     await drainCorePoll(tester);
   });

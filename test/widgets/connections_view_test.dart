@@ -128,7 +128,7 @@ void main() {
 
     expect(readCount, 1);
 
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
 
     expect(readCount, 2);
