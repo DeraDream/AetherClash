@@ -100,7 +100,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     final group = _leadingGroup(groups, preferred);
     if (group == null) return null;
     final selected = ref.read(selectedProxyNameProvider(group.name));
-    if (selected.isNotEmpty) return selected;
+    if (selected?.isNotEmpty == true) return selected;
     return group.realNow.isEmpty ? null : group.realNow;
   }
 
@@ -454,11 +454,11 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     );
     final currentGroup = _leadingGroup(currentGroups, preferredGroup);
     final selectedProxy = currentGroup == null
-        ? ''
+        ? null
         : ref.watch(selectedProxyNameProvider(currentGroup.name));
     final currentProxyName = mode == Mode.direct
         ? 'DIRECT'
-        : selectedProxy.isNotEmpty
+        : selectedProxy?.isNotEmpty == true
         ? selectedProxy
         : currentGroup?.realNow;
     final profileId = ref.watch(currentProfileIdProvider);
