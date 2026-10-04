@@ -269,7 +269,7 @@ class ControlSidebar extends StatelessWidget {
                     const OutboundModeSwitch(height: 34),
                     if (system.isDesktop) ...[
                       const SizedBox(height: 6),
-                      const DesktopRouteSwitch(height: 34),
+                      const DesktopRouteCards(),
                     ],
                     const SizedBox(height: 14),
                   ],

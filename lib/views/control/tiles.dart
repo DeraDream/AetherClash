@@ -434,18 +434,27 @@ class _QuickToggle extends StatelessWidget {
   }
 }
 
-Future<void> _useDesktopRoute(
+Future<void> _setDesktopTun(
   BuildContext context,
   WidgetRef ref,
-  SystemAction systemAction,
-  DesktopRoute route,
+  bool value,
 ) async {
-  if (route == DesktopRoute.tun &&
-      !ref.read(patchClashConfigProvider).tun.enable &&
-      !await confirmTunEnable(context)) {
+  final current = ref.read(patchClashConfigProvider).tun.enable;
+  if (value == current) return;
+  if (value && !await confirmTunEnable(context)) {
     return;
   }
-  systemAction.useRoute(route);
+  ref
+      .read(patchClashConfigProvider.notifier)
+      .update((state) => state.copyWith.tun(enable: value));
+}
+
+void _setDesktopSystemProxy(WidgetRef ref, bool value) {
+  final current = ref.read(networkSettingProvider).systemProxy;
+  if (value == current) return;
+  ref
+      .read(networkSettingProvider.notifier)
+      .update((state) => state.copyWith(systemProxy: value));
 }
 
 /// The routing switches with the detected exit beside them: on desktop TUN
@@ -455,12 +464,10 @@ class QuickToggles extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final systemAction = ref.read(systemActionProvider.notifier);
     return LayoutBuilder(
       builder: (_, constraints) => _buildRow(
         context,
         ref,
-        systemAction,
         compact: constraints.maxWidth < _compactWidth,
       ),
     );
@@ -470,8 +477,7 @@ class QuickToggles extends ConsumerWidget {
 
   Widget _buildRow(
     BuildContext context,
-    WidgetRef ref,
-    SystemAction systemAction, {
+    WidgetRef ref, {
     required bool compact,
   }) {
     final appLocalizations = context.appLocalizations;
@@ -503,11 +509,10 @@ class QuickToggles extends ConsumerWidget {
             patchClashConfigProvider.select((state) => state.tun.enable),
           ),
           onTap: () => unawaited(
-            _useDesktopRoute(
+            _setDesktopTun(
               context,
               ref,
-              systemAction,
-              DesktopRoute.tun,
+              !ref.read(patchClashConfigProvider).tun.enable,
             ),
           ),
         ),
@@ -519,7 +524,10 @@ class QuickToggles extends ConsumerWidget {
           selected: ref.watch(
             networkSettingProvider.select((state) => state.systemProxy),
           ),
-          onTap: () => systemAction.useRoute(DesktopRoute.systemProxy),
+          onTap: () => _setDesktopSystemProxy(
+            ref,
+            !ref.read(networkSettingProvider).systemProxy,
+          ),
         ),
       ],
       const IpDetectionChip(),
@@ -535,32 +543,115 @@ class QuickToggles extends ConsumerWidget {
   }
 }
 
-/// The desktop route as one two-way switch, for the sidebar.
-class DesktopRouteSwitch extends ConsumerWidget {
-  const DesktopRouteSwitch({super.key, this.height = 40});
-
-  final double height;
+/// Two independent desktop routing controls for the wide sidebar.
+class DesktopRouteCards extends ConsumerWidget {
+  const DesktopRouteCards({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
+    final systemProxy = ref.watch(
+      networkSettingProvider.select((state) => state.systemProxy),
+    );
     final tun = ref.watch(
       patchClashConfigProvider.select((state) => state.tun.enable),
     );
-    return GlassSegmented<DesktopRoute>(
-      height: height,
-      values: DesktopRoute.values,
-      selected: tun ? DesktopRoute.tun : DesktopRoute.systemProxy,
-      labelOf: (route) => switch (route) {
-        DesktopRoute.tun => appLocalizations.tun,
-        DesktopRoute.systemProxy => appLocalizations.systemProxy,
-      },
-      onChanged: (route) => unawaited(
-        _useDesktopRoute(
-          context,
-          ref,
-          ref.read(systemActionProvider.notifier),
-          route,
+    return Row(
+      children: [
+        Expanded(
+          child: _DesktopRouteCard(
+            icon: Icons.public_rounded,
+            label: appLocalizations.systemProxy,
+            value: systemProxy,
+            onChanged: (value) => _setDesktopSystemProxy(ref, value),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _DesktopRouteCard(
+            icon: Icons.lan_rounded,
+            label: appLocalizations.tun,
+            value: tun,
+            onChanged: (value) => unawaited(
+              _setDesktopTun(context, ref, value),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DesktopRouteCard extends StatelessWidget {
+  const _DesktopRouteCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = context.glass;
+    final activeColor = context.colorScheme.primary;
+    return AnimatedContainer(
+      duration: context.motionDuration(Durations.short4),
+      height: 88,
+      decoration: BoxDecoration(
+        color: value
+            ? activeColor.withValues(alpha: glass.isDark ? 0.88 : 0.92)
+            : glass.fill.withValues(alpha: glass.isDark ? 0.72 : 0.86),
+        borderRadius: AppRadius.all(12),
+        border: Border.all(
+          color: value
+              ? activeColor.withValues(alpha: 0.92)
+              : glass.separator.withValues(alpha: 0.55),
+        ),
+      ),
+      child: InkWell(
+        borderRadius: AppRadius.all(12),
+        onTap: () => onChanged(!value),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 8, 8, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 19,
+                    color: value ? Colors.white : glass.secondaryLabel,
+                  ),
+                  const Spacer(),
+                  Transform.scale(
+                    scale: 0.76,
+                    alignment: Alignment.centerRight,
+                    child: Switch(
+                      value: value,
+                      onChanged: onChanged,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.labelLarge?.copyWith(
+                  color: value ? Colors.white : context.colorScheme.onSurface,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

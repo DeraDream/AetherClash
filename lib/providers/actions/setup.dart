@@ -436,7 +436,9 @@ class SetupAction extends _$SetupAction {
   /// A declined or failed authorization must not leave TUN looking on while
   /// the Core runs without it; the next time TUN is turned on it asks again.
   void _fallBackFromTun() {
-    ref.read(systemActionProvider.notifier).useRoute(DesktopRoute.systemProxy);
+    ref
+        .read(patchClashConfigProvider.notifier)
+        .update((state) => state.copyWith.tun(enable: false));
     dialogs.showNotifier(
       currentAppLocalizations.tunAuthorizationFallbackTip,
       level: MessageLevel.warning,
