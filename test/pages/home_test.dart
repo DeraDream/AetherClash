@@ -8,6 +8,7 @@ import 'package:fl_clash/pages/shell.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/tools.dart';
+import 'package:fl_clash/views/network_info.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -107,6 +108,51 @@ void main() {
 
     expect(container.read(currentPageLabelProvider), PageLabel.tools);
     expect(find.text('page:tools').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('network info opens directly on the first desktop frame', (
+    tester,
+  ) async {
+    final container = _container(tester, const Size(1200, 800));
+    await _pumpHome(tester, container);
+
+    final initialPage = container.read(currentPageLabelProvider);
+    await tester.tap(find.byTooltip('Network info'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NetworkInfoView), findsOneWidget);
+    expect(container.read(currentPageLabelProvider), initialPage);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('network info is independent from the selected sidebar page', (
+    tester,
+  ) async {
+    final container = _container(tester, const Size(1200, 800));
+    await _pumpHome(tester, container);
+
+    final settings = find.descendant(
+      of: find.byType(ControlSidebar),
+      matching: find.text('Settings'),
+    );
+    await tester.tap(settings);
+    await tester.pumpAndSettle();
+    expect(container.read(currentPageLabelProvider), PageLabel.tools);
+    expect(find.text('page:tools').hitTestable(), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Network info'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NetworkInfoView), findsOneWidget);
+    expect(container.read(currentPageLabelProvider), PageLabel.tools);
+
+    // Tapping the already-selected underlying page must still close the
+    // independent network-info surface and restore that page immediately.
+    await tester.tap(settings);
+    await tester.pumpAndSettle();
+    expect(find.byType(NetworkInfoView), findsNothing);
+    expect(find.text('page:tools').hitTestable(), findsOneWidget);
+    expect(container.read(currentPageLabelProvider), PageLabel.tools);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the rail highlight sits exactly on the chosen destination', (

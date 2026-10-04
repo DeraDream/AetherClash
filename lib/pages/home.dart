@@ -2,6 +2,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/views/network_info.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,28 +20,26 @@ class HomePage extends ConsumerWidget {
     if (!hasViewSize) {
       return const SizedBox.shrink();
     }
-    return HomeBackScopeContainer(
-      child: _GlassShell(
-        child: Consumer(
-          builder: (_, ref, _) {
-            final navigationItems = ref
-                .watch(currentNavigationItemsStateProvider)
-                .value;
-            final isMobile = ref.watch(isMobileViewProvider);
-            return _HomePageView(
-              navigationItems: navigationItems,
-              pageBuilder: (_, index) {
-                final navigationItem = navigationItems[index];
-                return _NavigationPage(
-                  key: ValueKey(navigationItem.label),
-                  item: navigationItem,
-                  isMobile: isMobile,
-                  view: navigationItem.builder(context),
-                );
-              },
-            );
-          },
-        ),
+    return _GlassShell(
+      child: Consumer(
+        builder: (_, ref, _) {
+          final navigationItems = ref
+              .watch(currentNavigationItemsStateProvider)
+              .value;
+          final isMobile = ref.watch(isMobileViewProvider);
+          return _HomePageView(
+            navigationItems: navigationItems,
+            pageBuilder: (_, index) {
+              final navigationItem = navigationItems[index];
+              return _NavigationPage(
+                key: ValueKey(navigationItem.label),
+                item: navigationItem,
+                isMobile: isMobile,
+                view: navigationItem.builder(context),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -49,15 +48,30 @@ class HomePage extends ConsumerWidget {
 /// Lays the spaces out on the window floor: a floating glass dock on phones,
 /// a glass rail on narrow windows and the glass control sidebar on wide ones,
 /// with the page itself resting directly on the floor.
-class _GlassShell extends ConsumerWidget {
+class _GlassShell extends ConsumerStatefulWidget {
   const _GlassShell({required this.child});
 
   static const _gutter = 8.0;
 
   final Widget child;
 
-  void _handleToPage(WidgetRef ref, PageLabel pageLabel) {
+  @override
+  ConsumerState<_GlassShell> createState() => _GlassShellState();
+}
+
+class _GlassShellState extends ConsumerState<_GlassShell> {
+  bool _networkInfoOpen = false;
+
+  void _handleToPage(PageLabel pageLabel) {
+    if (_networkInfoOpen) {
+      setState(() => _networkInfoOpen = false);
+    }
     ref.read(currentPageLabelProvider.notifier).toPage(pageLabel);
+  }
+
+  void _openNetworkInfo() {
+    if (_networkInfoOpen) return;
+    setState(() => _networkInfoOpen = true);
   }
 
   void _updateSideWidth(WidgetRef ref, double contentWidth) {
@@ -72,43 +86,92 @@ class _GlassShell extends ConsumerWidget {
     return LayoutBuilder(
       builder: (_, constraints) {
         _updateSideWidth(ref, constraints.maxWidth);
-        return FocusTraversalGroup(policy: PageTraversalPolicy(), child: child);
+        return FocusTraversalGroup(
+          policy: PageTraversalPolicy(),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ExcludeFocus(
+                excluding: _networkInfoOpen,
+                child: IgnorePointer(
+                  ignoring: _networkInfoOpen,
+                  child: widget.child,
+                ),
+              ),
+              if (_networkInfoOpen) const NetworkInfoView(),
+            ],
+          ),
+        );
       },
     );
   }
 
+  Widget _withBackScope(WidgetRef ref, Widget child) {
+    return CommonPopScope(
+      onPop: (context) async {
+        if (_networkInfoOpen) {
+          setState(() => _networkInfoOpen = false);
+          return false;
+        }
+
+        final pageLabel = ref.read(currentPageLabelProvider);
+        final workspaceNavigator = workspaceNavigatorKey(
+          pageLabel,
+        ).currentState;
+        if (workspaceNavigator?.canPop() == true) {
+          workspaceNavigator!.pop();
+          return false;
+        }
+
+        // Mobile pages do not have nested workspace navigators.
+        final realContext =
+            GlobalObjectKey(pageLabel).currentContext ?? context;
+        if (Navigator.canPop(realContext)) {
+          Navigator.of(realContext).pop();
+        } else {
+          await ref.read(systemActionProvider.notifier).handleClose();
+        }
+        return false;
+      },
+      child: child,
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final state = ref.watch(navigationStateProvider);
     final items = state.navigationItems;
     final currentIndex = state.currentIndex;
-    void onSelected(PageLabel label) => _handleToPage(ref, label);
+    void onSelected(PageLabel label) => _handleToPage(label);
     if (state.viewMode == ViewMode.mobile) {
       final dockExtent = GlassDock.extentOf(context);
-      return Material(
-        type: MaterialType.transparency,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: BottomInsetScope(
-                inset: dockExtent - MediaQuery.paddingOf(context).bottom,
-                child: FocusTraversalGroup(
-                  policy: PageTraversalPolicy(),
-                  child: child,
+      return _withBackScope(
+        ref,
+        Material(
+          type: MaterialType.transparency,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: BottomInsetScope(
+                  inset: dockExtent - MediaQuery.paddingOf(context).bottom,
+                  child: FocusTraversalGroup(
+                    policy: PageTraversalPolicy(),
+                    child: widget.child,
+                  ),
                 ),
               ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GlassDock(
-                items: items,
-                currentIndex: currentIndex,
-                onSelected: onSelected,
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: GlassDock(
+                  items: items,
+                  currentIndex: currentIndex,
+                  onSelected: onSelected,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -122,8 +185,10 @@ class _GlassShell extends ConsumerWidget {
     final navigation = state.viewMode == ViewMode.desktop
         ? ControlSidebar(
             items: items,
-            currentIndex: currentIndex,
+            currentIndex: _networkInfoOpen ? -1 : currentIndex,
             onSelected: onSelected,
+            onNetworkInfoSelected: _openNetworkInfo,
+            networkInfoSelected: _networkInfoOpen,
             topInset: topInset,
           )
         : Padding(
@@ -134,18 +199,21 @@ class _GlassShell extends ConsumerWidget {
               onSelected: onSelected,
             ),
           );
-    return Material(
-      type: MaterialType.transparency,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(_gutter),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              navigation,
-              const SizedBox(width: _gutter),
-              Expanded(child: _buildWorkspace(ref)),
-            ],
+    return _withBackScope(
+      ref,
+      Material(
+        type: MaterialType.transparency,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(_GlassShell._gutter),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                navigation,
+                const SizedBox(width: _GlassShell._gutter),
+                Expanded(child: _buildWorkspace(ref)),
+              ],
+            ),
           ),
         ),
       ),

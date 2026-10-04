@@ -5,7 +5,6 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/control/connect_orb.dart';
 import 'package:fl_clash/views/control/control_center.dart';
 import 'package:fl_clash/views/control/tiles.dart';
-import 'package:fl_clash/views/network_info.dart';
 import 'package:fl_clash/views/po0_firewall.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -236,6 +235,8 @@ class ControlSidebar extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onSelected,
+    required this.onNetworkInfoSelected,
+    required this.networkInfoSelected,
     this.topInset = 0,
   });
 
@@ -244,6 +245,8 @@ class ControlSidebar extends StatelessWidget {
   final List<NavigationItem> items;
   final int currentIndex;
   final OnDestinationSelected onSelected;
+  final VoidCallback onNetworkInfoSelected;
+  final bool networkInfoSelected;
   final double topInset;
 
   @override
@@ -291,13 +294,16 @@ class ControlSidebar extends StatelessWidget {
                   ],
                 ),
               ),
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
-                    child: _SidebarFooter(),
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                    child: _SidebarFooter(
+                      selected: networkInfoSelected,
+                      onTap: onNetworkInfoSelected,
+                    ),
                   ),
                 ),
               ),
@@ -405,20 +411,13 @@ class _SidebarItem extends ConsumerWidget {
 }
 
 class _SidebarFooter extends ConsumerWidget {
-  const _SidebarFooter();
+  const _SidebarFooter({
+    required this.selected,
+    required this.onTap,
+  });
 
-  void _openNetworkInfo(WidgetRef ref) {
-    final pageLabel = ref.read(currentPageLabelProvider);
-    final navigator = workspaceNavigatorKey(pageLabel).currentState;
-    if (navigator == null) {
-      return;
-    }
-    navigator.push(
-      MaterialPageRoute<void>(
-        builder: (_) => const NetworkInfoView(),
-      ),
-    );
-  }
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -458,14 +457,15 @@ class _SidebarFooter extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         GlassButton(
-          plain: true,
+          plain: !selected,
+          color: glass.selected,
           elevated: false,
           borderRadius: AppRadius.extraSmall,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           tooltip: Localizations.localeOf(context).languageCode == 'zh'
               ? '网络信息'
               : 'Network info',
-          onTap: () => _openNetworkInfo(ref),
+          onTap: onTap,
           child: Row(
             children: [
               Icon(
