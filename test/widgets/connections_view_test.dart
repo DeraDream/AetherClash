@@ -85,10 +85,15 @@ void main() {
     expect(builtRows, lessThan(connections.length));
     expect(find.byKey(const Key('connection-row-99')), findsOneWidget);
 
-    await tester.drag(
-      find.byType(ListView),
-      const Offset(0, -5000),
-      warnIfMissed: false,
+    final verticalScrollable = find.descendant(
+      of: find.byType(ListView),
+      matching: find.byType(Scrollable),
+    );
+    expect(verticalScrollable, findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('connection-row-0')),
+      1200,
+      scrollable: verticalScrollable,
     );
     await tester.pumpAndSettle();
 
