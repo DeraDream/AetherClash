@@ -140,6 +140,39 @@ class Request {
     'http://ip-api.com/json': 'ip-api.com',
   };
 
+  Future<Result<Map<String, dynamic>?>> checkIpDetails({
+    String? sourceUrl,
+  }) async {
+    final sources = sourceUrl == null
+        ? _ipInfoSources.keys.toList(growable: false)
+        : [sourceUrl];
+    for (final source in sources) {
+      if (!_ipInfoSources.containsKey(source)) {
+        continue;
+      }
+      try {
+        final res = await dio
+            .get<Map<String, dynamic>>(
+              source,
+              options: Options(responseType: ResponseType.json),
+            )
+            .timeout(const Duration(seconds: 8));
+        if (res.statusCode == HttpStatus.ok && res.data != null) {
+          return Result.success({
+            ...res.data!,
+            '_source': source,
+          });
+        }
+      } catch (e) {
+        commonPrint.log(
+          'checkIpDetails($source) failed: ${compactError(e)}',
+          logLevel: LogLevel.info,
+        );
+      }
+    }
+    return Result.success(null);
+  }
+
   Future<Result<IpInfo?>> checkIp({
     CancelToken? cancelToken,
     String? sourceUrl,

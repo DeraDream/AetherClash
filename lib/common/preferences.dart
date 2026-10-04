@@ -151,6 +151,45 @@ class Preferences {
     await sharedPreferencesIns?.setString(bootRecordKey, json.encode(record));
   }
 
+  Future<List<Map<String, String>>> getNetworkLatencyTargets() async {
+    try {
+      final sharedPreferencesIns = await sharedPreferencesCompleter.future;
+      final raw = sharedPreferencesIns?.getString('networkLatencyTargets');
+      if (raw == null || raw.isEmpty) {
+        return const [];
+      }
+      final decoded = json.decode(raw);
+      if (decoded is! List) {
+        return const [];
+      }
+      return decoded
+          .whereType<Map>()
+          .map((item) => Map<String, String>.from(
+                item.map((key, value) => MapEntry(
+                      key.toString(),
+                      value.toString(),
+                    )),
+              ))
+          .toList(growable: false);
+    } catch (e) {
+      commonPrint.log(
+        'getNetworkLatencyTargets error ${e.toString()}',
+        logLevel: LogLevel.warning,
+      );
+      return const [];
+    }
+  }
+
+  Future<void> saveNetworkLatencyTargets(
+    List<Map<String, String>> targets,
+  ) async {
+    final sharedPreferencesIns = await sharedPreferencesCompleter.future;
+    await sharedPreferencesIns?.setString(
+      'networkLatencyTargets',
+      json.encode(targets),
+    );
+  }
+
   Future<Sniffer> getSnifferConfig() async {
     try {
       final sharedPreferencesIns = await sharedPreferencesCompleter.future;

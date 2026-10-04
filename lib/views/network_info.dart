@@ -19,7 +19,7 @@ class NetworkInfoView extends ConsumerStatefulWidget {
 class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
   static const _autoSource = '__auto__';
 
-  static const _targets = <_LatencyTarget>[
+  static const _defaultTargets = <_LatencyTarget>[
     _LatencyTarget(
       label: 'Google',
       url: 'https://www.google.com/generate_204',
@@ -31,7 +31,10 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     _LatencyTarget(label: 'GitHub', url: 'https://github.com'),
   ];
 
+  List<_LatencyTarget> _targets = List<_LatencyTarget>.from(_defaultTargets);
   final Map<String, int?> _latencies = {};
+  Map<String, dynamic>? _ipDetails;
+  bool _ipDetailsLoading = false;
   String _selectedIpSource = _autoSource;
   IpInfo? _sourceIpInfo;
   bool _sourceIpLoading = false;
@@ -45,24 +48,86 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(networkDetectionProvider.notifier).startCheck();
-      unawaited(_refreshLatency());
+      unawaited(_refreshIpDetails());
+      unawaited(_loadLatencyTargets());
     });
   }
 
   Future<void> _refreshIp() async {
-    if (_selectedIpSource == _autoSource) {
+    final auto = _selectedIpSource == _autoSource;
+    if (auto) {
       ref.read(networkDetectionProvider.notifier).startCheck();
+      unawaited(_refreshIpDetails());
       return;
     }
 
     final version = ++_ipCheckVersion;
-    setState(() => _sourceIpLoading = true);
-    final result = await request.checkIp(sourceUrl: _selectedIpSource);
+    setState(() {
+      _sourceIpLoading = true;
+      _ipDetailsLoading = true;
+    });
+    final results = await (
+      request.checkIp(sourceUrl: _selectedIpSource),
+      request.checkIpDetails(sourceUrl: _selectedIpSource),
+    ).wait;
     if (!mounted || version != _ipCheckVersion) return;
     setState(() {
-      _sourceIpInfo = result.data;
+      _sourceIpInfo = results.$1.data;
       _sourceIpLoading = false;
+      _ipDetails = results.$2.data;
+      _ipDetailsLoading = false;
     });
+  }
+
+  Future<void> _refreshIpDetails() async {
+    final source = _selectedIpSource == _autoSource
+        ? null
+        : _selectedIpSource;
+    if (mounted) {
+      setState(() => _ipDetailsLoading = true);
+    }
+    final result = await request.checkIpDetails(sourceUrl: source);
+    if (!mounted) return;
+    setState(() {
+      _ipDetails = result.data;
+      _ipDetailsLoading = false;
+    });
+  }
+
+  Future<void> _loadLatencyTargets() async {
+    final saved = await preferences.getNetworkLatencyTargets();
+    if (!mounted) return;
+    final parsed = saved
+        .map(
+          (item) => _LatencyTarget(
+            label: item['label']?.trim() ?? '',
+            url: item['url']?.trim() ?? '',
+          ),
+        )
+        .where((item) => item.label.isNotEmpty && item.url.isNotEmpty)
+        .toList(growable: false);
+    setState(() {
+      _targets = parsed.isEmpty
+          ? List<_LatencyTarget>.from(_defaultTargets)
+          : parsed;
+    });
+    await _refreshLatency();
+  }
+
+  Future<void> _editLatencyTargets() async {
+    final result = await dialogs.showCommonDialog<List<_LatencyTarget>>(
+      child: _LatencyTargetsDialog(initial: _targets),
+    );
+    if (result == null || result.isEmpty || !mounted) return;
+    setState(() {
+      _targets = result;
+      _latencies.clear();
+    });
+    await preferences.saveNetworkLatencyTargets([
+      for (final target in result)
+        {'label': target.label, 'url': target.url},
+    ]);
+    await _refreshLatency();
   }
 
   void _selectIpSource(String value) {
@@ -70,7 +135,9 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     setState(() {
       _selectedIpSource = value;
       _sourceIpInfo = null;
+      _ipDetails = null;
       _sourceIpLoading = value != _autoSource;
+      _ipDetailsLoading = true;
     });
     unawaited(_refreshIp());
   }
@@ -163,12 +230,32 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
                 ),
               ],
             ),
-            child: _IpRow(
-              ipInfo: publicIp,
-              loading: ipLoading,
-              onCopy: publicIp == null
-                  ? null
-                  : () => Clipboard.setData(ClipboardData(text: publicIp.ip)),
+            child: Column(
+              children: [
+                _IpRow(
+                  ipInfo: publicIp,
+                  loading: ipLoading,
+                  onCopy: publicIp == null
+                      ? null
+                      : () => Clipboard.setData(
+                            ClipboardData(text: publicIp.ip),
+                          ),
+                ),
+                if (_ipDetailsLoading && _ipDetails == null) ...[
+                  const SizedBox(height: 12),
+                  const LinearProgressIndicator(minHeight: 2),
+                ],
+                if (_ipDetails case final details?) ...[
+                  const SizedBox(height: 12),
+                  _IpDetailGrid(
+                    details: _IpDetailData.fromRaw(details),
+                    sourceLabel: _sourceLabel(
+                      context,
+                      details['_source']?.toString() ?? _selectedIpSource,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 14),
@@ -187,7 +274,14 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _AverageDelayPill(values: _latencies.values),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: _text(context, '编辑检测目标', 'Edit targets'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: _editLatencyTargets,
+                  icon: const Icon(Icons.tune_rounded, size: 18),
+                ),
+                const SizedBox(width: 2),
                 IconButton(
                   tooltip: _text(context, '重新测试', 'Retest'),
                   visualDensity: VisualDensity.compact,
@@ -317,6 +411,139 @@ class _SourceMenuItem extends StatelessWidget {
   }
 }
 
+class _IpDetailData {
+  const _IpDetailData({
+    required this.country,
+    required this.city,
+    required this.asn,
+    required this.organization,
+  });
+
+  factory _IpDetailData.fromRaw(Map<String, dynamic> raw) {
+    String textOf(dynamic value) {
+      if (value == null) return '';
+      if (value is Map) {
+        return (value['name'] ?? value['code'] ?? '').toString();
+      }
+      return value.toString();
+    }
+
+    final connection = raw['connection'] is Map
+        ? Map<String, dynamic>.from(raw['connection'] as Map)
+        : const <String, dynamic>{};
+    final countryValue = raw['country'];
+    final country = countryValue is Map
+        ? textOf(countryValue['name'] ?? countryValue['code'])
+        : textOf(countryValue);
+    final asn = textOf(
+      raw['asn'] ??
+          connection['asn'] ??
+          raw['as'] ??
+          raw['asn_number'],
+    );
+    final organization = textOf(
+      raw['org'] ??
+          raw['organization'] ??
+          connection['org'] ??
+          connection['isp'] ??
+          raw['isp'],
+    );
+    return _IpDetailData(
+      country: country,
+      city: textOf(raw['city']),
+      asn: asn,
+      organization: organization,
+    );
+  }
+
+  final String country;
+  final String city;
+  final String asn;
+  final String organization;
+}
+
+class _IpDetailGrid extends StatelessWidget {
+  const _IpDetailGrid({
+    required this.details,
+    required this.sourceLabel,
+  });
+
+  final _IpDetailData details;
+  final String sourceLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final items = <(String, String)>[
+      (zh ? '国家 / 地区' : 'Country / region', details.country),
+      (zh ? '城市' : 'City', details.city),
+      ('ASN', details.asn),
+      (zh ? '运营商 / 组织' : 'ISP / organization', details.organization),
+      (zh ? '数据来源' : 'Source', sourceLabel),
+    ].where((item) => item.$2.isNotEmpty).toList(growable: false);
+    if (items.isEmpty) return const SizedBox.shrink();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 640 ? 3 : 2;
+        final width =
+            (constraints.maxWidth - (columns - 1) * 8) / columns;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: width,
+                child: _IpDetailTile(label: item.$1, value: item.$2),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _IpDetailTile extends StatelessWidget {
+  const _IpDetailTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = context.glass;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 58),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+      decoration: BoxDecoration(
+        color: glass.fill.withValues(alpha: glass.isDark ? 0.55 : 0.72),
+        borderRadius: AppRadius.all(8),
+        border: Border.all(color: glass.separator.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: glass.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LatencyTarget {
   const _LatencyTarget({required this.label, required this.url});
 
@@ -439,6 +666,164 @@ class _IpRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _LatencyTargetsDialog extends StatefulWidget {
+  const _LatencyTargetsDialog({required this.initial});
+
+  final List<_LatencyTarget> initial;
+
+  @override
+  State<_LatencyTargetsDialog> createState() => _LatencyTargetsDialogState();
+}
+
+class _LatencyTargetsDialogState extends State<_LatencyTargetsDialog> {
+  late final List<_LatencyTargetDraft> _items;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = [
+      for (final target in widget.initial)
+        _LatencyTargetDraft(target.label, target.url),
+    ];
+    if (_items.isEmpty) {
+      _items.add(_LatencyTargetDraft('', ''));
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final item in _items) {
+      item.dispose();
+    }
+    super.dispose();
+  }
+
+  void _add() {
+    setState(() => _items.add(_LatencyTargetDraft('', '')));
+  }
+
+  void _remove(int index) {
+    setState(() {
+      final item = _items.removeAt(index);
+      item.dispose();
+      if (_items.isEmpty) {
+        _items.add(_LatencyTargetDraft('', ''));
+      }
+    });
+  }
+
+  List<_LatencyTarget>? _buildResult() {
+    final result = <_LatencyTarget>[];
+    for (final item in _items) {
+      final label = item.label.text.trim();
+      final url = item.url.text.trim();
+      if (label.isEmpty && url.isEmpty) continue;
+      final uri = Uri.tryParse(url);
+      if (label.isEmpty ||
+          uri == null ||
+          !(uri.scheme == 'http' || uri.scheme == 'https') ||
+          uri.host.isEmpty) {
+        return null;
+      }
+      result.add(_LatencyTarget(label: label, url: url));
+    }
+    return result.isEmpty ? null : result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    return CommonDialog(
+      title: zh ? '编辑延迟检测目标' : 'Edit latency targets',
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.appLocalizations.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final result = _buildResult();
+            if (result == null) {
+              context.showNotifier(
+                zh
+                    ? '请填写名称和有效的 HTTP/HTTPS 地址'
+                    : 'Enter a name and a valid HTTP/HTTPS URL',
+                level: MessageLevel.warning,
+              );
+              return;
+            }
+            Navigator.of(context).pop(result);
+          },
+          child: Text(context.appLocalizations.confirm),
+        ),
+      ],
+      child: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (index, item) in _items.indexed) ...[
+              Row(
+                children: [
+                  SizedBox(
+                    width: 108,
+                    child: TextField(
+                      controller: item.label,
+                      decoration: InputDecoration(
+                        labelText: zh ? '名称' : 'Name',
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: item.url,
+                      decoration: const InputDecoration(
+                        labelText: 'URL',
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.appLocalizations.remove,
+                    onPressed: () => _remove(index),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                  ),
+                ],
+              ),
+              if (index != _items.length - 1) const SizedBox(height: 8),
+            ],
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _add,
+                icon: const Icon(Icons.add_rounded),
+                label: Text(zh ? '添加目标' : 'Add target'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LatencyTargetDraft {
+  _LatencyTargetDraft(String labelValue, String urlValue)
+      : label = TextEditingController(text: labelValue),
+        url = TextEditingController(text: urlValue);
+
+  final TextEditingController label;
+  final TextEditingController url;
+
+  void dispose() {
+    label.dispose();
+    url.dispose();
   }
 }
 
