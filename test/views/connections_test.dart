@@ -185,6 +185,38 @@ void main() {
     await teardownView(tester);
   });
 
+  testWidgets('keeps search open while realtime snapshots refresh', (
+    tester,
+  ) async {
+    var download = 0;
+    when(core.getConnections).thenAnswer(
+      (_) async => [
+        _tracker(
+          id: 'a',
+          host: 'alpha.test',
+          download: download += 128,
+        ),
+      ],
+    );
+
+    await pumpConnections(tester);
+    await tester.tap(find.byIcon(Icons.search));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.enterText(find.byType(TextField), 'alpha');
+
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+
+    expect(find.byType(TextField), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller?.text,
+      'alpha',
+    );
+    expect(find.textContaining('alpha.test'), findsWidgets);
+
+    await teardownView(tester);
+  });
+
   testWidgets('keeps the empty state when core throws', (tester) async {
     when(core.getConnections).thenThrow(StateError('core down'));
 

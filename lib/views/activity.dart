@@ -41,15 +41,12 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
           onChanged: (label) => setState(() => _current = label),
         ),
       ),
-      child: FadeThroughBox(
-        alignment: Alignment.topCenter,
-        child: KeyedSubtree(
-          key: ValueKey(current),
-          child: switch (current) {
-            PageLabel.logs => const LogsView(),
-            _ => const ConnectionsView(),
-          },
-        ),
+      child: KeyedSubtree(
+        key: ValueKey(current),
+        child: switch (current) {
+          PageLabel.logs => const LogsView(),
+          _ => const ConnectionsView(),
+        },
       ),
     );
   }

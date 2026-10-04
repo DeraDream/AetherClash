@@ -54,6 +54,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   List<String> _keywords = const [];
   DateTime? _lastSnapshotAt;
   Timer? _requestRefreshTimer;
+  late final AppBarSearchState _searchState;
 
   @override
   Duration get pollInterval => const Duration(milliseconds: 500);
@@ -61,7 +62,13 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   @override
   void initState() {
     super.initState();
+    _searchState = AppBarSearchState(onSearch: _handleSearch);
     coreEventManager.addListener(this);
+  }
+
+  void _handleSearch(String query) {
+    if (!mounted) return;
+    setState(() => _query = query);
   }
 
   @override
@@ -457,9 +464,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
 
     return CommonScaffold(
       title: appLocalizations.connections,
-      searchState: AppBarSearchState(
-        onSearch: (query) => setState(() => _query = query),
-      ),
+      searchState: _searchState,
       onKeywordsUpdate: (keywords) => setState(() => _keywords = keywords),
       body: Column(
         children: [

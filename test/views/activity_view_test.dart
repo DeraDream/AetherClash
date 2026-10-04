@@ -84,14 +84,16 @@ void main() {
     await pumpActivity(tester);
 
     await tester.tap(find.text('Logs'));
-    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
     expect(find.byType(LogsView), findsOneWidget);
+    expect(find.byType(ConnectionsView), findsNothing);
 
     container
         .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(openLogs: false));
-    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
     expect(find.text('Logs'), findsNothing);
+    expect(find.byType(LogsView), findsNothing);
     expect(find.byType(ConnectionsView), findsOneWidget);
 
     await drainCorePoll(tester);
