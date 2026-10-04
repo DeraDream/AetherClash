@@ -95,11 +95,13 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     if (mode == Mode.direct) {
       return 'DIRECT';
     }
-    final groups = ref.read(currentGroupsStateProvider).value;
+    final visibleGroups = ref.read(currentGroupsStateProvider).value;
     final preferred = ref.read(currentProfileProvider)?.currentGroupName;
-    final group = _leadingGroup(groups, preferred);
-    if (group == null) return null;
+    final visibleGroup = _leadingGroup(visibleGroups, preferred);
+    if (visibleGroup == null) return null;
 
+    final group =
+        ref.read(groupsProvider).getGroup(visibleGroup.name) ?? visibleGroup;
     final selected = ref.read(selectedProxyNameProvider(group.name));
     final rawName = selected?.isNotEmpty == true
         ? selected
@@ -459,12 +461,19 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
       currentProfileProvider.select((state) => state?.currentGroupName),
     );
     final currentGroup = _leadingGroup(currentGroups, preferredGroup);
+    final coreGroup = currentGroup == null
+        ? null
+        : ref.watch(
+            groupsProvider.select(
+              (groups) => groups.getGroup(currentGroup.name),
+            ),
+          );
     final selectedProxy = currentGroup == null
         ? null
         : ref.watch(selectedProxyNameProvider(currentGroup.name));
     final rawCurrentProxyName = selectedProxy?.isNotEmpty == true
         ? selectedProxy
-        : currentGroup?.realNow;
+        : coreGroup?.realNow;
     final currentProxyName = mode == Mode.direct
         ? 'DIRECT'
         : rawCurrentProxyName == null || rawCurrentProxyName.isEmpty
@@ -477,7 +486,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
             ),
           );
     final profileId = ref.watch(currentProfileIdProvider);
-    final groupMembersSignature = currentGroup?.all
+    final groupMembersSignature = (coreGroup ?? currentGroup)?.all
             .map((proxy) => proxy.name)
             .join('\u0000') ??
         '';
