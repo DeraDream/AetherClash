@@ -395,6 +395,24 @@ class SetupAction extends _$SetupAction {
     return '';
   }
 
+  Future<String> getRuntimeProfileWithId(int profileId) async {
+    try {
+      final setupState = await ref.read(setupStateProvider(profileId).future);
+      final patchClashConfig = ref.read(patchClashConfigProvider);
+      final effectiveConfig = patchClashConfig.copyWith.tun(
+        enable: _getEffectiveTunEnable(patchClashConfig.tun.enable),
+      );
+      final res = await getProfile(
+        setupState: setupState,
+        patchConfig: effectiveConfig,
+      );
+      return res.yaml;
+    } catch (e) {
+      dialogs.showNotifier(e.toString(), level: MessageLevel.error);
+    }
+    return '';
+  }
+
   bool _getEffectiveTunEnable(bool enableTun) {
     final authorizationState = ref.read(authorizedTunEnableProvider);
     return enableTun && authorizationState == TunAuthorizationState.authorized;

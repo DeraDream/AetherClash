@@ -37,9 +37,27 @@ class _SnifferViewState extends ConsumerState<SnifferView> {
     });
   }
 
+  Sniffer _withDefaultProtocols(Sniffer config) {
+    final sniff = Map<String, SnifferConfig>.from(config.sniff);
+    sniff.putIfAbsent(
+      'HTTP',
+      () => const SnifferConfig(ports: ['80', '8080-8880']),
+    );
+    sniff.putIfAbsent(
+      'TLS',
+      () => const SnifferConfig(ports: ['443', '8443']),
+    );
+    sniff.putIfAbsent(
+      'QUIC',
+      () => const SnifferConfig(ports: ['443', '8443']),
+    );
+    return config.copyWith(sniff: sniff);
+  }
+
   Future<void> _save(Sniffer next) async {
-    setState(() => _config = next);
-    await preferences.saveSnifferConfig(next);
+    final normalized = _withDefaultProtocols(next);
+    setState(() => _config = normalized);
+    await preferences.saveSnifferConfig(normalized);
     ref.read(setupActionProvider.notifier).applyProfileDebounce();
   }
 

@@ -457,8 +457,8 @@ void _setDesktopSystemProxy(WidgetRef ref, bool value) {
       .update((state) => state.copyWith(systemProxy: value));
 }
 
-/// The routing switches with the detected exit beside them: on desktop TUN
-/// and the system proxy exclude each other, on Android it is the VPN.
+/// Routing controls with the detected exit beside them. Desktop TUN and the
+/// system proxy are independent; Android uses the VPN switch.
 class QuickToggles extends ConsumerWidget {
   const QuickToggles({super.key});
 

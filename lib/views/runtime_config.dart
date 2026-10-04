@@ -46,7 +46,7 @@ class _RuntimeConfigViewState extends ConsumerState<RuntimeConfigView> {
     try {
       final yaml = await ref
           .read(setupActionProvider.notifier)
-          .getProfileWithId(profileId);
+          .getRuntimeProfileWithId(profileId);
       if (!mounted) return;
       _content.value = yaml;
     } finally {
