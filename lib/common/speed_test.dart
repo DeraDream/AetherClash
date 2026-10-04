@@ -3,12 +3,14 @@ const speedTestListenerName = '__aetherclash-speedtest__';
 
 /// A deterministic localhost-only port well away from the normal Clash ports.
 ///
-/// The last three digits follow the configured mixed port so multiple local
-/// profiles using different mixed ports are unlikely to share the same test
-/// listener.
+/// The mixed port is spread across an 8k range so separate local instances are
+/// unlikely to pick the same internal test listener.
 int speedTestListenerPortFor(int mixedPort) {
-  final suffix = mixedPort.abs() % 1000;
-  return 39000 + suffix;
+  var port = 40000 + ((mixedPort.abs() * 37) % 8000);
+  if (port == mixedPort) {
+    port = port == 47999 ? 40000 : port + 1;
+  }
+  return port;
 }
 
 /// Adds an internal selector and an isolated mixed listener used only by the
