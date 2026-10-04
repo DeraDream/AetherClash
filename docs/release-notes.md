@@ -1,43 +1,52 @@
-AetherClash v5.5.6：修复桌面控制与在线升级问题，并为网络信息新增独立节点测速。
+AetherClash v5.5.7：重做网络信息测速与延迟探测，并进一步修复 Windows 在线升级的前台 PowerShell 窗口。
 
 ## 本次更新
 
-- 修复「系统代理 / 虚拟网卡」独立控制
-  - 两张卡片不再响应整卡点击，仅右上角 Switch 可开关
-  - 彻底移除旧的系统代理 / TUN 互斥校正逻辑
-  - 系统代理与 TUN 可以独立开启、独立关闭，也可以同时开启
-  - TUN 开启继续保留二次确认
-- 调整顶部「规则 / 全局 / 直连」
-  - 当前选中项改为蓝色背景
-  - 选中文字使用高对比度颜色
-  - 仅作用于该模式切换控件，不影响其他 segmented UI
-- 修复左下角「网络信息」无法打开
-  - 为每个桌面工作区使用稳定的独立 Navigator
-  - 网络信息继续在右侧内容区打开，左侧菜单始终保留
-  - ESC / 返回优先关闭右侧网络信息页，不会直接关闭应用
-- 修复 Windows 在线升级 PowerShell 窗口残留
-  - 升级 PowerShell 改为后台隐藏运行
-  - 增加 -WindowStyle Hidden 与 -NonInteractive
-  - 静默安装器也隐藏执行
-  - 更新完成后显式退出 PowerShell
-  - 保留下载 → 退出旧进程 → 静默安装 → 自动启动新版的完整流程
-- 网络信息新增「节点测速」
-  - 可选择具体代理节点进行带宽测速
-  - 显示下载速度 Mbps、实际吞吐 MB/s 与节点延迟
-  - 显示测速进度，单次最多约 64 MB / 12 秒
-  - 测速使用独立隐藏策略组和 localhost listener，不会切换当前正在使用的代理节点
-  - 节点列表跟随 mihomo 实时节点列表刷新
-  - 更新订阅、Provider 或配置后测速节点列表自动刷新
-  - 如果原测速节点已被移除，会自动回退到有效节点
-  - 当前测速源使用 Cloudflare
+- Windows 在线升级进一步静默化
+  - 不再直接提权启动 powershell.exe
+  - 改由无控制台窗口的 Windows Script Host（wscript.exe）作为升级启动器
+  - PowerShell 继续使用 -WindowStyle Hidden / -NonInteractive 在后台执行
+  - 保留完整的「下载 → 退出旧进程 → 静默安装 → 自动启动新版」流程
+  - Windows UAC 系统授权框仍可能正常出现，但授权后不再显示管理员 PowerShell 控制台窗口
 
-## 桌面在线升级
+- 网络信息测速重做为 Speedtest 风格
+  - 右上角下拉框现在选择 Speedtest 测速服务器，而不是代理节点
+  - 测速服务器通过当前代理出口获取，并自动按测速服务器延迟排序
+  - 默认通过当前实际代理节点进行测速
+  - 支持嵌套策略组，自动递归解析到最终实际代理节点
+  - Selector 尚未写入本地 selectedMap 时，会回退到 mihomo 当前真实 group.now
+  - 当前代理节点、配置或节点列表变化后，会自动刷新测速服务器列表
+  - 使用独立隐藏测速策略组和仅监听 127.0.0.1 的内部 listener，不修改用户真实代理组
+  - 隐藏测速策略组不会显示在 Global 模式的代理列表中
+  - 下载约 15 秒、上传约 15 秒，多连接并发测试
+  - 测速过程中实时显示 Mbps 与 MB/s
+  - 支持手动停止测速
+  - 最终分别显示：
+    - 下载 Mbps
+    - 下载 MB/s
+    - 上传 Mbps
+    - 上传 MB/s
 
-Windows 用户可从应用内直接检查更新。下载并安装完成后，AetherClash 会在后台完成升级并自动重新启动，不再显示或残留 PowerShell 控制台窗口。
+- 网络延迟探测修正
+  - 不再把完整 DNS/TLS/HTTP 请求耗时直接当作节点延迟
+  - 改用 mihomo 的代理节点 delay 探测，并明确指定当前最终代理节点
+  - 每个目标进行两次探测并取较低有效值，降低首次建连带来的偏差
+  - 当前代理变化后自动重新测试
+  - 网络延迟区域会显示当前结果实际经过的代理节点
+  - 默认目标调整为轻量地址：
+    - Google：gstatic generate_204
+    - Cloudflare：generate_204
+    - GitHub：robots.txt
+
+- CI / 发布流程
+  - 普通 main 提交现在都会执行 Format/Parse、Analyze 与完整 Tests
+  - 普通开发提交不会启动 Windows/macOS 原生打包
+  - 仅 release tag、手动发布或 [release-build] 提交进入正式打包
+  - 发布前新增的代理解析与隐藏组逻辑已通过完整测试
 
 ## 发布目标
 
 - Windows amd64
 - macOS arm64
 
-Android 与 macOS Intel 仍暂时停用，相关构建代码未删除。
+Android 与 macOS Intel 继续暂时停用，相关构建代码仍保留。
