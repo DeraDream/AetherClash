@@ -142,12 +142,14 @@ class SystemAction extends _$SystemAction {
               .read(patchClashConfigProvider.notifier)
               .update((state) => state.copyWith.tun(enable: true));
         }
+        break;
       case DesktopRoute.systemProxy:
         if (!ref.read(networkSettingProvider).systemProxy) {
           ref
               .read(networkSettingProvider.notifier)
               .update((state) => state.copyWith(systemProxy: true));
         }
+        break;
     }
   }
 
