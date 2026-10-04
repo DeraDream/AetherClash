@@ -8,7 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod/riverpod.dart';
 
 final _packageInfo = PackageInfo(
-  appName: 'po0-clash',
+  appName: 'AetherClash',
   packageName: 'io.github.yuuukicreation.po0clash',
   version: '1.2.3',
   buildNumber: '1',
@@ -44,7 +44,7 @@ void main() {
       setGlobalUa('');
 
       expect(globalState.ua, _packageInfo.ua);
-      expect(globalState.ua, contains('po0-clash/v1.2.3'));
+      expect(globalState.ua, contains('AetherClash/v1.2.3'));
     });
 
     test('prefers the configured global user agent', () {

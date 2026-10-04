@@ -183,18 +183,21 @@ void main() {
     await teardownView(tester);
   });
 
-  testWidgets('the scroll-to-end button toggles its icon', (tester) async {
+  testWidgets('the auto-follow button toggles pause and resume', (
+    tester,
+  ) async {
     seedRequests([_tracker(id: 'a', host: 'alpha.test')]);
 
     await pumpRequests(tester);
 
-    expect(find.byIcon(Icons.block), findsOneWidget);
-    expect(find.byIcon(Icons.vertical_align_top), findsNothing);
+    expect(find.byIcon(Icons.pause_circle_outline_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.play_circle_outline_rounded), findsNothing);
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byIcon(Icons.pause_circle_outline_rounded));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.vertical_align_top), findsOneWidget);
+    expect(find.byIcon(Icons.pause_circle_outline_rounded), findsNothing);
+    expect(find.byIcon(Icons.play_circle_outline_rounded), findsOneWidget);
 
     await teardownView(tester);
   });

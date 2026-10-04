@@ -742,8 +742,8 @@ void main() {
       );
     });
 
-    test('a declined authorization falls back to the system proxy and asks '
-        'again when TUN is turned back on', () async {
+    test('a declined authorization disables only TUN and asks again when TUN '
+        'is turned back on', () async {
       TestWidgetsFlutterBinding.ensureInitialized();
       await AppLocalizations.load(const Locale('en'));
       late _AuthorizationSetupAction setupAction;
@@ -773,7 +773,7 @@ void main() {
         TunAuthorizationState.none,
       );
       expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
-      expect(container.read(networkSettingProvider).systemProxy, isTrue);
+      expect(container.read(networkSettingProvider).systemProxy, isFalse);
 
       expect(await setupAction.requestAdmin(true), isFalse);
       expect(setupAction.authorizationRequestCount, 2);

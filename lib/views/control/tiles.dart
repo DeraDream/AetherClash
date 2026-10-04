@@ -621,24 +621,31 @@ class _DesktopRouteCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    icon,
-                    size: 19,
-                    color: value ? Colors.white : glass.secondaryLabel,
-                  ),
-                  const Spacer(),
-                  Transform.scale(
-                    scale: 0.76,
-                    alignment: Alignment.centerRight,
-                    child: Switch(
-                      value: value,
-                      onChanged: onChanged,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              SizedBox(
+                height: 30,
+                child: Row(
+                  children: [
+                    Icon(
+                      icon,
+                      size: 19,
+                      color: value ? Colors.white : glass.secondaryLabel,
                     ),
-                  ),
-                ],
+                    const Spacer(),
+                    SizedBox(
+                      width: 38,
+                      height: 24,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: value,
+                          onChanged: onChanged,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const Spacer(),
               Text(
