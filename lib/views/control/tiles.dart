@@ -601,7 +601,7 @@ class _DesktopRouteCard extends StatelessWidget {
     final activeColor = context.colorScheme.primary;
     return AnimatedContainer(
       duration: context.motionDuration(Durations.short4),
-      height: 88,
+      height: 92,
       decoration: BoxDecoration(
         color: value
             ? activeColor.withValues(alpha: glass.isDark ? 0.88 : 0.92)
