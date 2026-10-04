@@ -1,24 +1,36 @@
-AetherClash v5.5.3：新增网络信息页并继续优化桌面交互。
+AetherClash v5.5.4：重构桌面代理接管、网络拓扑与网络诊断，并新增运行时配置和流量嗅探。
 
 ## 本次更新
 
-- 新增「网络信息」页面，从桌面侧栏底部公网 IP 入口进入
-- 当前 IP 支持来源选择与手动刷新
-  - 自动（多源抢最快成功结果）
-  - IP.SB
-  - ipwho.is
-  - ipapi.co
-  - ipinfo.io
-  - ident.me
-  - myip.com
-  - ip-api.com
-- 新增网络拓扑：本机 → AetherClash / mihomo → 当前代理或 DIRECT → 公网出口
-- 新增网络延迟检测，默认检测 Google / Cloudflare / GitHub
-- 延迟页面显示单项延迟、颜色状态、进度条和平均延迟，并支持手动刷新
-- 「活动 → 请求」自动跟随控制从页面中央移到右上角，并改为暂停 / 恢复图标
-- 优化桌面语言选择弹窗与代理页面右侧设置面板样式
-- Release 暂停 Android 与 macOS Intel 构建，目前只发布 Windows amd64 与 macOS arm64
-- 保留 v5.5.2 的 Windows 在线升级完成后自动重启修复
+- 重构桌面「系统代理 / 虚拟网卡」控制
+  - 移除原有 Tab / 二选一样式
+  - 改为两个独立卡片，各自拥有独立开关
+  - 系统代理与 TUN 允许独立开启或关闭
+  - TUN 开启增加二次确认
+  - TUN 授权失败只关闭 TUN，不再自动切换系统代理
+- 重做「网络拓扑」
+  - 参考 Clash Party 的实时连接拓扑
+  - 基于 mihomo Connections 动态生成代理组 → 节点 → 规则 → 来源 IP → 来源端口
+  - 显示连接数和流量，并支持展开、折叠、拖动与缩放
+  - 支持暂停 / 恢复实时刷新
+- 完善「网络信息」
+  - 当前公网 IP 支持多数据源切换和手动刷新
+  - 增加国家 / 地区、城市、ASN、运营商 / 组织及数据来源
+  - 延迟检测目标支持新增、删除和编辑，并持久保存
+  - 默认保留 Google、Cloudflare、GitHub
+- 新增「运行时配置」
+  - 从内核页面进入
+  - 查看最终生成并交给 mihomo 的 YAML
+  - 支持 YAML 高亮、搜索、刷新、复制全部和导出
+  - TUN 状态按照实际授权状态生成
+- 新增「流量嗅探」
+  - 独立 Sniffer 设置页面
+  - 支持 HTTP / TLS / QUIC 端口配置
+  - 支持覆盖目标地址、Force DNS Mapping、Parse Pure IP
+  - 支持强制嗅探域名、跳过域名、跳过来源 / 目标 IP 或 CIDR
+  - 修改后自动重新生成 mihomo 配置并持久保存
+- 网络信息页继续保持在桌面工作区内打开，左侧主菜单始终可见
+- Release 继续只构建 Windows amd64 与 macOS arm64
 
 ## 桌面在线升级
 
@@ -29,4 +41,4 @@ Windows 用户可从应用内直接检查更新。下载并安装完成后，Aet
 - Windows amd64
 - macOS arm64
 
-Android 与 macOS Intel 仅暂时从 Release 构建矩阵中注释，代码没有删除。
+Android 与 macOS Intel 仍暂时停用，相关构建代码未删除。

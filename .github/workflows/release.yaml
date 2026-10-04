@@ -1,9 +1,12 @@
 name: release
 
-# Runs only for a release tag or by hand; never on branch pushes or pull
-# requests (docs/development/release.md).
+# Release tags and manual runs always package. A main push packages only when
+# its commit message contains [release-build], so normal development pushes
+# never consume release runners.
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v[0-9]*'
   workflow_dispatch:
@@ -27,6 +30,9 @@ env:
 
 jobs:
   brand-assets:
+    # A main-branch push packages only when explicitly requested in the commit
+    # message; tags and manual workflow_dispatch runs always package.
+    if: ${{ github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release-build]') }}
     name: Brand assets
     runs-on: ubuntu-latest
     steps:
