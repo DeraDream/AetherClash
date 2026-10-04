@@ -55,6 +55,23 @@ void installSpeedTestRuntimeConfig(
   config['listeners'] = listeners;
 }
 
+dynamic decodeSpeedTestJsonBody(List<int> bytes) {
+  if (bytes.isEmpty) {
+    throw const FormatException('Empty Speedtest response.');
+  }
+
+  List<int> payload = bytes;
+  // Speedtest.net commonly serves the JS server list as gzip. HttpClient is
+  // intentionally configured with autoUncompress=false for throughput
+  // measurements, so decode the discovery response explicitly.
+  if (bytes.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b) {
+    payload = gzip.decode(bytes);
+  }
+
+  final body = utf8.decode(payload);
+  return json.decode(body);
+}
+
 final class SpeedTestServer {
   const SpeedTestServer({
     required this.id,
@@ -232,7 +249,11 @@ final class SpeedTestEngine {
       );
       final request = await client.getUrl(uri);
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      request.headers.set(HttpHeaders.refererHeader, 'https://www.speedtest.net/');
+      request.headers.set(HttpHeaders.acceptEncodingHeader, 'gzip');
+      request.headers.set(
+        HttpHeaders.refererHeader,
+        'https://www.speedtest.net/',
+      );
       final response = await request.close().timeout(
         const Duration(seconds: 8),
       );
@@ -242,11 +263,13 @@ final class SpeedTestEngine {
           uri: uri,
         );
       }
-      final body = await response
-          .transform(utf8.decoder)
-          .join()
+      final bytes = await response
+          .fold<BytesBuilder>(
+            BytesBuilder(copy: false),
+            (builder, chunk) => builder..add(chunk),
+          )
           .timeout(const Duration(seconds: 8));
-      final decoded = json.decode(body);
+      final decoded = decodeSpeedTestJsonBody(bytes.takeBytes());
       if (decoded is! List) {
         throw const FormatException('Invalid Speedtest server list.');
       }

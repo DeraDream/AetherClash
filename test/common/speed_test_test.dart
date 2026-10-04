@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:fl_clash/common/speed_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -42,6 +45,20 @@ void main() {
     expect(speedListeners.single['listen'], '127.0.0.1');
     expect(speedListeners.single['port'], 43930);
     expect(speedListeners.single['proxy'], speedTestGroupName);
+  });
+
+  test('decodes plain and gzip Speedtest server JSON', () {
+    const body =
+        '[{"id":"1","name":"Singapore","country":"Singapore",'
+        '"sponsor":"ISP","url":"https://example.com/upload.php",'
+        '"host":"example.com:443"}]';
+
+    final plain = decodeSpeedTestJsonBody(utf8.encode(body));
+    final compressed = decodeSpeedTestJsonBody(gzip.encode(utf8.encode(body)));
+
+    expect(plain, isA<List<dynamic>>());
+    expect(compressed, equals(plain));
+    expect((compressed as List).single['id'], '1');
   });
 
   test('SpeedTestServer derives classic Speedtest endpoints', () {
