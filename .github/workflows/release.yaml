@@ -30,9 +30,8 @@ env:
 
 jobs:
   preflight:
-    # Run on release tags/manual dispatches, or on explicitly requested
-    # main-branch release builds. Native packaging waits for this gate.
-    if: ${{ github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release-build]') }}
+    # Analyze and tests run on every main push. Native packaging is still
+    # gated below and only starts for release tags/manual runs/[release-build].
     name: Preflight
     runs-on: ubuntu-latest
     steps:
@@ -66,6 +65,7 @@ jobs:
 
   brand-assets:
     needs: [ preflight ]
+    if: ${{ github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release-build]') }}
     name: Brand assets
     runs-on: ubuntu-latest
     steps:
