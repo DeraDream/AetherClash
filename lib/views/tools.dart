@@ -165,7 +165,6 @@ class _ToolsBoard extends ConsumerWidget {
       (
         appLocalizations.other,
         [
-          const _DisclaimerTile(),
           if (developerMode)
             _SettingTile.page(
               icon: Icons.developer_board_outlined,
@@ -414,25 +413,6 @@ class _LocaleChoice {
   int get hashCode => locale.hashCode;
 }
 
-class _DisclaimerTile extends ConsumerWidget {
-  const _DisclaimerTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return _SettingTile(
-      icon: Icons.gavel_rounded,
-      tone: GlassTone.neutral,
-      title: context.appLocalizations.disclaimer,
-      onTap: (_) async {
-        final isDisclaimerAccepted = await dialogs.showDisclaimer();
-        if (!isDisclaimerAccepted) {
-          await ref.read(systemActionProvider.notifier).handleExit();
-        }
-      },
-    );
-  }
-}
-
 class _DesktopSettingsPage extends StatelessWidget {
   const _DesktopSettingsPage({required this.child});
 
@@ -465,44 +445,34 @@ class _DesktopLocaleDialog extends StatelessWidget {
     final glass = context.glass;
     final colorScheme = context.colorScheme;
     return Dialog(
-      backgroundColor: glass.glassStrong,
+      backgroundColor: colorScheme.surfaceContainerLow,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.all(AppCorner.large),
-        side: BorderSide(color: glass.separator.withValues(alpha: 0.85)),
+        borderRadius: AppRadius.all(16),
+        side: BorderSide(
+          color: glass.separator.withValues(alpha: 0.72),
+        ),
       ),
+      clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 320, maxWidth: 352),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
+        constraints: const BoxConstraints(minWidth: 320, maxWidth: 360),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 14, 10, 10),
+              child: Row(
                 children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.all(8),
-                    ),
-                    child: Icon(
-                      Icons.translate_rounded,
-                      size: 18,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       title,
                       style: context.textTheme.titleLarge?.copyWith(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ),
@@ -512,44 +482,39 @@ class _DesktopLocaleDialog extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(),
                     icon: Icon(
                       Icons.close_rounded,
-                      size: 20,
+                      size: 19,
                       color: glass.secondaryLabel,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: glass.fill.withValues(alpha: glass.isDark ? 0.7 : 0.8),
-                  borderRadius: AppRadius.all(11),
-                  border: Border.all(
-                    color: glass.separator.withValues(alpha: 0.55),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Column(
-                    children: [
-                      for (final (index, choice) in options.indexed) ...[
-                        if (index > 0)
-                          Divider(
-                            height: 1,
-                            indent: 42,
-                            color: glass.separator.withValues(alpha: 0.45),
-                          ),
-                        _DesktopLocaleOption(
-                          label: labelOf(choice),
-                          selected: choice == value,
-                          onTap: () => Navigator.of(context).pop(choice),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+            ),
+            Divider(
+              height: 0.5,
+              color: glass.separator.withValues(alpha: 0.50),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+              child: Column(
+                children: [
+                  for (final (index, choice) in options.indexed) ...[
+                    if (index > 0)
+                      Divider(
+                        height: 0.5,
+                        indent: 12,
+                        endIndent: 12,
+                        color: glass.separator.withValues(alpha: 0.38),
+                      ),
+                    _DesktopLocaleOption(
+                      label: labelOf(choice),
+                      selected: choice == value,
+                      onTap: () => Navigator.of(context).pop(choice),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -580,46 +545,33 @@ class _DesktopLocaleOption extends StatelessWidget {
           duration: Durations.short3,
           curve: Curves.easeOutCubic,
           constraints: const BoxConstraints(minHeight: 42),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: selected
                 ? colorScheme.primary.withValues(
-                    alpha: glass.isDark ? 0.16 : 0.10,
+                    alpha: glass.isDark ? 0.10 : 0.07,
                   )
                 : Colors.transparent,
             borderRadius: AppRadius.all(8),
           ),
           child: Row(
             children: [
-              AnimatedContainer(
-                duration: Durations.short3,
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: selected ? colorScheme.primary : Colors.transparent,
-                  border: Border.all(
-                    color: selected
-                        ? colorScheme.primary
-                        : glass.secondaryLabel.withValues(alpha: 0.7),
-                    width: 1.7,
-                  ),
-                ),
-                child: selected
-                    ? Icon(
-                        Icons.check_rounded,
-                        size: 14,
-                        color: colorScheme.onPrimary,
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
-                  style: context.textTheme.bodyLarge?.copyWith(
+                  style: context.textTheme.bodyMedium?.copyWith(
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              AnimatedOpacity(
+                opacity: selected ? 1 : 0,
+                duration: Durations.short3,
+                child: Icon(
+                  Icons.check_rounded,
+                  size: 19,
+                  color: colorScheme.primary,
                 ),
               ),
             ],
@@ -629,3 +581,4 @@ class _DesktopLocaleOption extends StatelessWidget {
     );
   }
 }
+
