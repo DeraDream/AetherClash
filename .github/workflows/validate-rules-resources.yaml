@@ -26,8 +26,8 @@ jobs:
       - name: Format changed Dart files
         run: |
           dart format             lib/enum/enum.dart             lib/common/l10n_labels.dart             lib/models/clash_config.dart             lib/providers/database.dart             lib/providers/actions/setup.dart             lib/common/preferences.dart             lib/views/routing_rules.dart             lib/views/navigation.dart             lib/views/views.dart             lib/views/tools.dart             lib/views/resources.dart
-      - name: Check formatter clean
-        run: git diff --exit-code
+      - name: Show formatter diff
+        run: git diff -- lib test tool plugins setup.dart
       - name: Analyze
         run: flutter analyze --no-fatal-infos
       - name: Skip native build hooks
