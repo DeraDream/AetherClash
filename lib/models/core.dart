@@ -169,6 +169,29 @@ extension ExternalProviderExt on ExternalProvider {
   String get updatingKey => 'provider_$name';
 }
 
+class ExternalProviderContent {
+  final String data;
+  final bool editable;
+  final String format;
+  final String vehicleType;
+
+  const ExternalProviderContent({
+    required this.data,
+    required this.editable,
+    required this.format,
+    required this.vehicleType,
+  });
+
+  factory ExternalProviderContent.fromJson(Map<String, Object?> json) {
+    return ExternalProviderContent(
+      data: json['data']?.toString() ?? '',
+      editable: json['editable'] == true,
+      format: json['format']?.toString() ?? '',
+      vehicleType: json['vehicle-type']?.toString() ?? '',
+    );
+  }
+}
+
 DateTime? _runtimeRuleDate(Object? value) {
   if (value is! String || value.isEmpty) {
     return null;
