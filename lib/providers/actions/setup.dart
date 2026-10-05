@@ -356,6 +356,10 @@ class SetupAction extends _$SetupAction {
     if (scriptContent?.isNotEmpty == true) {
       rawConfig = await handleEvaluate(scriptContent!, rawConfig);
     }
+    rawConfig = {
+      ...rawConfig,
+      'geodata-mode': await preferences.getGeoDataMode(),
+    };
     if (profileId != null && overwriteType == OverwriteType.standard) {
       final disabledRuleIds = (await database.rulesDao
               .queryProfileDisabledRules(profileId)
