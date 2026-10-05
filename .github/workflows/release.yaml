@@ -15,6 +15,11 @@ on:
         description: Release tag to upload to (empty keeps the artifacts on the run only)
         required: false
         default: ''
+      verbose:
+        description: Enable verbose package logs for diagnosis
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -195,14 +200,13 @@ jobs:
       # Persist those records and native outputs across hosted runners so
       # Flutter/UI-only releases do not rebuild the Go Core/Rust Helper.
       - name: Restore native Core/Helper cache
+        id: native-cache
         uses: actions/cache@v4
         with:
           path: |
             .dart_tool/setup_build_cache/v1/
             libclash/
           key: native-v1-${{ runner.os }}-${{ matrix.arch || 'all' }}-${{ hashFiles('core/**', 'services/helper/**', 'plugins/setup/setup_hooks/**', 'build_config.yaml') }}
-          restore-keys: |
-            native-v1-${{ runner.os }}-${{ matrix.arch || 'all' }}-
 
       - name: Download generated brand assets
         uses: actions/download-artifact@v4
@@ -254,6 +258,30 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          # Phase-2 A/B showed that disabling Pub cache only shifted ~53s from
+          # cache restore to flutter pub get on Windows, so keep it enabled.
+          pub-cache: true
+
+      # Cache the exact appdmg installation instead of globally reinstalling it
+      # on every macOS runner. setup.dart sees it on PATH and skips npm install.
+      - name: Restore appdmg
+        if: matrix.platform == 'macos'
+        id: appdmg-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.tool_cache }}/aetherclash-appdmg/0.6.6
+          key: appdmg-v1-${{ runner.os }}-0.6.6
+
+      - name: Setup appdmg
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          APPDMG_PREFIX="${{ runner.tool_cache }}/aetherclash-appdmg/0.6.6"
+          if [[ ! -x "$APPDMG_PREFIX/node_modules/.bin/appdmg" ]]; then
+            npm install --prefix "$APPDMG_PREFIX" --no-audit --no-fund appdmg@0.6.6
+          fi
+          echo "$APPDMG_PREFIX/node_modules/.bin" >> "$GITHUB_PATH"
+          test -x "$APPDMG_PREFIX/node_modules/.bin/appdmg"
 
       - name: Setup Xcode
         if: matrix.platform == 'macos'
@@ -271,7 +299,9 @@ jobs:
       - name: Package
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
-        run: dart setup.dart ${{ matrix.platform }} --env stable -v
+        # Normal packages stay concise; workflow_dispatch can opt back into
+        # verbose Flutter output when diagnosing a failure.
+        run: dart setup.dart ${{ matrix.platform }} --env stable ${{ inputs.verbose == true && '-v' || '' }}
 
       - name: Upload
         uses: actions/upload-artifact@v4
