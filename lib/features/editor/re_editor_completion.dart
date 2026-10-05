@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:re_editor/re_editor.dart';
 
 import 'clash_schema.dart';
