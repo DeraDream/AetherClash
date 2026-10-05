@@ -14,4 +14,5 @@ export 'po0_firewall.dart';
 export 'profiles/profiles.dart';
 export 'proxies/proxies.dart';
 export 'resources.dart';
+export 'routing_rules.dart';
 export 'tools.dart';
