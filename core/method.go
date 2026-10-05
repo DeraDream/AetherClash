@@ -236,6 +236,14 @@ var methodHandlers = map[CoreMethod]methodHandler{
 	getExternalProviderMethod: withArguments(func(name *string, response MethodResponse) {
 		response.success(handleGetExternalProvider(*name))
 	}),
+	getExternalProviderContentMethod: withArguments(func(name *string, response MethodResponse) {
+		content, err := handleGetExternalProviderContent(*name)
+		if err != nil {
+			response.failure(err.Code, err.Message, err.Details)
+			return
+		}
+		response.success(content)
+	}),
 	updateExternalProviderMethod: withArguments(func(name *string, response MethodResponse) {
 		safeGo(response, func() {
 			if err := handleUpdateExternalProvider(*name); err != nil {
