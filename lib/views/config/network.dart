@@ -202,10 +202,16 @@ class TunStackItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
     return ConfigOptionsItem<TunStack>(
       title: (l) => l.stackMode,
       options: TunStack.values,
-      textBuilder: (stack) => stack.name,
+      textBuilder: (stack) => switch (stack) {
+        TunStack.mips => isChinese ? 'MIPS（推荐）' : 'MIPS (Recommended)',
+        TunStack.gvisor => 'gVisor',
+        TunStack.system => 'System',
+        TunStack.mixed => 'Mixed',
+      },
       selector: patchClashConfigProvider.select((state) => state.tun.stack),
       onChanged: _tunWriter((state, value) => state.copyWith.tun(stack: value)),
     );
