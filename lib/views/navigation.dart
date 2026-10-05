@@ -48,6 +48,20 @@ class Navigation implements NavigationPort {
         modes: const [NavigationItemMode.laptop, NavigationItemMode.desktop],
       ),
       NavigationItem(
+        icon: const Icon(Icons.rule_rounded),
+        label: PageLabel.rules,
+        builder: (_) =>
+            const RoutingRulesView(key: GlobalObjectKey(PageLabel.rules)),
+        modes: const [NavigationItemMode.laptop, NavigationItemMode.desktop],
+      ),
+      NavigationItem(
+        icon: const Icon(Icons.storage_rounded),
+        label: PageLabel.resources,
+        builder: (_) =>
+            const ResourcesView(key: GlobalObjectKey(PageLabel.resources)),
+        modes: const [NavigationItemMode.laptop, NavigationItemMode.desktop],
+      ),
+      NavigationItem(
         icon: const Icon(Icons.public_rounded),
         label: PageLabel.activity,
         builder: (_) =>
