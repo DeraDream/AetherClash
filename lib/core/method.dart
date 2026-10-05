@@ -26,6 +26,7 @@ enum CoreMethod {
   closeConnection,
   getExternalProviders,
   getExternalProvider,
+  getExternalProviderContent,
   updateGeoData,
   updateExternalProvider,
   sideLoadExternalProvider,
