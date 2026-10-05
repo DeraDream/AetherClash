@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  checks: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,8 +38,284 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      # A metadata-only [release-build] commit can reuse the already-green
+      # Preflight from its direct parent. Any code/config change, missing check,
+      # API failure, tag, or manual run falls back to the full gate below.
+      - name: Detect reusable parent Preflight
+        id: reuse
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release-build]') }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "reuse=false" >> "$GITHUB_OUTPUT"
+          PARENT="$(git rev-parse HEAD^)"
+          CHANGED="$(git diff --name-only "$PARENT" HEAD)"
+          INVALID="$(printf '%s\n' "$CHANGED" | grep -Ev '^(pubspec\.yaml|docs/release-notes\.md)
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        if: ${{ steps.reuse.outputs.reuse != 'true' }}
+        run: flutter pub get
+
+      - name: Validate Dart formatting/parsing
+        if: ${{ steps.reuse.outputs.reuse != 'true' }}
+        # Release packaging must not be blocked by pre-existing style-only
+        # differences; analyze/tests below are the functional quality gates.
+        run: dart format --output=none lib test tool plugins setup.dart
+
+      - name: Analyze
+        if: ${{ steps.reuse.outputs.reuse != 'true' }}
+        run: flutter analyze --no-fatal-infos
+
+      - name: Skip native build hooks for tests
+        if: ${{ steps.reuse.outputs.reuse != 'true' }}
+        run: |
+          yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
+
+      - name: Run tests
+        if: ${{ steps.reuse.outputs.reuse != 'true' }}
+        run: flutter test --reporter compact
+
+  brand-assets:
+    # Icon generation is independent from Dart analysis/tests, so run it in
+    # parallel with Preflight. The build waits for both jobs below.
+    if: ${{ github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release-build]') }}
+    name: Brand assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore generated brand assets
+        id: brand-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            assets/images/icon.png
+            assets/images/icon.ico
+            assets/images/tray/unix/
+            assets/images/tray/windows/
+            android/app/src/main/ic_launcher-playstore.png
+            android/app/src/main/res/mipmap-*/
+            android/app/src/main/res/mipmap-television-*/
+            macos/Runner/Assets.xcassets/AppIcon.appiconset/
+            windows/runner/resources/app_icon.ico
+          key: brand-assets-v1-${{ hashFiles('assets_source/images/icon/**', 'tool/generate_app_icons.sh') }}
+
+      - name: Install icon tools
+        if: ${{ steps.brand-cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin webp
+
+      - name: Generate AetherClash icons
+        if: ${{ steps.brand-cache.outputs.cache-hit != 'true' }}
+        run: bash tool/generate_app_icons.sh
+
+      - name: Upload generated brand assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-brand-assets
+          path: |
+            assets/images/icon.png
+            assets/images/icon.ico
+            assets/images/tray/unix/
+            assets/images/tray/windows/
+            android/app/src/main/ic_launcher-playstore.png
+            android/app/src/main/res/mipmap-*/
+            android/app/src/main/res/mipmap-television-*/
+            macos/Runner/Assets.xcassets/AppIcon.appiconset/
+            windows/runner/resources/app_icon.ico
+          overwrite: true
+
+  build:
+    needs: [ preflight, brand-assets ]
+    name: ${{ matrix.platform }}${{ matrix.arch && format('-{0}', matrix.arch) }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Android packaging is temporarily disabled.
+          # - platform: android
+          #   os: ubuntu-latest
+          - platform: windows
+            os: windows-2022
+            arch: amd64
+          - platform: macos
+            os: macos-latest
+            arch: arm64
+          # macOS Intel packaging is temporarily disabled.
+          # - platform: macos
+          #   os: macos-15-intel
+          #   arch: amd64
+
+    steps:
+      - name: Enable git long paths (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: git config --global core.longpaths true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # The setup build hook already validates fingerprints and output
+      # metadata. Persist its records and native outputs across hosted runners
+      # so UI-only releases do not rebuild the Go Core/Rust Helper.
+      - name: Restore native Core/Helper cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .dart_tool/setup_build_cache/v1/
+            libclash/
+          key: native-v1-${{ runner.os }}-${{ matrix.arch || 'all' }}-${{ hashFiles('core/**', 'services/helper/**', 'plugins/setup/setup_hooks/**', 'build_config.yaml') }}
+          restore-keys: |
+            native-v1-${{ runner.os }}-${{ matrix.arch || 'all' }}-
+
+      - name: Download generated brand assets
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-brand-assets
+          path: .
+
+      - name: Check release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: bash scripts/check-release-tag.sh "${{ github.ref_name }}"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: core/go.sum
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.platform }}-${{ matrix.arch || 'all' }}
+          workspaces: services/helper
+          cache-directories: .dart_tool/hooks_runner
+
+      - name: Setup Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        if: matrix.platform == 'android'
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Setup NDK
+        if: matrix.platform == 'android'
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+          link-to-sdk: true
 
       - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup Xcode
+        if: matrix.platform == 'macos'
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app
+          xcodebuild -version
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      # The Android release keystore and android/signing.properties are
+      # committed on purpose (docs/adr/0006-standalone-app-identity.md).
+      - name: Package
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: dart setup.dart ${{ matrix.platform }} --env stable -v
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ matrix.platform }}${{ matrix.arch && format('-{0}', matrix.arch) }}
+          path: ./dist
+          overwrite: true
+
+  release:
+    needs: [ build ]
+    if: ${{ startsWith(github.ref, 'refs/tags/') || inputs.tag != '' || (github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release-build]')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist/
+          pattern: artifact-*
+          merge-multiple: true
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ -n "$INPUT_TAG" ]]; then
+            TAG="$INPUT_TAG"
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            VERSION="$(awk '/^version:/ {print $2; exit}' pubspec.yaml)"
+            VERSION="${VERSION%%+*}"
+            TAG="v$VERSION"
+          fi
+
+          mapfile -t files < <(find dist -type f \( -name '*.exe' -o -name '*.zip' -o -name '*.dmg' -o -name '*.apk' \))
+          files+=(scripts/install-macos.sh)
+
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title "AetherClash $TAG" \
+              --notes-file docs/release-notes.md
+          fi
+          gh release upload "$TAG" "${files[@]}" --clobber
+ || true)"
+          if [[ -z "$CHANGED" || -n "$INVALID" ]]; then
+            echo "Release commit contains non-metadata changes; running full Preflight."
+            exit 0
+          fi
+
+          COUNT="$(gh api             -H "Accept: application/vnd.github+json"             "/repos/$GITHUB_REPOSITORY/commits/$PARENT/check-runs"             --jq '[.check_runs[] | select(.name == "Preflight" and .conclusion == "success")] | length'             2>/dev/null || echo 0)"
+          if [[ "$COUNT" =~ ^[0-9]+$ ]] && (( COUNT > 0 )); then
+            echo "reuse=true" >> "$GITHUB_OUTPUT"
+            echo "Reusing successful parent Preflight for $PARENT."
+          else
+            echo "No successful parent Preflight found; running full Preflight."
+          fi
+
+      - name: Reused parent Preflight
+        if: ${{ steps.reuse.outputs.reuse == 'true' }}
+        run: echo "No functional files changed; parent Preflight already passed."
+
+      - name: Setup Flutter
+        if: ${{ steps.reuse.outputs.reuse != 'true' }}
         uses: subosito/flutter-action@v2
         with:
           channel: stable
