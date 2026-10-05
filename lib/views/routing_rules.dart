@@ -157,7 +157,7 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
       isLoading: _loading && rules != null,
       actions: [
         IconButton(
-          tooltip: context.appLocalizations.refresh,
+          tooltip: _text('刷新', 'Refresh'),
           onPressed: _loading ? null : () => _loadRules(showLoading: true),
           icon: const Icon(Icons.refresh_rounded),
         ),
