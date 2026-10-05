@@ -3,7 +3,9 @@ package main
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
+	"maps"
 	"net"
 	"net/url"
 	"os"
@@ -12,6 +14,7 @@ import (
 	"runtime/debug"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -106,6 +109,33 @@ func handleValidateConfig(path string) string {
 	return ""
 }
 
+// Tailscale and EasyTier register a DNS client under the proxy name when built
+// and drop that name's entry on Close, so a probe under the real name would
+// take the resolver from a running proxy of the same name.
+const validationNameSuffix = "\x00validate"
+
+// The per-proxy parser the config load runs; checks across proxies, such as
+// duplicate names, are left to the load itself.
+func handleValidateProxies(mappings []map[string]any) []string {
+	results := make([]string, len(mappings))
+	for i, mapping := range mappings {
+		name, _ := mapping["name"].(string)
+		probe := mapping
+		switch mapping["type"] {
+		case "tailscale", "easytier":
+			probe = maps.Clone(mapping)
+			probe["name"] = name + validationNameSuffix
+		}
+		proxy, err := adapter.ParseProxy(probe)
+		if err != nil {
+			results[i] = strings.ReplaceAll(err.Error(), validationNameSuffix, "")
+			continue
+		}
+		_ = proxy.Close()
+	}
+	return results
+}
+
 const globalProxyName = "GLOBAL"
 
 func isProxyGroupType(adapterType constant.AdapterType) bool {
@@ -155,10 +185,33 @@ func handleGetProxies() ProxiesData {
 		return p.Type(), true
 	})
 
+	views := make(map[string]any, len(proxies))
+	for name, proxy := range proxies {
+		views[name] = proxyView(proxy)
+	}
 	return ProxiesData{
 		All:     allNames,
-		Proxies: proxies,
+		Proxies: views,
 	}
+}
+
+// Proxy.MarshalJSON encodes each node twice, with history the host never reads.
+func proxyView(proxy constant.Proxy) any {
+	node := nodeView{Name: proxy.Name(), Type: proxy.Type().String()}
+	if !isProxyGroupType(proxy.Type()) {
+		return node
+	}
+	data, err := proxy.Adapter().MarshalJSON()
+	view := map[string]any{}
+	if err == nil {
+		err = json.Unmarshal(data, &view)
+	}
+	if err != nil {
+		log.Warnln("[APP] encode group %s: %v", node.Name, err)
+		return node
+	}
+	view["name"] = node.Name
+	return view
 }
 
 var (
