@@ -1,0 +1,129 @@
+name: ui-rework-windows-preview
+
+on:
+  push:
+    branches:
+      - fix/route-card-workspace-nav
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.47.1'
+  GO_VERSION: '1.26.4'
+
+jobs:
+  validate:
+    name: Validate UI rework
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Format changed UI files
+        run: |
+          dart format             lib/views/profiles/profiles.dart             lib/views/profiles/edit.dart             lib/views/tools.dart             lib/common/dialog.dart             lib/widgets/list.dart             lib/common/navigator.dart             lib/views/control/tiles.dart             test/views/control_center_test.dart
+      - name: Ensure formatting is committed
+        run: git diff --exit-code -- .
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+      - name: Skip native hooks for tests
+        run: |
+          yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
+      - name: Relevant widget tests
+        run: |
+          flutter test             test/widgets/edit_profile_focus_test.dart             test/widgets/profile_focus_test.dart             test/common/dialog_test.dart             test/widgets/list_header_focus_test.dart             test/views/control_center_test.dart             --reporter compact
+
+  brand-assets:
+    name: Brand assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore generated brand assets
+        id: brand-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            assets/images/icon.png
+            assets/images/icon.ico
+            assets/images/tray/unix/
+            assets/images/tray/windows/
+            android/app/src/main/ic_launcher-playstore.png
+            android/app/src/main/res/mipmap-*/
+            android/app/src/main/res/mipmap-television-*/
+            macos/Runner/Assets.xcassets/AppIcon.appiconset/
+            windows/runner/resources/app_icon.ico
+          key: brand-assets-v1-${{ hashFiles('assets_source/images/icon/**', 'tool/generate_app_icons.sh') }}
+      - name: Install icon tools
+        if: steps.brand-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin webp
+      - name: Generate icons
+        if: steps.brand-cache.outputs.cache-hit != 'true'
+        run: bash tool/generate_app_icons.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-preview-brand-assets
+          path: |
+            assets/images/icon.png
+            assets/images/icon.ico
+            assets/images/tray/unix/
+            assets/images/tray/windows/
+            windows/runner/resources/app_icon.ico
+          overwrite: true
+
+  windows-preview:
+    name: Windows preview
+    needs: [validate, brand-assets]
+    runs-on: windows-2022
+    steps:
+      - name: Enable git long paths
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Restore native Core/Helper cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .dart_tool/setup_build_cache/v1/
+            libclash/
+          key: native-v1-${{ runner.os }}-amd64-${{ hashFiles('core/**', 'services/helper/**', 'plugins/setup/setup_hooks/**', 'build_config.yaml') }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: ui-preview-brand-assets
+          path: .
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: core/go.sum
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: windows-amd64
+          workspaces: services/helper
+          cache-directories: .dart_tool/hooks_runner
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          pub-cache: true
+      - name: Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+      - name: Package Windows preview
+        run: dart setup.dart windows --env stable
+      - name: Upload Windows preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: AetherClash-v5.5.14-ui-preview-windows
+          path: ./dist
+          overwrite: true
