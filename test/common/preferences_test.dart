@@ -127,6 +127,26 @@ void main() {
     expect(await preferences.isInit, isTrue);
   });
 
+  group('sniffer config', () {
+    test('saveSnifferConfig persists nested protocol maps', () async {
+      const config = Sniffer(
+        enable: true,
+        sniff: {
+          'HTTP': SnifferConfig(ports: ['80', '8080-8880']),
+          'TLS': SnifferConfig(ports: ['443', '8443']),
+        },
+      );
+
+      await preferences.saveSnifferConfig(config);
+
+      final raw = json.decode(store.getString('snifferConfig')!) as Map;
+      final sniff = raw['sniff'] as Map;
+      expect(sniff['HTTP'], isA<Map>());
+      expect((sniff['HTTP'] as Map)['ports'], ['80', '8080-8880']);
+      expect(await preferences.getSnifferConfig(), config);
+    });
+  });
+
   group('boot record', () {
     test('getBootRecord returns null when nothing is stored', () async {
       expect(await preferences.getBootRecord(), isNull);

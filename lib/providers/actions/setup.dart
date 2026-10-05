@@ -357,7 +357,7 @@ class SetupAction extends _$SetupAction {
     final snifferConfig = await preferences.getSnifferConfig();
     rawConfig = {
       ...rawConfig,
-      'sniffer': snifferConfig.toJson(),
+      'sniffer': snifferConfig.toRawConfig(),
     };
     final directory = await appPath.profilesPath;
     final res = makeRealProfileTask(

@@ -215,7 +215,7 @@ class Preferences {
     final sharedPreferencesIns = await sharedPreferencesCompleter.future;
     await sharedPreferencesIns?.setString(
       'snifferConfig',
-      json.encode(config.toJson()),
+      json.encode(config.toRawConfig()),
     );
   }
 

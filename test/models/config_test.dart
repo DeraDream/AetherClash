@@ -253,6 +253,49 @@ void main() {
     });
   });
 
+  group('Sniffer raw config', () {
+    test('serializes protocol settings as plain maps', () {
+      const config = Sniffer(
+        enable: true,
+        overrideDest: false,
+        forceDnsMapping: true,
+        parsePureIp: true,
+        sniff: {
+          'HTTP': SnifferConfig(ports: ['80', '8080-8880']),
+          'TLS': SnifferConfig(
+            ports: ['443', '8443'],
+            overrideDest: true,
+          ),
+        },
+      );
+
+      final raw = config.toRawConfig();
+      final sniff = raw['sniff'];
+
+      expect(sniff, isA<Map>());
+      final http = (sniff as Map)['HTTP'];
+      final tls = sniff['TLS'];
+      expect(http, isA<Map>());
+      expect(tls, isA<Map>());
+      expect((http as Map)['ports'], ['80', '8080-8880']);
+      expect((tls as Map)['ports'], ['443', '8443']);
+      expect(tls['override-destination'], true);
+    });
+
+    test('never leaves SnifferConfig objects in the raw tree', () {
+      const config = Sniffer(
+        sniff: {
+          'QUIC': SnifferConfig(ports: ['443', '8443']),
+        },
+      );
+
+      final sniff = config.toRawConfig()['sniff'] as Map;
+
+      expect(sniff['QUIC'], isNot(isA<SnifferConfig>()));
+      expect((sniff['QUIC'] as Map)['ports'], ['443', '8443']);
+    });
+  });
+
   group('PatchClashConfig JSON round-trip', () {
     test('defaults match Clash patch defaults', () {
       const config = PatchClashConfig();

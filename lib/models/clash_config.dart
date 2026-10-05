@@ -229,6 +229,19 @@ abstract class Sniffer with _$Sniffer {
       _$SnifferFromJson(json);
 }
 
+extension SnifferExt on Sniffer {
+  /// Converts the strongly typed sniffer model into a plain config tree that
+  /// can be consumed by YAML/profile builders without dynamic [] lookups on
+  /// SnifferConfig instances.
+  Map<String, dynamic> toRawConfig() {
+    final raw = Map<String, dynamic>.from(toJson());
+    raw['sniff'] = sniff.map(
+      (protocol, config) => MapEntry(protocol, config.toJson()),
+    );
+    return raw;
+  }
+}
+
 List<String> _formJsonPorts(List? ports) {
   return ports?.map((item) => item.toString()).toList() ?? [];
 }
