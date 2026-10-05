@@ -258,11 +258,15 @@ class ProfileItem extends ConsumerWidget {
   }
 
   void _handleShowEditExtendPage(BuildContext context) {
-    showExtend(
-      context,
-      builder: (context) => AdaptiveSheetScaffold(
-        title: context.appLocalizations.edit,
-        body: EditProfileView(profile: profile, context: context),
+    unawaited(
+      dialogs.showCommonDialog<void>(
+        context: context,
+        child: Builder(
+          builder: (dialogContext) => _ProfileEditDialog(
+            profile: profile,
+            dialogContext: dialogContext,
+          ),
+        ),
       ),
     );
   }
@@ -457,6 +461,84 @@ class ProfileItem extends ConsumerWidget {
           },
         ),
         tileTitleAlignment: ListTileTitleAlignment.top,
+      ),
+    );
+  }
+}
+
+class _ProfileEditDialog extends StatelessWidget {
+  const _ProfileEditDialog({
+    required this.profile,
+    required this.dialogContext,
+  });
+
+  final Profile profile;
+  final BuildContext dialogContext;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = context.glass;
+    final colorScheme = context.colorScheme;
+    return Dialog(
+      backgroundColor: colorScheme.surfaceContainerLow,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.all(18),
+        side: BorderSide(
+          color: glass.separator.withValues(alpha: 0.72),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: 520,
+          maxWidth: 640,
+          minHeight: 520,
+          maxHeight: 720,
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.appLocalizations.edit,
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.appLocalizations.close,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: glass.secondaryLabel,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              height: 0.5,
+              color: glass.separator.withValues(alpha: 0.55),
+            ),
+            Expanded(
+              child: EditProfileView(
+                profile: profile,
+                context: dialogContext,
+                dialogMode: true,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
