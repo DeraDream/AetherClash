@@ -190,6 +190,16 @@ class Preferences {
     );
   }
 
+  Future<bool> getGeoDataMode() async {
+    final sharedPreferencesIns = await sharedPreferencesCompleter.future;
+    return sharedPreferencesIns?.getBool('geoDataMode') ?? false;
+  }
+
+  Future<void> saveGeoDataMode(bool value) async {
+    final sharedPreferencesIns = await sharedPreferencesCompleter.future;
+    await sharedPreferencesIns?.setBool('geoDataMode', value);
+  }
+
   Future<Sniffer> getSnifferConfig() async {
     try {
       final sharedPreferencesIns = await sharedPreferencesCompleter.future;
