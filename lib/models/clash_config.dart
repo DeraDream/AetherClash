@@ -389,7 +389,7 @@ abstract class Rule with _$Rule {
 
   // Mirrors mihomo's ParseRulePayload with needTarget set.
   factory Rule.parse(String value, {int? id}) {
-    id ??= snowflake.id;
+    id ??= _stableConfigRuleId(value);
     final fields = value.split(',').map((item) => item.trim()).toList();
     final type = fields.first.toUpperCase();
     if (type.isEmpty) {
@@ -480,6 +480,18 @@ extension RuleExt on Rule {
       ],
     ].join(',');
   }
+}
+
+int _stableConfigRuleId(String value) {
+  // Source profile rules need stable identities so their enabled/disabled
+  // state survives reloads and subscription updates. Keep them negative to
+  // avoid colliding with Snowflake ids used by user-created rules.
+  var hash = 0x811c9dc5;
+  for (final unit in value.codeUnits) {
+    hash ^= unit;
+    hash = (hash * 0x01000193) & 0x7fffffff;
+  }
+  return -(hash == 0 ? 1 : hash);
 }
 
 List<Rule> _genRules(List<dynamic>? rules) {
