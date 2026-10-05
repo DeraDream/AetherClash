@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/features/editor/editor.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/action.dart';
@@ -157,6 +158,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     final editorPage = EditorPage(
       title: title,
       content: _rawText!,
+      schema: EditorSchema.config,
       onSave: (context, _, content) {
         _handleSaveEdit(context, content);
       },
