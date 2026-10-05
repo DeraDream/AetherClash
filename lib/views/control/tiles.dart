@@ -549,6 +549,17 @@ class QuickToggles extends ConsumerWidget {
 class DesktopRouteCards extends ConsumerWidget {
   const DesktopRouteCards({super.key});
 
+  void _openNetwork(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    BaseNavigator.push(
+      context,
+      BaseScaffold(
+        title: appLocalizations.network,
+        body: const NetworkListView(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
@@ -565,6 +576,7 @@ class DesktopRouteCards extends ConsumerWidget {
             icon: Icons.public_rounded,
             label: appLocalizations.systemProxy,
             value: systemProxy,
+            onTap: () => _openNetwork(context),
             onChanged: (value) => _setDesktopSystemProxy(ref, value),
           ),
         ),
@@ -574,6 +586,7 @@ class DesktopRouteCards extends ConsumerWidget {
             icon: Icons.lan_rounded,
             label: appLocalizations.tun,
             value: tun,
+            onTap: () => _openNetwork(context),
             onChanged: (value) => unawaited(
               _setDesktopTun(context, ref, value),
             ),
@@ -589,33 +602,40 @@ class _DesktopRouteCard extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.onTap,
     required this.onChanged,
   });
 
   final IconData icon;
   final String label;
   final bool value;
+  final VoidCallback onTap;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final glass = context.glass;
     final activeColor = context.colorScheme.primary;
-    return AnimatedContainer(
-      duration: context.motionDuration(Durations.short4),
-      height: 92,
-      decoration: BoxDecoration(
-        color: value
-            ? activeColor.withValues(alpha: glass.isDark ? 0.88 : 0.92)
-            : glass.fill.withValues(alpha: glass.isDark ? 0.72 : 0.86),
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: AppRadius.all(12),
-        border: Border.all(
-          color: value
-              ? activeColor.withValues(alpha: 0.92)
-              : glass.separator.withValues(alpha: 0.55),
-        ),
-      ),
-      child: Padding(
+        child: AnimatedContainer(
+          duration: context.motionDuration(Durations.short4),
+          height: 92,
+          decoration: BoxDecoration(
+            color: value
+                ? activeColor.withValues(alpha: glass.isDark ? 0.88 : 0.92)
+                : glass.fill.withValues(alpha: glass.isDark ? 0.72 : 0.86),
+            borderRadius: AppRadius.all(12),
+            border: Border.all(
+              color: value
+                  ? activeColor.withValues(alpha: 0.92)
+                  : glass.separator.withValues(alpha: 0.55),
+            ),
+          ),
+          child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 8, 8, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,6 +677,8 @@ class _DesktopRouteCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
         ),
       ),
     );
