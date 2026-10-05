@@ -185,6 +185,12 @@ class CoreController {
     return _interface.getExternalProvider(externalProviderName);
   }
 
+  Future<ExternalProviderContent> getExternalProviderContent(
+    String externalProviderName,
+  ) async {
+    return _interface.getExternalProviderContent(externalProviderName);
+  }
+
   Future<String> updateGeoData(String type) {
     return _interface.updateGeoData(type);
   }
