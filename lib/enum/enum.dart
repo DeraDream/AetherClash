@@ -319,6 +319,7 @@ enum PageLabel {
   logs,
   requests,
   resources,
+  rules,
   connections,
   po0,
   core,
