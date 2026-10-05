@@ -155,6 +155,14 @@ class CoreController {
     return _interface.getConnections();
   }
 
+  Future<List<RuntimeRule>> getRules() async {
+    return _interface.getRules();
+  }
+
+  Future<bool> setRuleDisabled(int index, bool disabled) async {
+    return _interface.setRuleDisabled(index, disabled);
+  }
+
   Future<void> closeConnection(String id) async {
     await _interface.closeConnection(id);
   }
