@@ -466,6 +466,11 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
   @override
   void initState() {
     super.initState();
+    ref.listenManual(currentProfileIdProvider, (previous, next) {
+      if (previous != next) {
+        _reload();
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
 
@@ -580,78 +585,66 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
   }
 
   Future<void> _openEditor(ExternalProvider provider) async {
-    final config = _configs[provider.name] ?? const <String, dynamic>{};
-    final path = provider.path;
-    final format = (config['format']?.toString() ?? '').toLowerCase();
-    final binary = format == 'mrs' || (path?.toLowerCase().endsWith('.mrs') ?? false);
-    if (binary) {
-      await dialogs.showMessage(
-        title: provider.name,
-        message: TextSpan(
-          text: _text(
-            'MRS 是二进制规则集，当前仅显示规则数量，不能直接文本编辑。',
-            'MRS is a binary rule-set. Its count is available, but it cannot be edited as text.',
-          ),
-        ),
-        cancelable: false,
-      );
-      return;
-    }
-    if (path == null || path.isEmpty) {
-      await dialogs.showMessage(
-        title: provider.name,
-        message: TextSpan(
-          text: _text(
-            '这个规则集没有可编辑的本地缓存文件。',
-            'This rule-set has no editable local cache file.',
-          ),
-        ),
-        cancelable: false,
-      );
-      return;
-    }
-
-    final file = File(path);
-    if (!await file.exists()) {
-      await dialogs.showMessage(
-        title: provider.name,
-        message: TextSpan(
-          text: _text(
-            '本地规则文件不存在，请先刷新规则集。',
-            'The local rule file does not exist. Refresh the provider first.',
-          ),
-        ),
-        cancelable: false,
-      );
-      return;
-    }
-
-    String content;
+    ExternalProviderContent content;
     try {
-      content = await file.readAsString();
-    } on FormatException {
-      await dialogs.showMessage(
-        title: provider.name,
-        message: TextSpan(
-          text: _text(
-            '该规则集不是可编辑的文本格式。',
-            'This rule-set is not an editable text format.',
-          ),
-        ),
-        cancelable: false,
-      );
+      content = await ref
+          .read(coreHandlerProvider)
+          .getExternalProviderContent(provider.name);
+    } catch (error) {
+      if (mounted) {
+        context.showNotifier(
+          userFacingErrorMessage(error, context.appLocalizations),
+          level: MessageLevel.error,
+        );
+      }
       return;
     }
-
     if (!mounted) return;
+
     final isRemote = provider.vehicleType == 'HTTP';
+    final readOnly = !content.editable;
+    final format = content.format.toLowerCase();
+    final titleSuffix = switch (format) {
+      'mrs' => 'MRS',
+      'inline' => 'INLINE',
+      'text' => 'TEXT',
+      _ => 'YAML',
+    };
+
     BaseNavigator.push(
       context,
       EditorPage(
-        title: provider.name,
-        content: content,
+        title: '${provider.name} · $titleSuffix',
+        content: content.data,
+        languages: format == 'text' || format == 'mrs'
+            ? const []
+            : const [Language.yaml],
         actions: [
-          if (isRemote)
+          if (readOnly)
+            IconButton(
+              tooltip: _text(
+                format == 'mrs'
+                    ? 'MRS 已解析为文本，仅供查看'
+                    : '内联规则来自当前配置，仅供查看',
+                format == 'mrs'
+                    ? 'MRS is decoded to text and is read-only'
+                    : 'Inline rules come from the current profile and are read-only',
+              ),
+              onPressed: () {
+                context.showNotifier(
+                  _text(
+                    format == 'mrs'
+                        ? 'MRS 为二进制格式，这里显示解析后的规则内容。'
+                        : '内联规则属于当前配置，请在配置文件中修改。',
+                    format == 'mrs'
+                        ? 'MRS is binary; this view shows its decoded rules.'
+                        : 'Inline rules belong to the current profile; edit them in the profile config.',
+                  ),
+                );
+              },
+              icon: const Icon(Icons.lock_outline_rounded),
+            ),
+          if (isRemote && !readOnly)
             IconButton(
               tooltip: _text(
                 '远程规则集：下次更新会覆盖本地修改',
@@ -669,33 +662,36 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
               icon: const Icon(Icons.cloud_sync_outlined),
             ),
         ],
-        onSave: (editorContext, _, nextContent) async {
-          await globalState.safeRun<void>(() async {
-            await file.safeWriteAsString(nextContent);
-            final message = await ref
-                .read(proxiesActionProvider.notifier)
-                .sideLoadExternalProvider(
-                  provider,
-                  nextContent,
-                  showLoading: true,
-                );
-            if (message.isNotEmpty) throw MessageException(message);
-          }, silence: false);
-          if (editorContext.mounted) {
-            editorContext.showNotifier(
-              _text(
-                isRemote
-                    ? '已保存到本地缓存；下次远程更新会覆盖'
-                    : '规则集已保存',
-                isRemote
-                    ? 'Saved to local cache; the next remote update will overwrite it'
-                    : 'Rule-set saved',
-              ),
-              level: MessageLevel.success,
-            );
-          }
-          await _reload();
-        },
+        onSave: readOnly
+            ? null
+            : (editorContext, _, nextContent) async {
+                await globalState.safeRun<void>(() async {
+                  final message = await ref
+                      .read(proxiesActionProvider.notifier)
+                      .sideLoadExternalProvider(
+                        provider,
+                        nextContent,
+                        showLoading: true,
+                      );
+                  if (message.isNotEmpty) {
+                    throw MessageException(message);
+                  }
+                }, silence: false);
+                if (editorContext.mounted) {
+                  editorContext.showNotifier(
+                    _text(
+                      isRemote
+                          ? '已保存到本地缓存；下次远程更新会覆盖'
+                          : '规则集已保存',
+                      isRemote
+                          ? 'Saved to local cache; the next remote update will overwrite it'
+                          : 'Rule-set saved',
+                    ),
+                    level: MessageLevel.success,
+                  );
+                }
+                await _reload();
+              },
       ),
     );
   }
