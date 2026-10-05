@@ -11,34 +11,79 @@ concurrency:
 
 env:
   FLUTTER_VERSION: '3.47.1'
+  GO_VERSION: '1.26.4'
 
 jobs:
-  dart:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-      - run: flutter pub get
+
+      - name: Install Dart dependencies
+        run: flutter pub get
+
       - name: Format changed Dart files
         run: |
-          dart format             lib/enum/enum.dart             lib/common/l10n_labels.dart             lib/models/clash_config.dart             lib/providers/database.dart             lib/providers/actions/setup.dart             lib/common/preferences.dart             lib/views/routing_rules.dart             lib/views/navigation.dart             lib/views/views.dart             lib/views/tools.dart             lib/views/resources.dart \
-            lib/core/method.dart \
+          dart format \
+            lib/enum/enum.dart \
+            lib/common/l10n_labels.dart \
+            lib/common/preferences.dart \
+            lib/models/clash_config.dart \
             lib/models/core.dart \
+            lib/providers/database.dart \
+            lib/providers/actions/setup.dart \
+            lib/core/method.dart \
             lib/core/interface.dart \
-            lib/core/controller.dart
+            lib/core/controller.dart \
+            lib/views/routing_rules.dart \
+            lib/views/navigation.dart \
+            lib/views/views.dart \
+            lib/views/tools.dart \
+            lib/views/resources.dart
+
       - name: Show formatter diff
-        run: git diff -- lib test tool plugins setup.dart
+        run: git diff -- lib
+
       - name: Analyze
         run: flutter analyze --no-fatal-infos
+
       - name: Skip native build hooks
         run: |
           yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
-      - name: Focused tests
+
+      - name: Focused Dart tests
         run: |
-          flutter test --reporter expanded             test/models/rule_test.dart             test/providers/setup_action_test.dart             test/views/resources_view_test.dart             test/providers/database_test.dart
+          flutter test --reporter expanded test/models/rule_test.dart
+          flutter test --reporter expanded test/models/core_test.dart
+          flutter test --reporter expanded test/providers/setup_action_test.dart
+          flutter test --reporter expanded test/views/resources_view_test.dart
+          flutter test --reporter expanded test/providers/database_test.dart
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: core/go.sum
+
+      - name: Check Go format
+        run: |
+          files="$(gofmt -l core/*.go)"
+          test -z "$files" || {
+            echo "$files"
+            exit 1
+          }
+
+      - name: Validate Go core
+        working-directory: core
+        env:
+          CGO_ENABLED: 0
+        run: |
+          go test -count=1 .
+          go vet .
