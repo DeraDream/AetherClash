@@ -471,6 +471,11 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
         _reload();
       }
     });
+    ref.listenManual(initProvider, (previous, next) {
+      if (previous != next) {
+        _reload();
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
 
@@ -482,6 +487,13 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
 
   Future<void> _reload() async {
     if (!mounted) return;
+    if (!ref.read(initProvider)) {
+      setState(() {
+        _loading = false;
+        _configs = const {};
+      });
+      return;
+    }
     setState(() => _loading = true);
     try {
       await ref.read(providersProvider.notifier).syncProviders();
