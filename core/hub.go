@@ -360,6 +360,50 @@ func handleGetConnections() *statistic.Snapshot {
 	return statistic.DefaultManager.Snapshot()
 }
 
+func handleGetRules() []RuntimeRule {
+	rawRules := tunnel.Rules()
+	rules := make([]RuntimeRule, 0, len(rawRules))
+	for index, rule := range rawRules {
+		item := RuntimeRule{
+			Index:   index,
+			Type:    rule.RuleType().String(),
+			Payload: rule.Payload(),
+			Proxy:   rule.Adapter(),
+			Size:    -1,
+		}
+		if wrapper, ok := rule.(constant.RuleWrapper); ok {
+			item.Extra = &RuntimeRuleExtra{
+				Disabled:  wrapper.IsDisabled(),
+				HitCount:  wrapper.HitCount(),
+				HitAt:     wrapper.HitAt(),
+				MissCount: wrapper.MissCount(),
+				MissAt:    wrapper.MissAt(),
+			}
+			rule = wrapper.Unwrap()
+		}
+		if rule.RuleType() == constant.GEOIP || rule.RuleType() == constant.GEOSITE {
+			if group, ok := rule.(constant.RuleGroup); ok {
+				item.Size = group.GetRecodeSize()
+			}
+		}
+		rules = append(rules, item)
+	}
+	return rules
+}
+
+func handleSetRuleDisabled(params *RuleDisabledParams) bool {
+	rules := tunnel.Rules()
+	if params.Index < 0 || params.Index >= len(rules) {
+		return false
+	}
+	wrapper, ok := rules[params.Index].(constant.RuleWrapper)
+	if !ok {
+		return false
+	}
+	wrapper.SetDisabled(params.Disabled)
+	return true
+}
+
 func handleCloseConnections() bool {
 	statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
 		_ = c.Close()
