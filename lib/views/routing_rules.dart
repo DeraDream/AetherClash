@@ -144,7 +144,7 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
                               suffixIcon: _searchController.text.isEmpty
                                   ? null
                                   : IconButton(
-                                      tooltip: context.appLocalizations.clear,
+                                      tooltip: _text(context, '清除', 'Clear'),
                                       onPressed: () {
                                         _searchController.clear();
                                         setState(() {});
