@@ -206,12 +206,9 @@ class TunStackItem extends ConsumerWidget {
     return ConfigOptionsItem<TunStack>(
       title: (l) => l.stackMode,
       options: TunStack.values,
-      textBuilder: (stack) => switch (stack) {
-        TunStack.mips => isChinese ? 'MIPS（推荐）' : 'MIPS (Recommended)',
-        TunStack.gvisor => 'gVisor',
-        TunStack.system => 'System',
-        TunStack.mixed => 'Mixed',
-      },
+      textBuilder: (stack) => stack == TunStack.mips
+          ? (isChinese ? 'MIPS（推荐）' : 'MIPS (Recommended)')
+          : stack.name,
       selector: patchClashConfigProvider.select((state) => state.tun.stack),
       onChanged: _tunWriter((state, value) => state.copyWith.tun(stack: value)),
     );
