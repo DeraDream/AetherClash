@@ -70,6 +70,10 @@ mixin CoreInterface {
 
   FutureOr<List<TrackerInfo>> getConnections();
 
+  FutureOr<List<RuntimeRule>> getRules();
+
+  FutureOr<bool> setRuleDisabled(int index, bool disabled);
+
   FutureOr<bool> closeConnection(String id);
 
   FutureOr<String> clearEffect(int profileId);
@@ -289,6 +293,29 @@ abstract class CoreHandlerInterface with CoreInterface {
         .whereType<Map>()
         .map((item) => TrackerInfo.fromJson(Map<String, Object?>.from(item)))
         .toList();
+  }
+
+  @override
+  Future<List<RuntimeRule>> getRules() async {
+    final data = await _invokeMethod<List<dynamic>>(method: CoreMethod.getRules);
+    return data
+            ?.whereType<Map>()
+            .map(
+              (item) => RuntimeRule.fromJson(
+                Map<String, Object?>.from(item),
+              ),
+            )
+            .toList() ??
+        const [];
+  }
+
+  @override
+  Future<bool> setRuleDisabled(int index, bool disabled) async {
+    return await _invokeMethod<bool>(
+          method: CoreMethod.setRuleDisabled,
+          arguments: {'index': index, 'disabled': disabled},
+        ) ??
+        false;
   }
 
   @override
