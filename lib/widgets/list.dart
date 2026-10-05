@@ -427,7 +427,8 @@ class ListItem<T> extends StatelessWidget {
       case final _NextAction nextDelegate:
         final child = nextDelegate.widget;
 
-        return _buildListTile(context, 
+        return _buildListTile(
+          context,
           onTap: () {
             showExtend(
               context,
@@ -440,7 +441,8 @@ class ListItem<T> extends StatelessWidget {
         );
       case final _OptionsAction options:
         final optionsDelegate = options as _OptionsAction<T>;
-        return _buildListTile(context, 
+        return _buildListTile(
+          context,
           onTap: () async {
             final value = await dialogs.showCommonDialog<T>(
               child: OptionsDialog<T>(
@@ -454,7 +456,8 @@ class ListItem<T> extends StatelessWidget {
           },
         );
       case final _InputAction inputDelegate:
-        return _buildListTile(context, 
+        return _buildListTile(
+          context,
           onTap: () async {
             final value = await dialogs.showCommonDialog<String>(
               child: InputDialog(
@@ -473,7 +476,8 @@ class ListItem<T> extends StatelessWidget {
           },
         );
       case final _CheckboxAction checkboxDelegate:
-        return _buildListTile(context, 
+        return _buildListTile(
+          context,
           onTap: checkboxDelegate.onChanged == null
               ? null
               : () {
@@ -485,7 +489,8 @@ class ListItem<T> extends StatelessWidget {
           ),
         );
       case final _ToggleAction toggleAction:
-        return _buildListTile(context, 
+        return _buildListTile(
+          context,
           onTap: toggleAction.onChanged == null
               ? null
               : () {
@@ -498,7 +503,8 @@ class ListItem<T> extends StatelessWidget {
         );
       case final _RadioAction radio:
         final radioDelegate = radio as _RadioAction<T>;
-        return _buildListTile(context, 
+        return _buildListTile(
+          context,
           onTap: radioDelegate.onTap,
           leading: ExcludeFocus(
             child: Radio<T>(
