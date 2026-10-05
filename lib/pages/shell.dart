@@ -2,7 +2,6 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/control/connect_orb.dart';
 import 'package:fl_clash/views/control/control_center.dart';
 import 'package:fl_clash/views/control/tiles.dart';
 import 'package:fl_clash/views/po0_firewall.dart';
@@ -267,8 +266,6 @@ class ControlSidebar extends StatelessWidget {
                   children: [
                     const BrandHeader(dense: true),
                     const SizedBox(height: 14),
-                    const CompactConnectControl(),
-                    const SizedBox(height: 10),
                     const OutboundModeSwitch(height: 34),
                     if (system.isDesktop) ...[
                       const SizedBox(height: 6),
@@ -424,6 +421,7 @@ class _SidebarFooter extends ConsumerWidget {
     final glass = context.glass;
     final traffic = ref.watch(trafficsProvider).list.lastOrNull;
     final ipInfo = ref.watch(networkDetectionProvider).ipInfo;
+    final runTime = ref.watch(runTimeProvider);
     final style = context.textTheme.bodySmall?.copyWith(
       color: glass.secondaryLabel,
       fontFeatures: const [FontFeature.tabularFigures()],
@@ -498,6 +496,17 @@ class _SidebarFooter extends ConsumerWidget {
             ],
           ),
         ),
+        if (runTime != null) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: line(
+              Icons.schedule_rounded,
+              getTimeText(runTime),
+              fontFamily: FontFamily.jetBrainsMono.value,
+            ),
+          ),
+        ],
       ],
     );
   }
