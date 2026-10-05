@@ -323,23 +323,64 @@ class ListItem<T> extends StatelessWidget {
     Widget? trailing,
     Widget? leading,
   }) {
+    final desktop = MediaQuery.sizeOf(context).width >= 600;
+    final rawLeading = leading ?? this.leading;
+    final effectiveLeading = desktop && rawLeading is Icon
+        ? DecoratedBox(
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainerHighest.withValues(
+                alpha: context.glass.isDark ? 0.44 : 0.66,
+              ),
+              borderRadius: AppRadius.all(7),
+            ),
+            child: SizedBox.square(
+              dimension: 30,
+              child: IconTheme.merge(
+                data: IconThemeData(
+                  size: 17,
+                  color: context.glass.secondaryLabel,
+                ),
+                child: Center(child: rawLeading),
+              ),
+            ),
+          )
+        : rawLeading;
+    final defaultPadding = const EdgeInsets.symmetric(horizontal: 16);
+    final effectivePadding = desktop && padding == defaultPadding
+        ? const EdgeInsets.fromLTRB(14, 8, 12, 8)
+        : padding;
     return ListTile(
       key: key,
       dense: dense,
-      visualDensity: visualDensity,
+      visualDensity: visualDensity ??
+          (desktop ? const VisualDensity(horizontal: -1, vertical: -1) : null),
       tileColor: color,
-      titleTextStyle: titleTextStyle,
-      subtitleTextStyle: subtitleTextStyle,
-      leading: leading ?? this.leading,
-      horizontalTitleGap: horizontalTitleGap,
+      titleTextStyle: titleTextStyle ??
+          (desktop
+              ? context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.colorScheme.onSurface,
+                )
+              : null),
+      subtitleTextStyle: subtitleTextStyle ??
+          (desktop
+              ? context.textTheme.bodySmall?.copyWith(
+                  color: context.glass.secondaryLabel,
+                  height: 1.2,
+                )
+              : null),
+      leading: effectiveLeading,
+      horizontalTitleGap: horizontalTitleGap ?? (desktop ? 11 : null),
       title: title,
-      minTileHeight: minTileHeight,
-      minVerticalPadding: minVerticalPadding,
+      minTileHeight: minTileHeight ?? (desktop ? 52 : null),
+      minVerticalPadding: desktop && minVerticalPadding == 12
+          ? 8
+          : minVerticalPadding,
       subtitle: subtitle,
       titleAlignment: tileTitleAlignment,
       onTap: onTap,
       trailing: trailing ?? this.trailing,
-      contentPadding: padding,
+      contentPadding: effectivePadding,
     );
   }
 
@@ -508,9 +549,10 @@ class ListHeader extends StatelessWidget {
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: context.textTheme.labelLarge?.copyWith(
-                    color: context.colorScheme.onSurfaceVariant.opacity80,
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: context.glass.secondaryLabel,
                     fontWeight: FontWeight.w600,
+                    letterSpacing: 0.1,
                   ),
                 ),
                 if (subTitle != null)
@@ -565,11 +607,21 @@ class _SectionBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final children = separated
-        ? items.separated(const Divider(height: 0)).toList()
+        ? items
+              .separated(
+                const Divider(
+                  height: 0.5,
+                  indent: 52,
+                  endIndent: 12,
+                ),
+              )
+              .toList()
         : items;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: GlassSurface(
+        borderRadius: AppRadius.small,
+        elevated: false,
         child: Material(
           type: MaterialType.transparency,
           child: Column(mainAxisSize: MainAxisSize.min, children: children),
