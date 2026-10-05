@@ -10,7 +10,6 @@ import 'package:fl_clash/views/application_setting.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/views/config/config.dart';
 import 'package:fl_clash/views/hotkey.dart';
-import 'package:fl_clash/views/resources.dart';
 import 'package:fl_clash/views/sniffer.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -152,13 +151,6 @@ class _ToolsBoard extends ConsumerWidget {
             title: appLocalizations.backupAndRestore,
             subtitle: appLocalizations.backupAndRestoreDesc,
             page: const BackupAndRestore(),
-          ),
-          _SettingTile.page(
-            icon: Icons.storage_outlined,
-            tone: GlassTone.warning,
-            title: appLocalizations.resources,
-            subtitle: appLocalizations.resourcesDesc,
-            page: const ResourcesView(),
           ),
         ],
       ),
