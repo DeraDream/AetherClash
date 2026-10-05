@@ -215,6 +215,12 @@ var methodHandlers = map[CoreMethod]methodHandler{
 	getConnectionsMethod: withoutArguments(func(response MethodResponse) {
 		response.success(handleGetConnections())
 	}),
+	getRulesMethod: withoutArguments(func(response MethodResponse) {
+		response.success(handleGetRules())
+	}),
+	setRuleDisabledMethod: withArguments(func(params *RuleDisabledParams, response MethodResponse) {
+		response.success(handleSetRuleDisabled(params))
+	}),
 	closeConnectionsMethod: withoutArguments(func(response MethodResponse) {
 		response.success(handleCloseConnections())
 	}),
