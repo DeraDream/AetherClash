@@ -482,31 +482,32 @@ extension RuleExt on Rule {
   }
 }
 
-int stableConfigRuleId(String value, int index) {
+int stableConfigRuleId(String value, int occurrence) {
   // Profile source rules need deterministic identities so enabled/disabled
-  // state survives reloads. Include the source index so duplicate rule lines
-  // can still be toggled independently. Keep ids negative to avoid colliding
-  // with Snowflake ids used by user-created rules.
+  // state survives subscription refreshes and ordinary reordering. The
+  // occurrence only disambiguates duplicate identical rule lines.
   var hash = 0x811c9dc5;
-  for (final unit in '$index:$value'.codeUnits) {
+  for (final unit in '$occurrence:$value'.codeUnits) {
     hash ^= unit;
     hash = (hash * 0x01000193) & 0x7fffffff;
   }
-  return -(hash == 0 ? index + 1 : hash);
+  return -(hash == 0 ? occurrence + 1 : hash);
 }
 
 List<Rule> _genRules(List<dynamic>? rules) {
   if (rules == null) {
     return [];
   }
-  return rules.indexed
-      .map(
-        (entry) => Rule.parse(
-          entry.$2.toString(),
-          id: stableConfigRuleId(entry.$2.toString(), entry.$1),
-        ),
-      )
-      .toList();
+  final occurrences = <String, int>{};
+  return rules.map((item) {
+    final value = item.toString();
+    final occurrence = occurrences[value] ?? 0;
+    occurrences[value] = occurrence + 1;
+    return Rule.parse(
+      value,
+      id: stableConfigRuleId(value, occurrence),
+    );
+  }).toList();
 }
 
 List<String> _genList(Map<String, dynamic> json) {
