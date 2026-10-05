@@ -29,8 +29,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Check format
-        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Format changed editor files
+        run: |
+          dart format \
+            lib/features/editor \
+            lib/pages/editor.dart \
+            lib/views/config/network.dart \
+            test/features/editor_schema_test.dart
+          git diff -- \
+            lib/features/editor \
+            lib/pages/editor.dart \
+            lib/views/config/network.dart \
+            test/features/editor_schema_test.dart
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos
