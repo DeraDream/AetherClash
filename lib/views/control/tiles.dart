@@ -552,8 +552,9 @@ class DesktopRouteCards extends ConsumerWidget {
   void _openNetwork(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
     final pageLabel = ref.read(currentPageLabelProvider);
-    BaseNavigator.pushToWorkspace(
+    BaseNavigator.pushToWorkspaceOnce(
       pageLabel,
+      'desktop-network-settings',
       BaseScaffold(
         title: appLocalizations.network,
         body: const NetworkListView(),
