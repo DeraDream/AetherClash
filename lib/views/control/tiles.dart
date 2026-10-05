@@ -587,9 +587,8 @@ class DesktopRouteCards extends ConsumerWidget {
             label: appLocalizations.tun,
             value: tun,
             onTap: () => _openNetwork(context),
-            onChanged: (value) => unawaited(
-              _setDesktopTun(context, ref, value),
-            ),
+            onChanged: (value) =>
+                unawaited(_setDesktopTun(context, ref, value)),
           ),
         ),
       ],
@@ -636,49 +635,49 @@ class _DesktopRouteCard extends StatelessWidget {
             ),
           ),
           child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 8, 8, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 30,
-              child: Row(
-                children: [
-                  Icon(
-                    icon,
-                    size: 19,
-                    color: value ? Colors.white : glass.secondaryLabel,
-                  ),
-                  const Spacer(),
-                  SizedBox(
-                    width: 38,
-                    height: 24,
-                    child: FittedBox(
-                      fit: BoxFit.fill,
-                      child: Switch(
-                        value: value,
-                        onChanged: onChanged,
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
+            padding: const EdgeInsets.fromLTRB(10, 8, 8, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 30,
+                  child: Row(
+                    children: [
+                      Icon(
+                        icon,
+                        size: 19,
+                        color: value ? Colors.white : glass.secondaryLabel,
                       ),
-                    ),
+                      const Spacer(),
+                      SizedBox(
+                        width: 38,
+                        height: 24,
+                        child: FittedBox(
+                          fit: BoxFit.fill,
+                          child: Switch(
+                            value: value,
+                            onChanged: onChanged,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: value ? Colors.white : context.colorScheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
-            const Spacer(),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.labelLarge?.copyWith(
-                color: value ? Colors.white : context.colorScheme.onSurface,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
         ),
       ),
     );

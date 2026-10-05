@@ -64,9 +64,7 @@ void main() {
     );
   }
 
-  testWidgets('TUN and the system proxy toggle independently', (
-    tester,
-  ) async {
+  testWidgets('TUN and the system proxy toggle independently', (tester) async {
     await pump(tester, const QuickToggles());
     expect(route(), (tun: false, systemProxy: true));
 
