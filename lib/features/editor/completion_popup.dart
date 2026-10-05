@@ -101,9 +101,8 @@ class _EditorCompletionPopupState extends State<EditorCompletionPopup> {
           final detail = _detail(prompt);
           return InkWell(
             borderRadius: BorderRadius.circular(7),
-            onTap: () => widget.onSelected(
-              value.copyWith(index: index).autocomplete,
-            ),
+            onTap: () =>
+                widget.onSelected(value.copyWith(index: index).autocomplete),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(

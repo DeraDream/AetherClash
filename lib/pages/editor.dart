@@ -406,10 +406,7 @@ class _EditorBody extends ConsumerWidget {
       autocompleteSymbols: true,
       focusNode: focusNode,
       scrollbarBuilder: (context, child, details) {
-        return CommonScrollBar(
-          controller: details.controller,
-          child: child,
-        );
+        return CommonScrollBar(controller: details.controller, child: child);
       },
       toolbarController: toolbarController,
       indicatorBuilder:
@@ -420,8 +417,7 @@ class _EditorBody extends ConsumerWidget {
               notifier: notifier,
             );
           },
-      shortcutsActivatorsBuilder:
-          const DefaultCodeShortcutsActivatorsBuilder(),
+      shortcutsActivatorsBuilder: const DefaultCodeShortcutsActivatorsBuilder(),
       controller: controller,
       style: CodeEditorStyle(
         fontSize: context.textTheme.bodyLarge?.fontSize?.ap,

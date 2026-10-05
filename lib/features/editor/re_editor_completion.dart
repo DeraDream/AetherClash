@@ -187,8 +187,7 @@ class ClashYamlAutocompleteBuilder implements CodeAutocompletePromptsBuilder {
     };
     final prompts = [
       for (final value in values)
-        if (_matches(value, typed))
-          CodeKeywordPrompt(word: value),
+        if (_matches(value, typed)) CodeKeywordPrompt(word: value),
     ];
     return _result(typed, prompts);
   }
@@ -225,8 +224,7 @@ class ClashYamlAutocompleteBuilder implements CodeAutocompletePromptsBuilder {
 
     final prompts = [
       for (final value in values)
-        if (_matches(value, text))
-          CodeKeywordPrompt(word: value),
+        if (_matches(value, text)) CodeKeywordPrompt(word: value),
     ];
     return _result(text, prompts);
   }
@@ -252,8 +250,7 @@ class ClashYamlAutocompleteBuilder implements CodeAutocompletePromptsBuilder {
   }
 
   bool _matches(String value, String input) =>
-      value != input &&
-      value.toLowerCase().startsWith(input.toLowerCase());
+      value != input && value.toLowerCase().startsWith(input.toLowerCase());
 }
 
 class _DocumentNames {
