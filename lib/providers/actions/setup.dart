@@ -370,11 +370,13 @@ class SetupAction extends _$SetupAction {
       if (disabledRuleIds.isNotEmpty && sourceRules is List) {
         rawConfig = {
           ...rawConfig,
-          'rules': sourceRules
+          'rules': sourceRules.indexed
               .where(
-                (item) =>
-                    !disabledRuleIds.contains(Rule.parse(item.toString()).id),
+                (entry) => !disabledRuleIds.contains(
+                  stableConfigRuleId(entry.$2.toString(), entry.$1),
+                ),
               )
+              .map((entry) => entry.$2)
               .toList(),
         };
       }
