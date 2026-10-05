@@ -1,0 +1,39 @@
+name: validate-v5514-candidate
+
+on:
+  push:
+    branches:
+      - feat/editor-schema-v1.19.32
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.47.1'
+
+jobs:
+  validate:
+    name: v5.5.14 candidate validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Check changed-file formatting
+        run: |
+          dart format --output=none --set-exit-if-changed             lib/features/editor             lib/pages/editor.dart             lib/views/profiles/edit.dart             lib/views/config/network.dart             lib/views/control/tiles.dart             test/features/editor_completion_engine_test.dart             test/views/control_center_test.dart
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+      - name: Skip native build hooks
+        run: |
+          yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
+      - name: Editor schema tests
+        run: flutter test test/features/editor_completion_engine_test.dart --reporter expanded
+      - name: Route card tests
+        run: flutter test test/views/control_center_test.dart --reporter expanded
+      - name: All Flutter tests
+        run: flutter test --reporter compact
