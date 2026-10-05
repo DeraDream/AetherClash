@@ -360,31 +360,6 @@ class SetupAction extends _$SetupAction {
       ...rawConfig,
       'geodata-mode': await preferences.getGeoDataMode(),
     };
-    if (profileId != null && overwriteType == OverwriteType.standard) {
-      final disabledRuleIds = (await database.rulesDao
-              .queryProfileDisabledRules(profileId)
-              .map((item) => item.id)
-              .get())
-          .toSet();
-      final sourceRules = rawConfig['rules'];
-      if (disabledRuleIds.isNotEmpty && sourceRules is List) {
-        final occurrences = <String, int>{};
-        final enabledRules = <dynamic>[];
-        for (final item in sourceRules) {
-          final value = item.toString();
-          final occurrence = occurrences[value] ?? 0;
-          occurrences[value] = occurrence + 1;
-          final id = stableConfigRuleId(value, occurrence);
-          if (!disabledRuleIds.contains(id)) {
-            enabledRules.add(item);
-          }
-        }
-        rawConfig = {
-          ...rawConfig,
-          'rules': enabledRules,
-        };
-      }
-    }
     final snifferConfig = await preferences.getSnifferConfig();
     rawConfig = {
       ...rawConfig,
