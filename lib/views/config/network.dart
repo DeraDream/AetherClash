@@ -205,7 +205,12 @@ class TunStackItem extends ConsumerWidget {
     return ConfigOptionsItem<TunStack>(
       title: (l) => l.stackMode,
       options: TunStack.values,
-      textBuilder: (stack) => stack.name,
+      textBuilder: (stack) => switch (stack) {
+        TunStack.mips => 'MIPS',
+        TunStack.mixed => 'Mixed',
+        TunStack.system => 'System',
+        TunStack.gvisor => 'gVisor',
+      },
       selector: patchClashConfigProvider.select((state) => state.tun.stack),
       onChanged: _tunWriter((state, value) => state.copyWith.tun(stack: value)),
     );
