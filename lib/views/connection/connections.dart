@@ -830,7 +830,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         final contentWidth = tableWidth > constraints.maxWidth
             ? tableWidth
             : constraints.maxWidth;
-        return Scrollbar(
+        final table = Scrollbar(
           controller: _horizontalController,
           thumbVisibility: true,
           notificationPredicate: (notification) =>
@@ -855,14 +855,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
                   ),
                   Expanded(
                     child: visible.isEmpty
-                        ? NullStatus(
-                            label: _query.trim().isNotEmpty
-                                ? _text('没有匹配的连接', 'No matching connections')
-                                : _tab == _ConnectionTab.active
-                                ? _text('暂无活动连接', 'No active connections')
-                                : _text('暂无已关闭连接', 'No closed connections'),
-                            illustration: NullStatusIllustration.connections,
-                          )
+                        ? const SizedBox.shrink()
                         : ListView.builder(
                             controller: _verticalController,
                             padding: EdgeInsets.only(
@@ -876,6 +869,37 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
               ),
             ),
           ),
+        );
+
+        if (visible.isNotEmpty) {
+          return table;
+        }
+
+        final emptyLabel = _query.trim().isNotEmpty
+            ? _text('没有匹配的连接', 'No matching connections')
+            : _tab == _ConnectionTab.active
+            ? _text('暂无活动连接', 'No active connections')
+            : _text('暂无已关闭连接', 'No closed connections');
+
+        // Keep the empty illustration centered in the visible table viewport,
+        // not in the much wider horizontally-scrollable table content.
+        return Stack(
+          children: [
+            Positioned.fill(child: table),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 39,
+              bottom: 0,
+              child: IgnorePointer(
+                child: NullStatus(
+                  label: emptyLabel,
+                  illustration: NullStatusIllustration.connections,
+                  alignment: Alignment.center,
+                ),
+              ),
+            ),
+          ],
         );
       },
     );

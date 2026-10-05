@@ -30,6 +30,20 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
       if (openLogs) PageLabel.logs,
     ];
     final current = tabs.contains(_current) ? _current : tabs.first;
+    final child = KeyedSubtree(
+      key: ValueKey(current),
+      child: switch (current) {
+        PageLabel.logs => const LogsView(),
+        _ => const ConnectionsView(),
+      },
+    );
+
+    // A single "Connections" segment is just a decorative title pill. Keep
+    // the app bar clean unless there is a real sibling page to switch to.
+    if (!openLogs) {
+      return child;
+    }
+
     return ScaffoldTitleSlot(
       title: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 360),
@@ -41,13 +55,7 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
           onChanged: (label) => setState(() => _current = label),
         ),
       ),
-      child: KeyedSubtree(
-        key: ValueKey(current),
-        child: switch (current) {
-          PageLabel.logs => const LogsView(),
-          _ => const ConnectionsView(),
-        },
-      ),
+      child: child,
     );
   }
 }

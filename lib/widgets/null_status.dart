@@ -75,6 +75,7 @@ class NullStatus extends StatelessWidget {
   final String? description;
   final Widget? action;
   final NullStatusIllustration illustration;
+  final AlignmentGeometry alignment;
 
   const NullStatus({
     super.key,
@@ -82,6 +83,7 @@ class NullStatus extends StatelessWidget {
     this.description,
     this.action,
     this.illustration = NullStatusIllustration.data,
+    this.alignment = const Alignment(0.0, -0.25),
   });
 
   @override
@@ -89,7 +91,7 @@ class NullStatus extends StatelessWidget {
     final description = this.description;
     final action = this.action;
     return Align(
-      alignment: const Alignment(0.0, -0.25),
+      alignment: alignment,
       child: Wrap(
         direction: Axis.vertical,
         runAlignment: WrapAlignment.center,

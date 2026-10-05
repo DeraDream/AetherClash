@@ -56,15 +56,8 @@ void main() {
         of: find.byType(AppBar),
         matching: find.byType(GlassSegmented<PageLabel>),
       ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.text('Connections'),
-      ),
-      findsOneWidget,
-      reason: 'the switch sits where the page title would be',
+      findsNothing,
+      reason: 'a single Connections page must not render a segmented title pill',
     );
     expect(find.byType(ConnectionsView), findsOneWidget);
     expect(find.text('Logs'), findsNothing);
@@ -83,6 +76,13 @@ void main() {
         .update((state) => state.copyWith(openLogs: true));
     await pumpActivity(tester);
 
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byType(GlassSegmented<PageLabel>),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Logs'));
     await tester.pump();
     expect(find.byType(LogsView), findsOneWidget);

@@ -101,6 +101,9 @@ void main() {
     await pumpConnections(tester);
 
     expect(find.byType(NullStatus), findsOneWidget);
+    final emptyState = tester.widget<NullStatus>(find.byType(NullStatus));
+    expect(emptyState.alignment, Alignment.center);
+    expect(tester.getSize(find.byType(NullStatus)).width, lessThanOrEqualTo(1400));
     expect(tester.takeException(), null);
 
     await teardownView(tester);

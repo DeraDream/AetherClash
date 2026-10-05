@@ -52,7 +52,6 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
   bool _speedServersLoading = false;
   bool _speedTesting = false;
   SpeedTestPhase? _speedPhase;
-  double _speedProgress = 0;
   double _speedLiveMbps = 0;
   double? _speedDownloadMbps;
   double? _speedUploadMbps;
@@ -152,7 +151,6 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
         _speedServersLoading = true;
         _speedTesting = false;
         _speedPhase = null;
-        _speedProgress = 0;
         _speedLiveMbps = 0;
         _speedDownloadMbps = null;
         _speedUploadMbps = null;
@@ -254,7 +252,6 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     setState(() {
       _speedTesting = true;
       _speedPhase = SpeedTestPhase.download;
-      _speedProgress = 0;
       _speedLiveMbps = 0;
       _speedDownloadMbps = null;
       _speedUploadMbps = null;
@@ -288,7 +285,6 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
               _speedDownloadMbps = previousLiveMbps;
             }
             _speedPhase = progress.phase;
-            _speedProgress = progress.progress;
             _speedLiveMbps = progress.mbps;
           });
         },
@@ -299,7 +295,6 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
         _speedDownloadMbps = result.downloadMbps;
         _speedUploadMbps = result.uploadMbps;
         _speedLiveMbps = result.uploadMbps;
-        _speedProgress = 1;
       });
     } on SpeedTestCancelled {
       // User stop / proxy-context refresh: keep any completed direction.
@@ -610,8 +605,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
                   _speedDownloadMbps = null;
                   _speedUploadMbps = null;
                   _speedLiveMbps = 0;
-                  _speedProgress = 0;
-                  _speedError = null;
+                            _speedError = null;
                 });
               },
             ),
@@ -621,7 +615,6 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
               serverLoading: _speedServersLoading,
               testing: _speedTesting,
               phase: _speedPhase,
-              progress: _speedProgress,
               liveMbps: _speedLiveMbps,
               downloadMbps: _speedDownloadMbps,
               uploadMbps: _speedUploadMbps,
@@ -1105,7 +1098,6 @@ class _SpeedTestPanel extends StatelessWidget {
     required this.serverLoading,
     required this.testing,
     required this.phase,
-    required this.progress,
     required this.liveMbps,
     required this.downloadMbps,
     required this.uploadMbps,
@@ -1120,7 +1112,6 @@ class _SpeedTestPanel extends StatelessWidget {
   final bool serverLoading;
   final bool testing;
   final SpeedTestPhase? phase;
-  final double progress;
   final double liveMbps;
   final double? downloadMbps;
   final double? uploadMbps;
@@ -1134,11 +1125,10 @@ class _SpeedTestPanel extends StatelessWidget {
     final glass = context.glass;
     final primary = context.colorScheme.primary;
     final teal = context.toneColor(GlassTone.teal);
-    final phaseLabel = switch (phase) {
-      SpeedTestPhase.download => text('下载测速', 'Download test'),
-      SpeedTestPhase.upload => text('上传测速', 'Upload test'),
-      null => '',
-    };
+    final shownDownloadMbps =
+        testing && phase == SpeedTestPhase.download ? liveMbps : downloadMbps;
+    final shownUploadMbps =
+        testing && phase == SpeedTestPhase.upload ? liveMbps : uploadMbps;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1204,73 +1194,39 @@ class _SpeedTestPanel extends StatelessWidget {
             ),
           ),
         ] else ...[
-          if (testing) ...[
-            Row(
-              children: [
-                Text(
-                  phaseLabel,
-                  style: context.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '${liveMbps.toStringAsFixed(1)} Mbps  ·  '
-                  '${(liveMbps / 8).toStringAsFixed(1)} MB/s',
-                  style: context.textTheme.labelLarge?.copyWith(
-                    fontFamily: FontFamily.jetBrainsMono.value,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 7),
-            LinearProgressIndicator(value: progress.clamp(0, 1).toDouble()),
-            const SizedBox(height: 8),
-            Text(
-              text(
-                '采用 Speedtest 风格多连接测试：下载约 15 秒，随后上传约 15 秒。',
-                'Speedtest-style multi-connection test: about 15s download, then 15s upload.',
-              ),
-              style: context.textTheme.bodySmall?.copyWith(
-                color: glass.secondaryLabel,
-              ),
-            ),
-            const SizedBox(height: 14),
-          ],
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _SpeedMetric(
                 label: text('下载', 'Download'),
-                value: downloadMbps == null
+                value: shownDownloadMbps == null
                     ? '— Mbps'
-                    : '${downloadMbps!.toStringAsFixed(1)} Mbps',
+                    : '${shownDownloadMbps.toStringAsFixed(1)} Mbps',
                 icon: Icons.download_rounded,
                 color: primary,
               ),
               _SpeedMetric(
                 label: text('下载吞吐', 'Download throughput'),
-                value: downloadMbps == null
+                value: shownDownloadMbps == null
                     ? '— MB/s'
-                    : '${(downloadMbps! / 8).toStringAsFixed(1)} MB/s',
+                    : '${(shownDownloadMbps / 8).toStringAsFixed(1)} MB/s',
                 icon: Icons.data_usage_rounded,
                 color: primary,
               ),
               _SpeedMetric(
                 label: text('上传', 'Upload'),
-                value: uploadMbps == null
+                value: shownUploadMbps == null
                     ? '— Mbps'
-                    : '${uploadMbps!.toStringAsFixed(1)} Mbps',
+                    : '${shownUploadMbps.toStringAsFixed(1)} Mbps',
                 icon: Icons.upload_rounded,
                 color: teal,
               ),
               _SpeedMetric(
                 label: text('上传吞吐', 'Upload throughput'),
-                value: uploadMbps == null
+                value: shownUploadMbps == null
                     ? '— MB/s'
-                    : '${(uploadMbps! / 8).toStringAsFixed(1)} MB/s',
+                    : '${(shownUploadMbps / 8).toStringAsFixed(1)} MB/s',
                 icon: Icons.swap_vert_rounded,
                 color: teal,
               ),
