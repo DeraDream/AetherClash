@@ -4,6 +4,9 @@ name: build
 # fork are built by release.yaml (docs/development/build.md).
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - test/stage12-validation
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
