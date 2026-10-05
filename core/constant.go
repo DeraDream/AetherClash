@@ -66,6 +66,28 @@ type Traffic struct {
 	Down int64 `json:"down"`
 }
 
+type RuntimeRuleExtra struct {
+	Disabled  bool      `json:"disabled"`
+	HitCount  uint64    `json:"hitCount"`
+	HitAt     time.Time `json:"hitAt"`
+	MissCount uint64    `json:"missCount"`
+	MissAt    time.Time `json:"missAt"`
+}
+
+type RuntimeRule struct {
+	Index   int               `json:"index"`
+	Type    string            `json:"type"`
+	Payload string            `json:"payload"`
+	Proxy   string            `json:"proxy"`
+	Size    int               `json:"size"`
+	Extra   *RuntimeRuleExtra `json:"extra,omitempty"`
+}
+
+type RuleDisabledParams struct {
+	Index    int  `json:"index"`
+	Disabled bool `json:"disabled"`
+}
+
 type ExternalProvider struct {
 	Name             string                     `json:"name"`
 	Type             string                     `json:"type"`
@@ -102,6 +124,8 @@ const (
 	resetTrafficMethod             CoreMethod = "resetTraffic"
 	asyncTestDelayMethod           CoreMethod = "asyncTestDelay"
 	getConnectionsMethod           CoreMethod = "getConnections"
+	getRulesMethod                 CoreMethod = "getRules"
+	setRuleDisabledMethod          CoreMethod = "setRuleDisabled"
 	closeConnectionsMethod         CoreMethod = "closeConnections"
 	resetConnectionsMethod         CoreMethod = "resetConnections"
 	closeConnectionMethod          CoreMethod = "closeConnection"
