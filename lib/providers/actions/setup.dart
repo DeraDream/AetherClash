@@ -102,7 +102,9 @@ class SetupAction extends _$SetupAction {
       await _updateStartTime();
     }
     final shouldRun = system.isDesktop
-        ? ref.read(profilesProvider).isNotEmpty
+        ? ref.read(profilesProvider).isNotEmpty ||
+              _isRunning ||
+              ref.read(appSettingProvider).autoRun
         : _isRunning || ref.read(appSettingProvider).autoRun;
     if (shouldRun) {
       await setRunning(true, initialize: true);
