@@ -1,30 +1,37 @@
-AetherClash v5.5.11：简化 Speedtest 实时展示，并优化活动连接页顶部与空状态布局。
+AetherClash v5.5.12：修复流量嗅探配置序列化导致 Core 配置加载失败的问题，并优化发布打包流程。
 
-## 本次更新
+## 关键修复
 
-- Speedtest 测速展示调整
-  - 去掉下载 / 上传阶段的测速进度条
-  - 去掉进度条上方单独的实时 Mbps / MB/s 状态行
-  - 下载测速期间，底部“下载 Mbps / 下载 MB/s”两张卡片直接实时刷新
-  - 进入上传阶段后固定下载结果，底部“上传 Mbps / 上传 MB/s”两张卡片实时刷新
-  - 测速完成后四张卡片保留最终结果
-  - 当前代理、测速节点和开始 / 停止操作保持不变
+- 修复流量嗅探开启后出现：
+  `NoSuchMethodError: Class '_SnifferConfig' has no instance method '[]'`
+- HTTP / TLS / QUIC 嗅探协议配置在写入 Mihomo YAML 前统一转换为纯 Map
+- 修复嗅探配置保存与重新读取的嵌套序列化
+- 避免配置生成失败后连带导致：
+  - Core 无法加载配置
+  - 策略组为空
+  - 左侧“代理”入口消失
+  - 系统代理 / TUN 无法正常工作
+- 增加 Sniffer 原始配置转换及持久化 round-trip 回归测试
 
-- 活动页顶部简化
-  - 只有连接页面时不再显示单独的灰色“连接”分段 View
-  - 开启日志页面后才显示“连接 / 日志”切换
-  - 右上角实时流量、暂停 / 恢复、清除连接等操作保持不变
+## 构建流程优化
 
-- 活动连接空状态布局
-  - 没有连接或搜索无结果时继续保留表头
-  - “没有匹配的连接 / 暂无活动连接”占位图改为当前可见表格区域正中央
-  - 空状态不再跟随超宽横向表格内容偏到右侧
+- release 元数据提交可安全复用直接父提交已经通过的 Preflight
+- 仅当发布提交只修改版本号与 release notes 时才复用；其他变化自动完整重测
+- Brand assets 与 Preflight 并行
+- 图标生成任务不再安装不需要的 Flutter SDK
+- Brand assets 增加内容哈希缓存
+- Go Core / Rust Helper 增加跨 GitHub Actions Run 的原生产物缓存
+- 原有 Core fingerprint、输出校验和 Helper/Core SHA-256 绑定继续保留
+- Windows amd64 / macOS arm64 仍并行构建，产物格式不变
 
-- 发布前回归
-  - Dart formatting / parsing 通过
-  - Flutter Analyze 通过
-  - 完整 Flutter tests 通过
-  - 单页面 Activity 标题、Logs 切换和连接空状态均有回归覆盖
+## 发布前验证
+
+- Dart Format / Parse：通过
+- Flutter Analyze：通过
+- 完整 Flutter Tests：通过
+- Sniffer 嵌套协议纯 Map 回归：通过
+- Sniffer 配置保存 / 读取 round-trip：通过
+- 优化后的普通 Preflight workflow：通过
 
 ## 发布目标
 
