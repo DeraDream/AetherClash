@@ -406,21 +406,18 @@ class _EditorBody extends ConsumerWidget {
       autocompleteSymbols: true,
       focusNode: focusNode,
       scrollbarBuilder: (context, child, details) {
-        return CommonScrollBar(
-          controller: details.controller,
-          child: child,
-        );
+        return CommonScrollBar(controller: details.controller, child: child);
       },
       toolbarController: toolbarController,
-      indicatorBuilder: (context, editingController, chunkController, notifier) {
-        return _EditorGutter(
-          controller: editingController,
-          chunkController: chunkController,
-          notifier: notifier,
-        );
-      },
-      shortcutsActivatorsBuilder:
-          const DefaultCodeShortcutsActivatorsBuilder(),
+      indicatorBuilder:
+          (context, editingController, chunkController, notifier) {
+            return _EditorGutter(
+              controller: editingController,
+              chunkController: chunkController,
+              notifier: notifier,
+            );
+          },
+      shortcutsActivatorsBuilder: const DefaultCodeShortcutsActivatorsBuilder(),
       controller: controller,
       style: CodeEditorStyle(
         fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
@@ -432,10 +429,7 @@ class _EditorBody extends ConsumerWidget {
     if (!readOnly && schema != null && languages.contains(Language.yaml)) {
       editor = CodeAutocomplete(
         viewBuilder: (context, notifier, onSelected) =>
-            MihomoAutocompletePopup(
-              notifier: notifier,
-              onSelected: onSelected,
-            ),
+            MihomoAutocompletePopup(notifier: notifier, onSelected: onSelected),
         promptsBuilder: MihomoYamlAutocompletePromptsBuilder(
           controller: controller,
           schema: schema,

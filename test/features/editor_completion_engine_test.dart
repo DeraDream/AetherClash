@@ -64,19 +64,12 @@ void main() {
   });
 
   test('offers MIPS in TUN stack values', () {
-    final result = complete([
-      'tun:',
-      '  stack: mi',
-    ]);
+    final result = complete(['tun:', '  stack: mi']);
     expect(labels(result), contains('mips'));
   });
 
   test('recognizes EasyTier and its fields', () {
-    final type = complete([
-      'proxies:',
-      '  - name: mesh',
-      '    type: easy',
-    ]);
+    final type = complete(['proxies:', '  - name: mesh', '    type: easy']);
     expect(labels(type), contains('easytier'));
 
     final field = complete([
@@ -89,11 +82,7 @@ void main() {
   });
 
   test('does not offer an already present sibling key', () {
-    final result = complete([
-      'tun:',
-      '  enable: true',
-      '  e',
-    ]);
+    final result = complete(['tun:', '  enable: true', '  e']);
     expect(labels(result), isNot(contains('enable')));
   });
 }

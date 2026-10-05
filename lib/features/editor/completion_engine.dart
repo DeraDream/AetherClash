@@ -34,11 +34,7 @@ class MihomoYamlCompletionEngine {
 
   const MihomoYamlCompletionEngine(this.root);
 
-  EditorCompletionResult? complete(
-    List<String> lines,
-    int line,
-    int column,
-  ) {
+  EditorCompletionResult? complete(List<String> lines, int line, int column) {
     if (line < 0 || line >= lines.length) {
       return null;
     }
@@ -179,9 +175,7 @@ class MihomoYamlCompletionEngine {
     }
     return _ranked(
       typed,
-      labels.map(
-        (value) => EditorSuggestion(label: value, insertText: value),
-      ),
+      labels.map((value) => EditorSuggestion(label: value, insertText: value)),
     );
   }
 
@@ -195,18 +189,15 @@ class MihomoYamlCompletionEngine {
     final type = parts.first.trim().toUpperCase();
 
     if (parts.length == 1) {
-      return _ranked(
-        current,
-        [
-          for (final entry in ruleTypes.entries)
-            if (withPolicy || !const {'MATCH', 'SUB-RULE'}.contains(entry.key))
-              EditorSuggestion(
-                label: entry.key,
-                detail: entry.value,
-                insertText: '\${entry.key},',
-              ),
-        ],
-      );
+      return _ranked(current, [
+        for (final entry in ruleTypes.entries)
+          if (withPolicy || !const {'MATCH', 'SUB-RULE'}.contains(entry.key))
+            EditorSuggestion(
+              label: entry.key,
+              detail: entry.value,
+              insertText: '\${entry.key},',
+            ),
+      ]);
     }
     if (parts.length == 2 && type == 'MATCH' && withPolicy) {
       return _ranked(

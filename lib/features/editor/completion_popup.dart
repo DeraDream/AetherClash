@@ -18,10 +18,8 @@ class MihomoAutocompletePopup extends StatefulWidget
   });
 
   @override
-  Size get preferredSize => Size(
-    360,
-    math.min(itemHeight * notifier.value.prompts.length + 12, 240),
-  );
+  Size get preferredSize =>
+      Size(360, math.min(itemHeight * notifier.value.prompts.length + 12, 240));
 
   @override
   State<MihomoAutocompletePopup> createState() =>
@@ -97,9 +95,8 @@ class _MihomoAutocompletePopupState extends State<MihomoAutocompletePopup> {
             final detail = prompt is MihomoCodePrompt ? prompt.detail : '';
             return InkWell(
               canRequestFocus: false,
-              onTap: () => widget.onSelected(
-                value.copyWith(index: index).autocomplete,
-              ),
+              onTap: () =>
+                  widget.onSelected(value.copyWith(index: index).autocomplete),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 color: selected ? colorScheme.secondaryContainer : null,

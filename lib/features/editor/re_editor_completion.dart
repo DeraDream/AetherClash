@@ -23,7 +23,10 @@ class MihomoYamlAutocompletePromptsBuilder
     if (!selection.isCollapsed) {
       return null;
     }
-    final lines = controller.codeLines.toList().map((line) => line.text).toList();
+    final lines = controller.codeLines
+        .toList()
+        .map((line) => line.text)
+        .toList();
     final completion = engine.complete(
       lines,
       selection.extentIndex,
