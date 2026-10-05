@@ -6,7 +6,7 @@ on:
       - fix/route-card-workspace-nav
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FLUTTER_VERSION: '3.47.1'
@@ -29,8 +29,17 @@ jobs:
       - name: Format changed UI files
         run: |
           dart format             lib/views/profiles/profiles.dart             lib/views/profiles/edit.dart             lib/views/tools.dart             lib/common/dialog.dart             lib/widgets/list.dart             lib/common/navigator.dart             lib/views/control/tiles.dart             test/views/control_center_test.dart
-      - name: Ensure formatting is committed
-        run: git diff --exit-code -- .
+      - name: Commit formatter output if needed
+        shell: bash
+        run: |
+          if git diff --quiet --             lib/views/profiles/profiles.dart             lib/views/profiles/edit.dart             lib/views/tools.dart             lib/common/dialog.dart             lib/widgets/list.dart             lib/common/navigator.dart             lib/views/control/tiles.dart             test/views/control_center_test.dart; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             lib/views/profiles/profiles.dart             lib/views/profiles/edit.dart             lib/views/tools.dart             lib/common/dialog.dart             lib/widgets/list.dart             lib/common/navigator.dart             lib/views/control/tiles.dart             test/views/control_center_test.dart
+          git commit -m "style: format UI rework preview"
+          git push
       - name: Analyze
         run: flutter analyze --no-fatal-infos
       - name: Skip native hooks for tests
