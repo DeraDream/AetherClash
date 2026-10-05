@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/features/editor/editor.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -18,6 +19,7 @@ class EditorPage extends ConsumerStatefulWidget {
   final String title;
   final String? content;
   final List<Language> languages;
+  final EditorSchema? schema;
   final bool supportRemoteDownload;
   final bool titleEditable;
   final List<Widget> actions;
@@ -38,6 +40,7 @@ class EditorPage extends ConsumerStatefulWidget {
     this.onPop,
     this.supportRemoteDownload = false,
     this.languages = const [Language.yaml],
+    this.schema,
     this.actions = const [],
   });
 
@@ -213,6 +216,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
           focusNode: _focusNode,
           readOnly: readOnly,
           languages: widget.languages,
+          schema: widget.schema,
           isLoading: widget.content == null,
         ),
       ),
@@ -358,6 +362,7 @@ class _EditorBody extends ConsumerWidget {
     required this.focusNode,
     required this.readOnly,
     required this.languages,
+    required this.schema,
     required this.isLoading,
   });
 
@@ -367,6 +372,7 @@ class _EditorBody extends ConsumerWidget {
   final FocusNode focusNode;
   final bool readOnly;
   final List<Language> languages;
+  final EditorSchema? schema;
   final bool isLoading;
 
   CodeHighlightTheme get _highlightTheme {
@@ -386,45 +392,54 @@ class _EditorBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isMobileView = ref.watch(isMobileViewProvider);
-    return Stack(
-      children: [
-        CodeEditor(
-          readOnly: readOnly,
-          autofocus: false,
-          showCursorWhenReadOnly: false,
-          findController: findController,
-          findBuilder: (context, controller, readOnly) => FindPanel(
-            controller: controller,
-            readOnly: readOnly,
-            isMobileView: isMobileView,
-          ),
-          padding: const EdgeInsets.only(right: 16),
-          autocompleteSymbols: true,
-          focusNode: focusNode,
-          scrollbarBuilder: (context, child, details) {
-            return CommonScrollBar(
-              controller: details.controller,
-              child: child,
+    Widget editor = CodeEditor(
+      readOnly: readOnly,
+      autofocus: false,
+      showCursorWhenReadOnly: false,
+      findController: findController,
+      findBuilder: (context, controller, readOnly) => FindPanel(
+        controller: controller,
+        readOnly: readOnly,
+        isMobileView: isMobileView,
+      ),
+      padding: const EdgeInsets.only(right: 16),
+      autocompleteSymbols: true,
+      focusNode: focusNode,
+      scrollbarBuilder: (context, child, details) {
+        return CommonScrollBar(controller: details.controller, child: child);
+      },
+      toolbarController: toolbarController,
+      indicatorBuilder:
+          (context, editingController, chunkController, notifier) {
+            return _EditorGutter(
+              controller: editingController,
+              chunkController: chunkController,
+              notifier: notifier,
             );
           },
-          toolbarController: toolbarController,
-          indicatorBuilder:
-              (context, editingController, chunkController, notifier) {
-                return _EditorGutter(
-                  controller: editingController,
-                  chunkController: chunkController,
-                  notifier: notifier,
-                );
-              },
-          shortcutsActivatorsBuilder:
-              const DefaultCodeShortcutsActivatorsBuilder(),
+      shortcutsActivatorsBuilder: const DefaultCodeShortcutsActivatorsBuilder(),
+      controller: controller,
+      style: CodeEditorStyle(
+        fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
+        fontFamily: FontFamily.jetBrainsMono.value,
+        codeTheme: _highlightTheme,
+      ),
+    );
+    final schema = this.schema;
+    if (!readOnly && schema != null && languages.contains(Language.yaml)) {
+      editor = CodeAutocomplete(
+        viewBuilder: (context, notifier, onSelected) =>
+            MihomoAutocompletePopup(notifier: notifier, onSelected: onSelected),
+        promptsBuilder: MihomoYamlAutocompletePromptsBuilder(
           controller: controller,
-          style: CodeEditorStyle(
-            fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
-            fontFamily: FontFamily.jetBrainsMono.value,
-            codeTheme: _highlightTheme,
-          ),
+          schema: schema,
         ),
+        child: editor,
+      );
+    }
+    return Stack(
+      children: [
+        editor,
         FadeBox(
           child: isLoading
               ? Container(

@@ -3,6 +3,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/control/control_center.dart';
 import 'package:fl_clash/views/control/tiles.dart';
+import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,9 +64,7 @@ void main() {
     );
   }
 
-  testWidgets('TUN and the system proxy toggle independently', (
-    tester,
-  ) async {
+  testWidgets('TUN and the system proxy toggle independently', (tester) async {
     await pump(tester, const QuickToggles());
     expect(route(), (tun: false, systemProxy: true));
 
@@ -120,27 +119,34 @@ void main() {
     expect(find.byType(AdaptiveSheetScaffold), findsOneWidget);
   });
 
-  testWidgets('sidebar route cards only toggle from their switches', (
+  testWidgets('sidebar route cards open network while switches only toggle', (
     tester,
   ) async {
     await pump(tester, const DesktopRouteCards());
     expect(find.byType(Switch), findsNWidgets(2));
     expect(route(), (tun: false, systemProxy: true));
 
-    // Card labels/surfaces are display-only.
+    // Card taps open the existing Network page and do not change state.
     await tester.tap(find.text('System proxy'));
-    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.byType(NetworkListView), findsOneWidget);
     expect(route(), (tun: false, systemProxy: true));
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('TUN'));
-    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.byType(NetworkListView), findsOneWidget);
     expect(route(), (tun: false, systemProxy: true));
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     final switches = find.byType(Switch);
 
-    // The first switch controls only the system proxy.
+    // The first switch controls only the system proxy and does not navigate.
     await tester.tap(switches.at(0));
     await tester.pump();
+    expect(find.byType(NetworkListView), findsNothing);
     expect(route(), (tun: false, systemProxy: false));
 
     // The second switch controls only TUN and keeps system proxy unchanged.
@@ -148,11 +154,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Enable'));
     await tester.pumpAndSettle();
+    expect(find.byType(NetworkListView), findsNothing);
     expect(route(), (tun: true, systemProxy: false));
 
     // System proxy may be enabled while TUN stays enabled.
     await tester.tap(switches.at(0));
     await tester.pump();
+    expect(find.byType(NetworkListView), findsNothing);
     expect(route(), (tun: true, systemProxy: true));
   });
 
