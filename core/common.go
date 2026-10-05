@@ -108,14 +108,27 @@ func toExternalProvider(p cp.Provider) (*ExternalProvider, error) {
 			Path:             typed.Vehicle().Path(),
 			SubscriptionInfo: typed.GetSubscriptionInfo(),
 		}, nil
-	case *rp.RuleSetProvider:
+	case cp.RuleProvider:
+		updateAt := time.Time{}
+		if data, err := json.Marshal(typed); err == nil {
+			var view struct {
+				UpdatedAt time.Time `json:"updatedAt"`
+			}
+			if json.Unmarshal(data, &view) == nil {
+				updateAt = view.UpdatedAt
+			}
+		}
+		path := ""
+		if ruleset, ok := typed.(*rp.RuleSetProvider); ok {
+			path = ruleset.Vehicle().Path()
+		}
 		return &ExternalProvider{
 			Name:        typed.Name(),
 			Type:        typed.Type().String(),
 			VehicleType: typed.VehicleType().String(),
 			Count:       typed.Count(),
-			UpdateAt:    typed.UpdatedAt(),
-			Path:        typed.Vehicle().Path(),
+			UpdateAt:    updateAt,
+			Path:        path,
 		}, nil
 	default:
 		return nil, errNotExternalProvider
