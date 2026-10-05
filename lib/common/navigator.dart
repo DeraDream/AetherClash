@@ -45,4 +45,18 @@ class BaseNavigator {
       ),
     );
   }
+
+  /// Pushes a page into the currently visible desktop/laptop workspace.
+  ///
+  /// This intentionally never falls back to the root navigator, so persistent
+  /// shell chrome such as the left sidebar cannot be covered by mistake.
+  static Future<T?> pushToWorkspace<T>(PageLabel label, Widget child) {
+    final navigator = workspaceNavigatorKey(label).currentState;
+    if (navigator == null) {
+      return Future<T?>.value(null);
+    }
+    return navigator.push<T>(
+      MaterialPageRoute<T>(builder: (_) => child),
+    );
+  }
 }
