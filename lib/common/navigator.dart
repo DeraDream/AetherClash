@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final Map<PageLabel, GlobalKey<NavigatorState>> _workspaceNavigatorKeys = {};
+final Map<PageLabel, Set<String>> _workspaceRouteNames = {};
 
 /// Stable nested navigator for each non-mobile workspace page.
 GlobalKey<NavigatorState> workspaceNavigatorKey(PageLabel label) {
@@ -56,5 +57,34 @@ class BaseNavigator {
       return Future<T?>.value(null);
     }
     return navigator.push<T>(MaterialPageRoute<T>(builder: (_) => child));
+  }
+
+  /// Pushes a named page into a workspace only if that page is not already
+  /// present in the workspace stack. This keeps persistent sidebar actions
+  /// from stacking duplicate copies of the same settings page.
+  static Future<T?> pushToWorkspaceOnce<T>(
+    PageLabel label,
+    String routeName,
+    Widget child,
+  ) {
+    final activeRoutes = _workspaceRouteNames.putIfAbsent(label, () => <String>{});
+    if (!activeRoutes.add(routeName)) {
+      return Future<T?>.value(null);
+    }
+
+    final navigator = workspaceNavigatorKey(label).currentState;
+    if (navigator == null) {
+      activeRoutes.remove(routeName);
+      return Future<T?>.value(null);
+    }
+
+    return navigator
+        .push<T>(
+          MaterialPageRoute<T>(
+            settings: RouteSettings(name: routeName),
+            builder: (_) => child,
+          ),
+        )
+        .whenComplete(() => activeRoutes.remove(routeName));
   }
 }
