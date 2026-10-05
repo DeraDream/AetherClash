@@ -549,10 +549,11 @@ class QuickToggles extends ConsumerWidget {
 class DesktopRouteCards extends ConsumerWidget {
   const DesktopRouteCards({super.key});
 
-  void _openNetwork(BuildContext context) {
+  void _openNetwork(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
-    BaseNavigator.push(
-      context,
+    final pageLabel = ref.read(currentPageLabelProvider);
+    BaseNavigator.pushToWorkspace(
+      pageLabel,
       BaseScaffold(
         title: appLocalizations.network,
         body: const NetworkListView(),
@@ -576,7 +577,7 @@ class DesktopRouteCards extends ConsumerWidget {
             icon: Icons.public_rounded,
             label: appLocalizations.systemProxy,
             value: systemProxy,
-            onTap: () => _openNetwork(context),
+            onTap: () => _openNetwork(context, ref),
             onChanged: (value) => _setDesktopSystemProxy(ref, value),
           ),
         ),
@@ -586,7 +587,7 @@ class DesktopRouteCards extends ConsumerWidget {
             icon: Icons.lan_rounded,
             label: appLocalizations.tun,
             value: tun,
-            onTap: () => _openNetwork(context),
+            onTap: () => _openNetwork(context, ref),
             onChanged: (value) =>
                 unawaited(_setDesktopTun(context, ref, value)),
           ),
