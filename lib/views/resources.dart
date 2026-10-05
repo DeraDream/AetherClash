@@ -399,7 +399,7 @@ class _GeoDataModeItemState extends ConsumerState<_GeoDataModeItem> {
                 values: const [false, true],
                 selected: value,
                 labelOf: (item) => item ? 'DAT' : 'DB',
-                onChanged: _saving ? null : _change,
+                onChanged: _saving ? (_) {} : _change,
               ),
             ),
     );
@@ -846,7 +846,7 @@ class _RuleProviderResourceItem extends ConsumerWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w650,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 5),
