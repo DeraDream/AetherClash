@@ -1,41 +1,65 @@
-AetherClash v5.5.12：修复流量嗅探配置序列化导致 Core 配置加载失败的问题，并优化发布打包流程。
+AetherClash v5.5.13：升级 Mihomo Core 到 v1.19.32，并补齐 FlClash 已验证的 MIPS / EasyTier / 新协议兼容适配，同时继续优化桌面端发布流水线。
 
-## 关键修复
+## Core 升级
 
-- 修复流量嗅探开启后出现：
-  `NoSuchMethodError: Class '_SnifferConfig' has no instance method '[]'`
-- HTTP / TLS / QUIC 嗅探协议配置在写入 Mihomo YAML 前统一转换为纯 Map
-- 修复嗅探配置保存与重新读取的嵌套序列化
-- 避免配置生成失败后连带导致：
-  - Core 无法加载配置
-  - 策略组为空
-  - 左侧“代理”入口消失
-  - 系统代理 / TUN 无法正常工作
-- 增加 Sniffer 原始配置转换及持久化 round-trip 回归测试
+- Mihomo Core 升级到 v1.19.32
+- 使用 FlClash 已适配的 Core 提交：
+  `8597778c7df410ebe88c57e59eaab32d203156df`
+- 同步更新 `core/go.mod` / `core/go.sum`
+- 自动获得 v1.19.32 内核包含的协议修复、依赖升级、性能和稳定性优化
 
-## 构建流程优化
+## TUN / MIPS
 
-- release 元数据提交可安全复用直接父提交已经通过的 Preflight
-- 仅当发布提交只修改版本号与 release notes 时才复用；其他变化自动完整重测
-- Brand assets 与 Preflight 并行
-- 图标生成任务不再安装不需要的 Flutter SDK
-- Brand assets 增加内容哈希缓存
-- Go Core / Rust Helper 增加跨 GitHub Actions Run 的原生产物缓存
-- 原有 Core fingerprint、输出校验和 Helper/Core SHA-256 绑定继续保留
-- Windows amd64 / macOS arm64 仍并行构建，产物格式不变
+- 新增 `TunStack.mips`
+- 新配置默认使用 MIPS TUN stack
+- TUN Stack 设置页自动提供 `mips` 选项
+- Core 无法识别 stack 时默认回退到 `TunMips`
+- 补充 MIPS 默认值和 JSON round-trip 回归测试
+
+## EasyTier / Core API
+
+- 补齐 EasyTier 节点类型兼容
+- 新增逐节点 `validateProxies` Core API
+- EasyTier / Tailscale 校验时使用临时名称，避免探测关闭时误删除正在运行的同名 DNS client
+- 更新 Proxies Core wrapper，减少无用 history 序列化并保持现有代理组数据兼容
+- 增加 `validateProxies` Go 回归测试
+
+## 新协议兼容
+
+随新版 Core 获得并确认支持：
+
+- XHTTP transport / `xhttp-opts`
+- REALITY `support-x25519mlkem768`
+- EasyTier outbound
+- 新版 mipstack / gVisor / sing-tun 等依赖
+
+当前 AetherClash 仍使用现有编辑器，因此这些配置可以在 YAML 中正常使用，但暂不迁移新版 FlClash 的 Schema 自动补全 UI。
+
+## 发布流水线优化
+
+- Native Core / Helper cache 仅接受精确命中，避免恢复无效旧缓存
+- macOS 缓存固定版本 appdmg
+- Release Package 默认关闭 Flutter verbose 日志
+- 保留手动 verbose 开关用于故障诊断
+- Windows Pub cache 经 A/B 验证后继续保留
 
 ## 发布前验证
 
-- Dart Format / Parse：通过
+- Dart Format：通过
 - Flutter Analyze：通过
 - 完整 Flutter Tests：通过
-- Sniffer 嵌套协议纯 Map 回归：通过
-- Sniffer 配置保存 / 读取 round-trip：通过
-- 优化后的普通 Preflight workflow：通过
+- Go Core wrapper：通过
+- Android Core NDK / cgo 验证：通过
+- Rust tests：通过
+- Plugins：通过
+- Android unit tests：通过
+- Windows amd64 实际打包验证：通过
+- macOS arm64 实际打包验证：通过
 
 ## 发布目标
 
-- Windows amd64
-- macOS arm64
+- Windows amd64 Setup EXE
+- Windows amd64 ZIP
+- macOS arm64 DMG
 
 Android 与 macOS Intel 继续暂时停用，相关构建代码仍保留。
