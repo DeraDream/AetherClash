@@ -131,10 +131,7 @@ void main() {
           child: Scaffold(
             body: Row(
               children: [
-                const SizedBox(
-                  width: 300,
-                  child: DesktopRouteCards(),
-                ),
+                const SizedBox(width: 300, child: DesktopRouteCards()),
                 Expanded(
                   child: Navigator(
                     key: workspaceNavigatorKey(pageLabel),

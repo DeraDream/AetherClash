@@ -55,8 +55,6 @@ class BaseNavigator {
     if (navigator == null) {
       return Future<T?>.value(null);
     }
-    return navigator.push<T>(
-      MaterialPageRoute<T>(builder: (_) => child),
-    );
+    return navigator.push<T>(MaterialPageRoute<T>(builder: (_) => child));
   }
 }
