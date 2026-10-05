@@ -45,6 +45,8 @@ mixin CoreInterface {
 
   Future<ExternalProvider?> getExternalProvider(String externalProviderName);
 
+  Future<ExternalProviderContent> getExternalProviderContent(String externalProviderName);
+
   Future<String> updateGeoData(String type);
 
   Future<String> sideLoadExternalProvider({
@@ -254,6 +256,25 @@ abstract class CoreHandlerInterface with CoreInterface {
       arguments: externalProviderName,
     );
     return data == null ? null : ExternalProvider.fromJson(data);
+  }
+
+  @override
+  Future<ExternalProviderContent> getExternalProviderContent(
+    String externalProviderName,
+  ) async {
+    final data = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.getExternalProviderContent,
+      arguments: externalProviderName,
+    );
+    if (data == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned empty provider content',
+      );
+    }
+    return ExternalProviderContent.fromJson(
+      Map<String, Object?>.from(data),
+    );
   }
 
   @override
