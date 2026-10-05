@@ -101,7 +101,9 @@ class SetupAction extends _$SetupAction {
     if (system.isAndroid) {
       await _updateStartTime();
     }
-    final shouldRun = _isRunning || ref.read(appSettingProvider).autoRun;
+    final shouldRun = system.isDesktop
+        ? ref.read(profilesProvider).isNotEmpty
+        : _isRunning || ref.read(appSettingProvider).autoRun;
     if (shouldRun) {
       await setRunning(true, initialize: true);
     } else {
