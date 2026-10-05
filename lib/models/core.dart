@@ -169,6 +169,75 @@ extension ExternalProviderExt on ExternalProvider {
   String get updatingKey => 'provider_$name';
 }
 
+DateTime? _runtimeRuleDate(Object? value) {
+  if (value is! String || value.isEmpty) {
+    return null;
+  }
+  final parsed = DateTime.tryParse(value);
+  if (parsed == null || parsed.year <= 1) {
+    return null;
+  }
+  return parsed;
+}
+
+class RuntimeRuleExtra {
+  final bool disabled;
+  final int hitCount;
+  final DateTime? hitAt;
+  final int missCount;
+  final DateTime? missAt;
+
+  const RuntimeRuleExtra({
+    required this.disabled,
+    required this.hitCount,
+    required this.hitAt,
+    required this.missCount,
+    required this.missAt,
+  });
+
+  factory RuntimeRuleExtra.fromJson(Map<String, Object?> json) {
+    return RuntimeRuleExtra(
+      disabled: json['disabled'] == true,
+      hitCount: (json['hitCount'] as num?)?.toInt() ?? 0,
+      hitAt: _runtimeRuleDate(json['hitAt']),
+      missCount: (json['missCount'] as num?)?.toInt() ?? 0,
+      missAt: _runtimeRuleDate(json['missAt']),
+    );
+  }
+}
+
+class RuntimeRule {
+  final int index;
+  final String type;
+  final String payload;
+  final String proxy;
+  final int size;
+  final RuntimeRuleExtra? extra;
+
+  const RuntimeRule({
+    required this.index,
+    required this.type,
+    required this.payload,
+    required this.proxy,
+    required this.size,
+    required this.extra,
+  });
+
+  factory RuntimeRule.fromJson(Map<String, Object?> json) {
+    final rawExtra = json['extra'];
+    return RuntimeRule(
+      index: (json['index'] as num?)?.toInt() ?? -1,
+      type: json['type']?.toString() ?? '',
+      payload: json['payload']?.toString() ?? '',
+      proxy: json['proxy']?.toString() ?? '',
+      size: (json['size'] as num?)?.toInt() ?? -1,
+      extra: rawExtra is Map
+          ? RuntimeRuleExtra.fromJson(Map<String, Object?>.from(rawExtra))
+          : null,
+    );
+  }
+}
+
 @freezed
 abstract class ProxiesData with _$ProxiesData {
   const factory ProxiesData({
