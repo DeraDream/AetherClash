@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - main
-      - ci/package-speed-phase2
     tags:
       - 'v[0-9]*'
   workflow_dispatch:
@@ -116,7 +115,7 @@ jobs:
   brand-assets:
     # Icon generation is independent from Dart analysis/tests, so run it in
     # parallel with Preflight. The build waits for both jobs below.
-    if: ${{ github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/ci/package-speed-phase2' || contains(github.event.head_commit.message, '[release-build]') }}
+    if: ${{ github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release-build]') }}
     name: Brand assets
     runs-on: ubuntu-latest
     steps:
@@ -259,10 +258,9 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          # Windows spent ~53s restoring Pub cache while pub get took only a
-          # few seconds. Keep the SDK cache, but A/B the Windows build without
-          # Pub cache; macOS keeps the previous behavior for comparison.
-          pub-cache: ${{ matrix.platform != 'windows' }}
+          # Phase-2 A/B showed that disabling Pub cache only shifted ~53s from
+          # cache restore to flutter pub get on Windows, so keep it enabled.
+          pub-cache: true
 
       # Cache the exact appdmg installation instead of globally reinstalling it
       # on every macOS runner. setup.dart sees it on PATH and skips npm install.
