@@ -482,32 +482,11 @@ extension RuleExt on Rule {
   }
 }
 
-int stableConfigRuleId(String value, int occurrence) {
-  // Profile source rules need deterministic identities so enabled/disabled
-  // state survives subscription refreshes and ordinary reordering. The
-  // occurrence only disambiguates duplicate identical rule lines.
-  var hash = 0x811c9dc5;
-  for (final unit in '$occurrence:$value'.codeUnits) {
-    hash ^= unit;
-    hash = (hash * 0x01000193) & 0x7fffffff;
-  }
-  return -(hash == 0 ? occurrence + 1 : hash);
-}
-
 List<Rule> _genRules(List<dynamic>? rules) {
   if (rules == null) {
     return [];
   }
-  final occurrences = <String, int>{};
-  return rules.map((item) {
-    final value = item.toString();
-    final occurrence = occurrences[value] ?? 0;
-    occurrences[value] = occurrence + 1;
-    return Rule.parse(
-      value,
-      id: stableConfigRuleId(value, occurrence),
-    );
-  }).toList();
+  return rules.map((item) => Rule.parse(item.toString())).toList();
 }
 
 List<String> _genList(Map<String, dynamic> json) {
