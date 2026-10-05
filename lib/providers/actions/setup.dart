@@ -356,6 +356,25 @@ class SetupAction extends _$SetupAction {
     if (scriptContent?.isNotEmpty == true) {
       rawConfig = await handleEvaluate(scriptContent!, rawConfig);
     }
+    if (profileId != null && overwriteType == OverwriteType.standard) {
+      final disabledRuleIds = (await database.rulesDao
+              .queryProfileDisabledRules(profileId)
+              .map((item) => item.id)
+              .get())
+          .toSet();
+      final sourceRules = rawConfig['rules'];
+      if (disabledRuleIds.isNotEmpty && sourceRules is List) {
+        rawConfig = {
+          ...rawConfig,
+          'rules': sourceRules
+              .where(
+                (item) =>
+                    !disabledRuleIds.contains(Rule.parse(item.toString()).id),
+              )
+              .toList(),
+        };
+      }
+    }
     final snifferConfig = await preferences.getSnifferConfig();
     rawConfig = {
       ...rawConfig,
