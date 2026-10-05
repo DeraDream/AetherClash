@@ -458,4 +458,18 @@ class ProfileDisabledRuleIds extends _$ProfileDisabledRuleIds
       () => database.rulesDao.putDisabledLink(profileId, ruleId),
     );
   }
+
+  Future<void> putRule(Rule rule) async {
+    if (value.contains(rule.id)) {
+      return;
+    }
+    await database.rulesDao.putProfileDisabledRule(profileId, rule);
+  }
+
+  Future<void> delRule(int ruleId) async {
+    if (!value.contains(ruleId)) {
+      return;
+    }
+    await database.rulesDao.delDisabledLink(profileId, ruleId);
+  }
 }
