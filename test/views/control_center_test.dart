@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/navigator.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -119,37 +120,68 @@ void main() {
     expect(find.byType(AdaptiveSheetScaffold), findsOneWidget);
   });
 
-  testWidgets('sidebar route cards open network while switches only toggle', (
+  testWidgets('sidebar route cards open network inside workspace', (
     tester,
   ) async {
-    await pump(tester, const DesktopRouteCards());
+    final pageLabel = container.read(currentPageLabelProvider);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: TestApp(
+          child: Scaffold(
+            body: Row(
+              children: [
+                const SizedBox(
+                  width: 300,
+                  child: DesktopRouteCards(),
+                ),
+                Expanded(
+                  child: Navigator(
+                    key: workspaceNavigatorKey(pageLabel),
+                    onGenerateRoute: (_) => MaterialPageRoute<void>(
+                      builder: (_) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
     expect(find.byType(Switch), findsNWidgets(2));
     expect(route(), (tun: false, systemProxy: true));
 
-    // Card taps open the existing Network page and do not change state.
+    // Card taps push only into the right workspace; the cards stay mounted.
     await tester.tap(find.text('System proxy'));
     await tester.pumpAndSettle();
     expect(find.byType(NetworkListView), findsOneWidget);
+    expect(find.byType(DesktopRouteCards), findsOneWidget);
+    expect(find.text('System proxy'), findsWidgets);
     expect(route(), (tun: false, systemProxy: true));
-    await tester.pageBack();
+
+    workspaceNavigatorKey(pageLabel).currentState!.pop();
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('TUN'));
     await tester.pumpAndSettle();
     expect(find.byType(NetworkListView), findsOneWidget);
+    expect(find.byType(DesktopRouteCards), findsOneWidget);
     expect(route(), (tun: false, systemProxy: true));
-    await tester.pageBack();
+
+    workspaceNavigatorKey(pageLabel).currentState!.pop();
     await tester.pumpAndSettle();
 
     final switches = find.byType(Switch);
 
-    // The first switch controls only the system proxy and does not navigate.
+    // Switch taps keep their original behavior and never navigate.
     await tester.tap(switches.at(0));
     await tester.pump();
     expect(find.byType(NetworkListView), findsNothing);
     expect(route(), (tun: false, systemProxy: false));
 
-    // The second switch controls only TUN and keeps system proxy unchanged.
     await tester.tap(switches.at(1));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Enable'));
@@ -157,7 +189,6 @@ void main() {
     expect(find.byType(NetworkListView), findsNothing);
     expect(route(), (tun: true, systemProxy: false));
 
-    // System proxy may be enabled while TUN stays enabled.
     await tester.tap(switches.at(0));
     await tester.pump();
     expect(find.byType(NetworkListView), findsNothing);
