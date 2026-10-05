@@ -17,6 +17,18 @@ T roundTrip<T>(
 }
 
 void main() {
+  group('Stage 1+2 MIPS compatibility', () {
+    test('defaults TUN stack to MIPS', () {
+      expect(defaultTun.stack, TunStack.mips);
+    });
+
+    test('round-trips the mips stack value', () {
+      final tun = Tun.fromJson({'stack': 'mips'});
+      expect(tun.stack, TunStack.mips);
+      expect(tun.toJson()['stack'], 'mips');
+    });
+  });
+
   group('GeoResource JSON', () {
     test('exposes mihomo raw config keys', () {
       expect(GeoResource.MMDB.configKey, 'mmdb');

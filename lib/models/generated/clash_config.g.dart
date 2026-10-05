@@ -165,7 +165,7 @@ _Tun _$TunFromJson(Map<String, dynamic> json) => _Tun(
   device: json['device'] as String? ?? tunDeviceName,
   autoRoute: json['auto-route'] as bool? ?? false,
   stack:
-      $enumDecodeNullable(_$TunStackEnumMap, json['stack']) ?? TunStack.mixed,
+      $enumDecodeNullable(_$TunStackEnumMap, json['stack']) ?? TunStack.mips,
   dnsHijack:
       (json['dns-hijack'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -191,6 +191,7 @@ const _$TunStackEnumMap = {
   TunStack.gvisor: 'gvisor',
   TunStack.system: 'system',
   TunStack.mixed: 'mixed',
+  TunStack.mips: 'mips',
 };
 
 _FallbackFilter _$FallbackFilterFromJson(

@@ -77,8 +77,13 @@ type ExternalProvider struct {
 }
 
 type ProxiesData struct {
-	Proxies map[string]constant.Proxy `json:"proxies"`
-	All     []string                  `json:"all"`
+	Proxies map[string]any `json:"proxies"`
+	All     []string       `json:"all"`
+}
+
+type nodeView struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 const (
@@ -88,6 +93,7 @@ const (
 	forceGcMethod                  CoreMethod = "forceGc"
 	shutdownMethod                 CoreMethod = "shutdown"
 	validateConfigMethod           CoreMethod = "validateConfig"
+	validateProxiesMethod          CoreMethod = "validateProxies"
 	updateConfigMethod             CoreMethod = "updateConfig"
 	getProxiesMethod               CoreMethod = "getProxies"
 	changeProxyMethod              CoreMethod = "changeProxy"
