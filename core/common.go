@@ -135,6 +135,103 @@ func toExternalProvider(p cp.Provider) (*ExternalProvider, error) {
 	}
 }
 
+func handleGetExternalProviderContent(name string) (*ExternalProviderContent, *MethodError) {
+	p, exist := lookupExternalProvider(name)
+	if !exist {
+		return nil, providerMethodError(
+			"provider_not_found",
+			name,
+			errors.New("external provider does not exist"),
+		)
+	}
+	ruleProvider, ok := p.(cp.RuleProvider)
+	if !ok {
+		return nil, providerMethodError(
+			"provider_not_rule",
+			name,
+			errors.New("external provider is not a rule provider"),
+		)
+	}
+
+	switch typed := ruleProvider.(type) {
+	case *rp.InlineProvider:
+		data, err := json.Marshal(typed)
+		if err != nil {
+			return nil, providerMethodError("provider_read_error", name, err)
+		}
+		var view struct {
+			Behavior    string   `json:"behavior"`
+			Payload     []string `json:"payload"`
+			VehicleType string   `json:"vehicleType"`
+		}
+		if err := json.Unmarshal(data, &view); err != nil {
+			return nil, providerMethodError("provider_read_error", name, err)
+		}
+		var out strings.Builder
+		out.WriteString("payload:\n")
+		for _, line := range view.Payload {
+			fmt.Fprintf(&out, "  - %q\n", line)
+		}
+		return &ExternalProviderContent{
+			Data:        out.String(),
+			Editable:    false,
+			Format:      "inline",
+			VehicleType: view.VehicleType,
+		}, nil
+
+	case *rp.RuleSetProvider:
+		path := typed.Vehicle().Path()
+		buf, err := os.ReadFile(path)
+		if err != nil {
+			return nil, providerMethodError("provider_read_error", name, err)
+		}
+		data, err := json.Marshal(typed)
+		if err != nil {
+			return nil, providerMethodError("provider_read_error", name, err)
+		}
+		var view struct {
+			Behavior    string `json:"behavior"`
+			Format      string `json:"format"`
+			VehicleType string `json:"vehicleType"`
+		}
+		if err := json.Unmarshal(data, &view); err != nil {
+			return nil, providerMethodError("provider_read_error", name, err)
+		}
+		if strings.EqualFold(view.Format, "MrsRule") || strings.EqualFold(view.Format, "mrs") {
+			behavior, err := cp.ParseBehavior(strings.ToLower(view.Behavior))
+			if err != nil {
+				return nil, providerMethodError("provider_read_error", name, err)
+			}
+			var out b.Buffer
+			if err := rp.ConvertToMrs(buf, behavior, cp.MrsRule, &out); err != nil {
+				return nil, providerMethodError("provider_read_error", name, err)
+			}
+			return &ExternalProviderContent{
+				Data:        out.String(),
+				Editable:    false,
+				Format:      "mrs",
+				VehicleType: view.VehicleType,
+			}, nil
+		}
+		format := strings.ToLower(strings.TrimSuffix(view.Format, "Rule"))
+		if format == "" {
+			format = "yaml"
+		}
+		return &ExternalProviderContent{
+			Data:        string(buf),
+			Editable:    true,
+			Format:      format,
+			VehicleType: view.VehicleType,
+		}, nil
+	default:
+		return nil, providerMethodError(
+			"provider_unsupported",
+			name,
+			errors.New("unsupported rule provider type"),
+		)
+	}
+}
+
 func sideUpdateExternalProvider(p cp.Provider, data []byte) error {
 	switch typed := p.(type) {
 	case *provider.ProxySetProvider:
