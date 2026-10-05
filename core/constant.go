@@ -98,6 +98,13 @@ type ExternalProvider struct {
 	SubscriptionInfo *provider.SubscriptionInfo `json:"subscription-info"`
 }
 
+type ExternalProviderContent struct {
+	Data        string `json:"data"`
+	Editable    bool   `json:"editable"`
+	Format      string `json:"format"`
+	VehicleType string `json:"vehicle-type"`
+}
+
 type ProxiesData struct {
 	Proxies map[string]any `json:"proxies"`
 	All     []string       `json:"all"`
@@ -131,6 +138,7 @@ const (
 	closeConnectionMethod          CoreMethod = "closeConnection"
 	getExternalProvidersMethod     CoreMethod = "getExternalProviders"
 	getExternalProviderMethod      CoreMethod = "getExternalProvider"
+	getExternalProviderContentMethod CoreMethod = "getExternalProviderContent"
 	getMemoryMethod                CoreMethod = "getMemory"
 	updateGeoDataMethod            CoreMethod = "updateGeoData"
 	updateExternalProviderMethod   CoreMethod = "updateExternalProvider"
