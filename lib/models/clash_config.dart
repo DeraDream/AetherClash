@@ -389,7 +389,7 @@ abstract class Rule with _$Rule {
 
   // Mirrors mihomo's ParseRulePayload with needTarget set.
   factory Rule.parse(String value, {int? id}) {
-    id ??= _stableConfigRuleId(value);
+    id ??= snowflake.id;
     final fields = value.split(',').map((item) => item.trim()).toList();
     final type = fields.first.toUpperCase();
     if (type.isEmpty) {
@@ -482,23 +482,31 @@ extension RuleExt on Rule {
   }
 }
 
-int _stableConfigRuleId(String value) {
-  // Source profile rules need stable identities so their enabled/disabled
-  // state survives reloads and subscription updates. Keep them negative to
-  // avoid colliding with Snowflake ids used by user-created rules.
+int stableConfigRuleId(String value, int index) {
+  // Profile source rules need deterministic identities so enabled/disabled
+  // state survives reloads. Include the source index so duplicate rule lines
+  // can still be toggled independently. Keep ids negative to avoid colliding
+  // with Snowflake ids used by user-created rules.
   var hash = 0x811c9dc5;
-  for (final unit in value.codeUnits) {
+  for (final unit in '$index:$value'.codeUnits) {
     hash ^= unit;
     hash = (hash * 0x01000193) & 0x7fffffff;
   }
-  return -(hash == 0 ? 1 : hash);
+  return -(hash == 0 ? index + 1 : hash);
 }
 
 List<Rule> _genRules(List<dynamic>? rules) {
   if (rules == null) {
     return [];
   }
-  return rules.map((item) => Rule.parse(item)).toList();
+  return rules.indexed
+      .map(
+        (entry) => Rule.parse(
+          entry.$2.toString(),
+          id: stableConfigRuleId(entry.$2.toString(), entry.$1),
+        ),
+      )
+      .toList();
 }
 
 List<String> _genList(Map<String, dynamic> json) {
