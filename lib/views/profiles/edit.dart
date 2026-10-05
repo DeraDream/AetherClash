@@ -18,11 +18,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class EditProfileView extends ConsumerStatefulWidget {
   final Profile profile;
   final BuildContext context;
+  final bool dialogMode;
 
   const EditProfileView({
     super.key,
     required this.context,
     required this.profile,
+    this.dialogMode = false,
   });
 
   @override
@@ -249,6 +251,60 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
         onUpload: _uploadProfileFile,
       ),
     ];
+    final form = Form(
+      key: _formKey,
+      child: Builder(
+        builder: (context) => ListView.separated(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            18,
+            20,
+            18 + BottomInsetScope.of(context),
+          ),
+          itemBuilder: (_, index) => items[index],
+          separatorBuilder: (_, _) => const SizedBox(height: 14),
+          itemCount: items.length,
+        ),
+      ),
+    );
+    final body = widget.dialogMode
+        ? Column(
+            children: [
+              Expanded(child: form),
+              Divider(
+                height: 0.5,
+                color: context.glass.separator.withValues(alpha: 0.55),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(appLocalizations.cancel),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: _handleConfirm,
+                      icon: const Icon(Icons.check_rounded, size: 18),
+                      label: Text(appLocalizations.save),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+        : FloatLayout(
+            floatingWidget: FloatWrapper(
+              child: CommonFloatingActionButton(
+                onPressed: _handleConfirm,
+                icon: const Icon(Icons.save),
+                label: appLocalizations.save,
+              ),
+            ),
+            child: form,
+          );
     return FocusTraversalGroup(
       policy: PageTraversalPolicy(),
       child: PageFocusScope(
@@ -260,35 +316,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
             _handleBack();
             return false;
           },
-          child: FloatLayout(
-            floatingWidget: FloatWrapper(
-              child: CommonFloatingActionButton(
-                onPressed: _handleConfirm,
-                icon: const Icon(Icons.save),
-                label: appLocalizations.save,
-              ),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Builder(
-                  builder: (context) => ListView.separated(
-                    padding: kMaterialListPadding.copyWith(
-                      bottom: BottomInsetScope.of(context),
-                    ),
-                    itemBuilder: (_, index) {
-                      return items[index];
-                    },
-                    separatorBuilder: (_, _) {
-                      return const SizedBox(height: 24);
-                    },
-                    itemCount: items.length,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          child: body,
         ),
       ),
     );
