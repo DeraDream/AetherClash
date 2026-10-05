@@ -451,9 +451,7 @@ class _DesktopLocaleDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.all(16),
-        side: BorderSide(
-          color: glass.separator.withValues(alpha: 0.72),
-        ),
+        side: BorderSide(color: glass.separator.withValues(alpha: 0.72)),
       ),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
@@ -581,4 +579,3 @@ class _DesktopLocaleOption extends StatelessWidget {
     );
   }
 }
-

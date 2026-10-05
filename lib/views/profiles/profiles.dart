@@ -486,9 +486,7 @@ class _ProfileEditDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.all(18),
-        side: BorderSide(
-          color: glass.separator.withValues(alpha: 0.72),
-        ),
+        side: BorderSide(color: glass.separator.withValues(alpha: 0.72)),
       ),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(

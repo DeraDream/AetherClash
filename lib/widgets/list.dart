@@ -352,17 +352,20 @@ class ListItem<T> extends StatelessWidget {
     return ListTile(
       key: key,
       dense: dense,
-      visualDensity: visualDensity ??
+      visualDensity:
+          visualDensity ??
           (desktop ? const VisualDensity(horizontal: -1, vertical: -1) : null),
       tileColor: color,
-      titleTextStyle: titleTextStyle ??
+      titleTextStyle:
+          titleTextStyle ??
           (desktop
               ? context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: context.colorScheme.onSurface,
                 )
               : null),
-      subtitleTextStyle: subtitleTextStyle ??
+      subtitleTextStyle:
+          subtitleTextStyle ??
           (desktop
               ? context.textTheme.bodySmall?.copyWith(
                   color: context.glass.secondaryLabel,
@@ -608,13 +611,7 @@ class _SectionBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final children = separated
         ? items
-              .separated(
-                const Divider(
-                  height: 0.5,
-                  indent: 52,
-                  endIndent: 12,
-                ),
-              )
+              .separated(const Divider(height: 0.5, indent: 52, endIndent: 12))
               .toList()
         : items;
     return Padding(
