@@ -368,16 +368,20 @@ class SetupAction extends _$SetupAction {
           .toSet();
       final sourceRules = rawConfig['rules'];
       if (disabledRuleIds.isNotEmpty && sourceRules is List) {
+        final occurrences = <String, int>{};
+        final enabledRules = <dynamic>[];
+        for (final item in sourceRules) {
+          final value = item.toString();
+          final occurrence = occurrences[value] ?? 0;
+          occurrences[value] = occurrence + 1;
+          final id = stableConfigRuleId(value, occurrence);
+          if (!disabledRuleIds.contains(id)) {
+            enabledRules.add(item);
+          }
+        }
         rawConfig = {
           ...rawConfig,
-          'rules': sourceRules.indexed
-              .where(
-                (entry) => !disabledRuleIds.contains(
-                  stableConfigRuleId(entry.$2.toString(), entry.$1),
-                ),
-              )
-              .map((entry) => entry.$2)
-              .toList(),
+          'rules': enabledRules,
         };
       }
     }
