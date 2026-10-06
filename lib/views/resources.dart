@@ -754,6 +754,7 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
             suffixIcon: _searchController.text.isEmpty
                 ? null
                 : IconButton(
+                    tooltip: context.appLocalizations.clearSearch,
                     onPressed: () {
                       _searchController.clear();
                       setState(() {});
