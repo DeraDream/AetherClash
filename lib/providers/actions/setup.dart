@@ -493,6 +493,20 @@ class SetupAction extends _$SetupAction {
     return fallback;
   }
 
+  Future<void> _applyRulePageOverrides(int profileId) async {
+    final disabledIds =
+        (await ref.read(profileDisabledRuleIdsProvider(profileId).future)).toSet();
+    if (disabledIds.isEmpty) return;
+    final rules = await _core.getRules();
+    for (final rule in rules) {
+      final extra = rule.extra;
+      if (extra == null) continue;
+      final shouldDisable = disabledIds.contains(rule.overlayId);
+      if (extra.disabled == shouldDisable) continue;
+      await _core.setRuleDisabled(rule.index, shouldDisable);
+    }
+  }
+
   Future<_SetupTaskResult> _setupConfig({
     bool force = false,
     bool silence = false,
@@ -553,6 +567,9 @@ class SetupAction extends _$SetupAction {
           );
           if (message.isNotEmpty) {
             throw MessageException(message);
+          }
+          if (profileId != null) {
+            await _applyRulePageOverrides(profileId);
           }
         } catch (e, s) {
           setupFailed = true;
