@@ -77,7 +77,11 @@ void main() {
         child: const TestApp(child: ResourcesView()),
       ),
     );
-    await tester.pumpAndSettle();
+    await pumpUntilFound(
+      tester,
+      find.byType(DecorationListItem).hitTestable(),
+    );
+    await settle(tester, rounds: 5);
 
     expect(find.byType(DecorationListItem), findsNWidgets(8));
     expect(find.byType(ItemPositionProvider), findsNWidgets(4));
@@ -95,7 +99,7 @@ void main() {
     await tester.tap(
       find.descendant(of: mmdbItem, matching: find.byIcon(Icons.more_vert)),
     );
-    await tester.pumpAndSettle();
+    await settle(tester, rounds: 3);
 
     expect(find.text(currentAppLocalizations.edit), findsOneWidget);
     expect(find.text(currentAppLocalizations.sync), findsOneWidget);
