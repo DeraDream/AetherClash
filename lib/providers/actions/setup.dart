@@ -494,8 +494,11 @@ class SetupAction extends _$SetupAction {
   }
 
   Future<void> _applyRulePageOverrides(int profileId) async {
-    final disabledIds =
-        (await ref.read(profileDisabledRuleIdsProvider(profileId).future)).toSet();
+    final disabledIds = (await database.rulesDao
+            .queryProfileDisabledRules(profileId)
+            .map((item) => item.id)
+            .get())
+        .toSet();
     if (disabledIds.isEmpty) return;
     final rules = await _core.getRules();
     for (final rule in rules) {
