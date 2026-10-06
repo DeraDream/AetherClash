@@ -261,6 +261,29 @@ class RuntimeRule {
   }
 }
 
+extension RuntimeRuleOverrideExt on RuntimeRule {
+  int get overlayId {
+    final key = '$type\u0000$payload\u0000$proxy';
+    var hash = 0x811c9dc5;
+    for (final unit in key.codeUnits) {
+      hash ^= unit;
+      hash = (hash * 0x01000193) & 0x7fffffff;
+    }
+    return -(hash == 0 ? 1 : hash);
+  }
+
+  Rule get storedOverlayRule {
+    final value = type.toUpperCase() == 'MATCH'
+        ? 'MATCH,$proxy'
+        : [
+            type,
+            if (payload.isNotEmpty) payload,
+            if (proxy.isNotEmpty) proxy,
+          ].join(',');
+    return Rule.parse(value, id: overlayId);
+  }
+}
+
 @freezed
 abstract class ProxiesData with _$ProxiesData {
   const factory ProxiesData({
