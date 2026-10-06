@@ -23,11 +23,67 @@ import (
 	"github.com/metacubex/mihomo/constant"
 	cp "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/log"
+	rulewrapper "github.com/metacubex/mihomo/rules/wrapper"
 	"github.com/metacubex/mihomo/tunnel"
 )
 
 func namedProxy(name string) constant.Proxy {
 	return adapter.NewProxy(outbound.NewDirectWithOption(outbound.DirectOption{Name: name}))
+}
+
+type fakeRuntimeRule struct {
+	ruleType constant.RuleType
+	payload  string
+	adapter  string
+	matches  bool
+}
+
+func (f *fakeRuntimeRule) RuleType() constant.RuleType { return f.ruleType }
+func (f *fakeRuntimeRule) Adapter() string             { return f.adapter }
+func (f *fakeRuntimeRule) Payload() string             { return f.payload }
+func (f *fakeRuntimeRule) ProviderNames() []string     { return nil }
+func (f *fakeRuntimeRule) Match(*constant.Metadata, constant.RuleMatchHelper) (bool, string) {
+	return f.matches, f.adapter
+}
+
+func TestRuntimeRulesExposeMihomoWrapperStatsAndToggle(t *testing.T) {
+	wrapped := rulewrapper.NewRuleWrapper(&fakeRuntimeRule{
+		ruleType: constant.DomainSuffix,
+		payload:  "example.com",
+		adapter:  "DIRECT",
+		matches:  true,
+	})
+	tunnel.UpdateRules([]constant.Rule{wrapped}, nil, nil)
+	t.Cleanup(func() { tunnel.UpdateRules(nil, nil, nil) })
+
+	wrapped.Match(&constant.Metadata{}, constant.RuleMatchHelper{})
+	wrapped.Match(&constant.Metadata{}, constant.RuleMatchHelper{})
+
+	rules := handleGetRules()
+	if len(rules) != 1 {
+		t.Fatalf("handleGetRules() = %d rules, want 1", len(rules))
+	}
+	got := rules[0]
+	if got.Type != "DomainSuffix" || got.Payload != "example.com" || got.Proxy != "DIRECT" {
+		t.Fatalf("runtime rule = %+v, want DomainSuffix/example.com/DIRECT", got)
+	}
+	if got.Extra == nil || got.Extra.HitCount != 2 || got.Extra.MissCount != 0 {
+		t.Fatalf("runtime rule stats = %+v, want 2 hits and 0 misses", got.Extra)
+	}
+
+	if !handleSetRuleDisabled(&RuleDisabledParams{Index: 0, Disabled: true}) {
+		t.Fatal("handleSetRuleDisabled rejected a wrapped rule")
+	}
+	if !wrapped.IsDisabled() {
+		t.Fatal("runtime wrapper was not disabled")
+	}
+	rules = handleGetRules()
+	if rules[0].Extra == nil || !rules[0].Extra.Disabled {
+		t.Fatal("disabled state was not reflected back to the host")
+	}
+	if handleSetRuleDisabled(&RuleDisabledParams{Index: 9, Disabled: true}) {
+		t.Fatal("out-of-range rule index was accepted")
+	}
 }
 
 // selectorGroup builds a real Selector over a compatible provider, so the
