@@ -487,7 +487,7 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
 
   Future<void> _reload() async {
     if (!mounted) return;
-    if (!ref.read(initProvider)) {
+    if (!ref.read(initProvider) || ref.read(currentProfileIdProvider) == null) {
       setState(() {
         _loading = false;
         _configs = const {};
