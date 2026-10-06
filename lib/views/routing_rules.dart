@@ -4,7 +4,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/control/tiles.dart';
+import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +14,27 @@ class RoutingRulesView extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<RoutingRulesView> createState() => _RoutingRulesViewState();
+}
+
+int _runtimeRuleOverlayId(RuntimeRule rule) {
+  final key = '${rule.type}\u0000${rule.payload}\u0000${rule.proxy}';
+  var hash = 0x811c9dc5;
+  for (final unit in key.codeUnits) {
+    hash ^= unit;
+    hash = (hash * 0x01000193) & 0x7fffffff;
+  }
+  return -(hash == 0 ? 1 : hash);
+}
+
+Rule _runtimeRuleToStoredRule(RuntimeRule rule) {
+  final value = rule.type.toUpperCase() == 'MATCH'
+      ? 'MATCH,${rule.proxy}'
+      : [
+          rule.type,
+          if (rule.payload.isNotEmpty) rule.payload,
+          if (rule.proxy.isNotEmpty) rule.proxy,
+        ].join(',');
+  return Rule.parse(value, id: _runtimeRuleOverlayId(rule));
 }
 
 class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
@@ -77,7 +98,27 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
     }
     _refreshing = true;
     try {
-      final rules = await ref.read(coreHandlerProvider).getRules();
+      var rules = await ref.read(coreHandlerProvider).getRules();
+      final profileId = ref.read(currentProfileIdProvider);
+      if (profileId != null) {
+        final disabledIds =
+            (await ref.read(profileDisabledRuleIdsProvider(profileId).future))
+                .toSet();
+        var changed = false;
+        for (final rule in rules) {
+          final extra = rule.extra;
+          if (extra == null) continue;
+          final shouldDisable = disabledIds.contains(_runtimeRuleOverlayId(rule));
+          if (extra.disabled == shouldDisable) continue;
+          final applied = await ref
+              .read(coreHandlerProvider)
+              .setRuleDisabled(rule.index, shouldDisable);
+          changed = changed || applied;
+        }
+        if (changed) {
+          rules = await ref.read(coreHandlerProvider).getRules();
+        }
+      }
       if (!mounted) return;
       setState(() {
         _rules = rules;
@@ -107,13 +148,32 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
 
   Future<void> _setEnabled(RuntimeRule rule, bool enabled) async {
     final extra = rule.extra;
-    if (extra == null || _updatingIndexes.contains(rule.index)) return;
+    final profileId = ref.read(currentProfileIdProvider);
+    if (extra == null ||
+        profileId == null ||
+        _updatingIndexes.contains(rule.index)) {
+      return;
+    }
     setState(() => _updatingIndexes.add(rule.index));
+    final storedRule = _runtimeRuleToStoredRule(rule);
+    final notifier = ref.read(
+      profileDisabledRuleIdsProvider(profileId).notifier,
+    );
     try {
+      if (enabled) {
+        await notifier.delRule(storedRule.id);
+      } else {
+        await notifier.putRule(storedRule);
+      }
       final success = await ref
           .read(coreHandlerProvider)
           .setRuleDisabled(rule.index, !enabled);
       if (!success) {
+        if (enabled) {
+          await notifier.putRule(storedRule);
+        } else {
+          await notifier.delRule(storedRule.id);
+        }
         throw StateError(
           _text(
             context,
@@ -148,11 +208,7 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-            child: Column(
-              children: [
-                const OutboundModeSwitch(height: 38),
-                const SizedBox(height: 10),
-                TextField(
+            child: TextField(
                   controller: _searchController,
                   onChanged: (_) => setState(() {}),
                   inputFormatters: TextInputLimits.limit(TextInputLimits.search),
@@ -175,8 +231,6 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
                           ),
                   ),
                 ),
-              ],
-            ),
           ),
           Expanded(child: _buildBody(context, rules, query)),
         ],
