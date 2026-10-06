@@ -1,118 +1,76 @@
-AetherClash v5.5.15：重构桌面端代理控制逻辑，并新增“规则”和“外部资源”两个一级功能页面。
+AetherClash v5.5.16：修正规则页职责与规则覆盖逻辑，并完成规则开关 / 外部资源更新专项验证。
 
-## 桌面端代理控制
+## 规则页修正
 
-- 移除桌面侧栏顶部额外的“代理总开关”
-- Mihomo Core 在桌面端按应用生命周期自动运行，不再要求用户手动开启总开关
-- 用户侧仅保留两个主要入口：
-  - 系统代理
-  - 虚拟网卡 / TUN
-- 原总开关下方的运行时间移动到左下角 IP 信息下方
-- 修复系统代理 / 虚拟网卡卡片连续点击时重复 push 网络设置页面的问题
-- 系统代理和 TUN 卡片仍保持“点卡片进入网络设置、点 Switch 只切换状态”的独立交互
+- 删除规则页顶部多余的“规则 / 全局 / 直连”模式切换
+- 左侧顶部模式切换继续只负责 Mihomo 运行模式
+- 一级“规则”页面只负责：
+  - 展示当前运行配置中的规则
+  - 显示真实命中 / 未命中统计
+  - 显示命中百分比
+  - 搜索规则
+  - 启用 / 禁用单条规则
+- 规则页开关作为 AetherClash 持久化覆盖层，不修改原订阅 / 原配置文件
+- 用户禁用的规则在配置重新加载、订阅更新、Core 重启后会自动重新应用
+- 规则覆盖层优先于配置文件本身的启用状态
 
-## 规则
+## 规则开关验证
 
-新增左侧一级“规则”页面，规则直接来自当前 Mihomo 运行配置。
+已对 Mihomo Runtime RuleWrapper 做专项验证：
 
-- 支持按规则类型、内容、策略搜索
-- 直接读取 Mihomo RuleWrapper 的真实运行时统计，不使用客户端估算
-- 显示：
-  - 命中次数
-  - 总匹配次数
-  - 命中百分比
-  - 最近命中 / 匹配时间
-- 每条规则支持运行时启用 / 禁用
-- 规则开关直接控制 Mihomo Runtime RuleWrapper，不改写订阅原文件
-- 配置 / Core 重新加载后自动重新读取当前规则状态
-- 页面定时刷新统计数据，无需手动刷新才能看到命中变化
+- 禁用后规则真实停止匹配
+- 重新启用后规则恢复匹配
+- 运行时 disabled 状态可正确回读
+- 越界规则索引不会错误生效
+- 配置重新加载后会从本地数据库重新应用禁用覆盖状态
 
-## 外部资源
+## 外部资源验证
 
-将原“设置 → 资源”迁移为左侧一级“外部资源”页面，设置中不再保留重复入口。
+### Rule Provider
+
+- 单项“刷新”会实际调用当前 Provider 的 Update()
+- 更新成功后重新读取 Provider 状态
+- “更新全部”使用同一真实更新路径
+- HTTP / FILE / INLINE 等 Provider 按 Mihomo 当前能力处理
+- Provider 内容编辑 / 只读逻辑保持不变：
+  - HTTP：可编辑本地缓存，远程更新会覆盖
+  - FILE：可编辑本地文件
+  - INLINE：只读
+  - MRS：解析后只读
 
 ### Geo 数据
 
-保留并扩展现有资源管理：
+- MMDB / ASN / GEOIP / GEOSITE 的手动更新会真实进入 Mihomo updater
+- 更新中的状态继续由 Core 事件驱动
+- 更新完成 / 跳过 / 失败会正确结束 loading 状态并反馈结果
 
-- GeoIP
-- GeoSite
-- MMDB
-- ASN
-- 自动更新
-- 更新间隔
-- 单项刷新
-- 文件信息
+## 同时包含 v5.5.15 功能
 
-新增：
-
-- GeoData 数据模式：DB / DAT
-- GeoData Loader：Memconservative / Standard
-- 相关设置持久化并应用到实际运行配置
-
-### Rule Providers
-
-从当前配置的 rule-providers 实时读取规则集合。
-
-- 支持搜索 Provider
-- 显示 Provider 名称、来源类型、Behavior、Format、规则数量、更新时间
-- 支持单项刷新
-- 支持更新全部
-- 配置切换后自动刷新当前 Provider 列表
-- Core 尚未初始化或没有当前配置时不会错误发起 Provider IPC
-
-## 规则集查看 / 编辑
-
-每个 Rule Provider 右侧提供：
-
-- 查看 / 编辑
-- 刷新
-
-按 Provider 类型和格式分别处理：
-
-- HTTP：可编辑本地缓存，明确提示下次远程更新会覆盖修改
-- FILE：可编辑本地文件
-- INLINE：只读查看，修改应回到当前配置文件
-- MRS：由 Core 解析为文本后只读查看，不直接修改二进制文件
-
-编辑器复用 AetherClash 现有编辑器能力，不额外引入第二套文本编辑组件。
-
-## Mihomo Core 接口
-
-为上述功能补充桌面 Core Bridge：
-
-- getRules
-- setRuleDisabled
-- getExternalProviderContent
-- RuleWrapper 命中 / 未命中统计
-- Inline Rule Provider 资源暴露
-- MRS 规则集文本解析
-
-## UI 重构
-
-本版本同时包含此前确认的桌面 UI 重构：
-
-- 配置创建改为桌面弹窗
-- 设置页、配置页、工具页进一步扁平化
-- 对话框改为更接近 macOS 的简洁样式
-- 删除免责声明启动流程
-- 左侧主导航在桌面子页面中保持常驻
+- 桌面端移除顶部代理总开关
+- Mihomo Core 桌面端自动运行
+- 运行时间移动至左下角 IP 下方
+- 系统代理 / TUN 保持独立
+- 修复重复 push 网络设置页面
+- 新增一级“规则”页面
+- 新增一级“外部资源”页面
+- 设置中的旧“资源”入口移除
+- GeoData DB / DAT 与 Loader 配置
+- Rule Provider 搜索、单项刷新、更新全部、查看 / 编辑
+- Inline / MRS 内容查看
+- Mihomo RuleWrapper 真实统计接口
 
 ## 验证
 
-发布前完成：
+发布前已通过：
 
-- Dart Format：通过
-- Flutter Analyze：通过
-- 规则 / 资源专项 Dart Tests：通过
-- 主分支完整 Flutter Tests：通过
-- Go gofmt：通过
-- Go Core Tests：通过
-- Go vet：通过
-- Runtime RuleWrapper 命中统计 / 开关专项测试：通过
-- Inline Rule Provider 列表 / 内容专项测试：通过
-- Rule Provider 资源页专项测试：通过
-- 主分支正式 Preflight：通过
+- Flutter Analyze
+- 规则 / 资源相关 Dart Tests
+- Mihomo Core 规则开关专项 Go Test
+- Rule Provider 更新专项 Go Test
+- Geo updater 专项 Go Test
+- Go Core Tests
+- Go Vet
+- Windows / macOS 正式打包流程
 
 ## 发布目标
 
