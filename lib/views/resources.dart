@@ -563,7 +563,6 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
     final messages = <UpdatingMessage>[];
     try {
       for (final provider in providers) {
-        if (provider.vehicleType != 'HTTP') continue;
         try {
           final message = await ref
               .read(proxiesActionProvider.notifier)
@@ -797,9 +796,7 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
                     provider: provider,
                     config: _configs[provider.name] ?? const {},
                     onEdit: () => _openEditor(provider),
-                    onRefresh: provider.vehicleType == 'HTTP'
-                        ? () => _updateOne(provider)
-                        : null,
+                    onRefresh: () => _updateOne(provider),
                   ),
                 ],
               ],
@@ -833,8 +830,7 @@ class _RuleProviderResourceItem extends ConsumerWidget {
       MetaChip(label: provider.vehicleType),
       if (behavior?.isNotEmpty == true) MetaChip(label: behavior!),
       if (format?.isNotEmpty == true) MetaChip(label: format!),
-      if (provider.count > 0)
-        MetaChip(label: context.appLocalizations.rulesCount(provider.count)),
+      MetaChip(label: context.appLocalizations.rulesCount(provider.count)),
       if (provider.updateAt.microsecondsSinceEpoch > 0)
         MetaChip(label: provider.updateAt.getLastUpdateTimeDesc(context)),
     ];
