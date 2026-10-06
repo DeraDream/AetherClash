@@ -80,9 +80,11 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
       var rules = await ref.read(coreHandlerProvider).getRules();
       final profileId = ref.read(currentProfileIdProvider);
       if (profileId != null) {
-        final disabledIds =
-            (await ref.read(profileDisabledRuleIdsProvider(profileId).future))
-                .toSet();
+        final disabledIds = (await database.rulesDao
+                .queryProfileDisabledRules(profileId)
+                .map((item) => item.id)
+                .get())
+            .toSet();
         var changed = false;
         for (final rule in rules) {
           final extra = rule.extra;
@@ -135,24 +137,23 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
     }
     setState(() => _updatingIndexes.add(rule.index));
     final storedRule = rule.storedOverlayRule;
-    final notifier = ref.read(
-      profileDisabledRuleIdsProvider(profileId).notifier,
-    );
     try {
       if (enabled) {
-        await notifier.delRule(storedRule.id);
+        await database.rulesDao.delDisabledLink(profileId, storedRule.id);
       } else {
-        await notifier.putRule(storedRule);
+        await database.rulesDao.putProfileDisabledRule(profileId, storedRule);
       }
+      ref.invalidate(profileDisabledRuleIdsProvider(profileId));
       final success = await ref
           .read(coreHandlerProvider)
           .setRuleDisabled(rule.index, !enabled);
       if (!success) {
         if (enabled) {
-          await notifier.putRule(storedRule);
+          await database.rulesDao.putProfileDisabledRule(profileId, storedRule);
         } else {
-          await notifier.delRule(storedRule.id);
+          await database.rulesDao.delDisabledLink(profileId, storedRule.id);
         }
+        ref.invalidate(profileDisabledRuleIdsProvider(profileId));
         throw StateError(
           _text(
             context,
