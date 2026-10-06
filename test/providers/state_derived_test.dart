@@ -110,7 +110,12 @@ void main() {
     container
         .read(currentPageLabelProvider.notifier)
         .toPage(PageLabel.resources);
-    expect(container.read(navigationStateProvider).currentIndex, 0);
+    final resources = container.read(navigationStateProvider);
+    expect(resources.currentIndex, greaterThan(0));
+    expect(
+      resources.navigationItems[resources.currentIndex].label,
+      PageLabel.resources,
+    );
   });
 
   test('layout and page state providers compose their dependencies', () {
