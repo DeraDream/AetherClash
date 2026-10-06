@@ -6,11 +6,13 @@ import (
 	"go/parser"
 	"go/token"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/constant"
 	cp "github.com/metacubex/mihomo/constant/provider"
+	rp "github.com/metacubex/mihomo/rules/provider"
 	"github.com/metacubex/mihomo/tunnel"
 )
 
@@ -257,6 +259,45 @@ func withTunnelProviders(
 		tunnel.UpdateProxies(nil, nil)
 		tunnel.UpdateRules(nil, nil, nil)
 	})
+}
+
+func TestInlineRuleProviderIsListedAndReadable(t *testing.T) {
+	inline := rp.NewInlineProvider(
+		"inline-rules",
+		cp.Domain,
+		[]string{"example.com", "example.org"},
+		nil,
+	)
+	withTunnelProviders(t, nil, map[string]cp.RuleProvider{
+		"inline-rules": inline,
+	})
+
+	providers := externalProviders()
+	listed, ok := providers["inline-rules"]
+	if !ok {
+		t.Fatal("inline rule provider was omitted from external resources")
+	}
+	view, err := toExternalProvider(listed)
+	if err != nil {
+		t.Fatalf("toExternalProvider(inline) error: %v", err)
+	}
+	if view.VehicleType != "Inline" || view.Count != 2 {
+		t.Fatalf("inline provider view = %+v, want Inline with 2 rules", view)
+	}
+
+	content, methodErr := handleGetExternalProviderContent("inline-rules")
+	if methodErr != nil {
+		t.Fatalf("get inline provider content: %v", methodErr)
+	}
+	if content.Editable {
+		t.Fatal("inline provider content should be read-only")
+	}
+	if content.Format != "inline" {
+		t.Fatalf("inline content format = %q, want inline", content.Format)
+	}
+	if !strings.Contains(content.Data, "example.com") || !strings.Contains(content.Data, "example.org") {
+		t.Fatalf("inline content = %q, want both payload entries", content.Data)
+	}
 }
 
 func TestExternalProvidersSkipsInlineProviders(t *testing.T) {
