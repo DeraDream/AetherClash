@@ -16,27 +16,6 @@ class RoutingRulesView extends ConsumerStatefulWidget {
   ConsumerState<RoutingRulesView> createState() => _RoutingRulesViewState();
 }
 
-int _runtimeRuleOverlayId(RuntimeRule rule) {
-  final key = '${rule.type}\u0000${rule.payload}\u0000${rule.proxy}';
-  var hash = 0x811c9dc5;
-  for (final unit in key.codeUnits) {
-    hash ^= unit;
-    hash = (hash * 0x01000193) & 0x7fffffff;
-  }
-  return -(hash == 0 ? 1 : hash);
-}
-
-Rule _runtimeRuleToStoredRule(RuntimeRule rule) {
-  final value = rule.type.toUpperCase() == 'MATCH'
-      ? 'MATCH,${rule.proxy}'
-      : [
-          rule.type,
-          if (rule.payload.isNotEmpty) rule.payload,
-          if (rule.proxy.isNotEmpty) rule.proxy,
-        ].join(',');
-  return Rule.parse(value, id: _runtimeRuleOverlayId(rule));
-}
-
 class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
   final _searchController = TextEditingController();
   final Set<int> _updatingIndexes = <int>{};
@@ -108,7 +87,7 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
         for (final rule in rules) {
           final extra = rule.extra;
           if (extra == null) continue;
-          final shouldDisable = disabledIds.contains(_runtimeRuleOverlayId(rule));
+          final shouldDisable = disabledIds.contains(rule.overlayId);
           if (extra.disabled == shouldDisable) continue;
           final applied = await ref
               .read(coreHandlerProvider)
@@ -155,7 +134,7 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
       return;
     }
     setState(() => _updatingIndexes.add(rule.index));
-    final storedRule = _runtimeRuleToStoredRule(rule);
+    final storedRule = rule.storedOverlayRule;
     final notifier = ref.read(
       profileDisabledRuleIdsProvider(profileId).notifier,
     );
