@@ -32,8 +32,18 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
   @override
   void initState() {
     super.initState();
+    ref.listenManual(currentProfileIdProvider, (previous, next) {
+      if (previous != next) {
+        _refresh(forceLoading: true);
+      }
+    });
+    ref.listenManual(initProvider, (previous, next) {
+      if (previous != next) {
+        _refresh(forceLoading: true);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refresh();
+      _refresh(forceLoading: true);
       _timer = Timer.periodic(const Duration(seconds: 1), (_) => _refresh());
     });
   }
@@ -45,8 +55,26 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
     super.dispose();
   }
 
-  Future<void> _refresh() async {
+  Future<void> _refresh({bool forceLoading = false}) async {
     if (!mounted || _refreshing) return;
+    final ready =
+        ref.read(initProvider) && ref.read(currentProfileIdProvider) != null;
+    if (!ready) {
+      if (_rules.isNotEmpty || _error != null || !_loading) {
+        setState(() {
+          _rules = const [];
+          _error = null;
+          _loading = false;
+        });
+      }
+      return;
+    }
+    if (forceLoading && _rules.isEmpty) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     _refreshing = true;
     try {
       final rules = await ref.read(coreHandlerProvider).getRules();
