@@ -81,6 +81,18 @@ func TestRuntimeRulesExposeMihomoWrapperStatsAndToggle(t *testing.T) {
 	if rules[0].Extra == nil || !rules[0].Extra.Disabled {
 		t.Fatal("disabled state was not reflected back to the host")
 	}
+	if matched, _ := wrapped.Match(&constant.Metadata{}, constant.RuleMatchHelper{}); matched {
+		t.Fatal("a disabled runtime rule still matched traffic")
+	}
+	if !handleSetRuleDisabled(&RuleDisabledParams{Index: 0, Disabled: false}) {
+		t.Fatal("handleSetRuleDisabled rejected re-enabling a wrapped rule")
+	}
+	if wrapped.IsDisabled() {
+		t.Fatal("runtime wrapper stayed disabled after re-enable")
+	}
+	if matched, _ := wrapped.Match(&constant.Metadata{}, constant.RuleMatchHelper{}); !matched {
+		t.Fatal("a re-enabled runtime rule did not resume matching")
+	}
 	if handleSetRuleDisabled(&RuleDisabledParams{Index: 9, Disabled: true}) {
 		t.Fatal("out-of-range rule index was accepted")
 	}
@@ -688,6 +700,54 @@ func TestProviderRequestErrorCode(t *testing.T) {
 		if got := providerRequestErrorCode(test.err); got != test.want {
 			t.Errorf("providerRequestErrorCode(%q) = %q, want %q", test.err, got, test.want)
 		}
+	}
+}
+
+type countingRuleProvider struct {
+	fakeRuleProvider
+	calls atomic.Int32
+}
+
+func (p *countingRuleProvider) Update() error {
+	p.calls.Add(1)
+	return nil
+}
+
+func TestUpdateExternalRuleProviderActuallyRunsUpdate(t *testing.T) {
+	const name = "ruleset"
+	provider := &countingRuleProvider{
+		fakeRuleProvider: fakeRuleProvider{name: name, vehicle: cp.HTTP},
+	}
+	withTunnelProviders(t, nil, map[string]cp.RuleProvider{name: provider})
+
+	if methodError := handleUpdateExternalProvider(name); methodError != nil {
+		t.Fatalf("handleUpdateExternalProvider(%q): %v", name, methodError)
+	}
+	if got := provider.calls.Load(); got != 1 {
+		t.Fatalf("rule provider Update ran %d times, want 1", got)
+	}
+}
+
+func TestUpdateGeoDataActuallyRunsSelectedUpdater(t *testing.T) {
+	const kind = "MMDB"
+	original := geoResourceUpdaters[kind]
+	called := make(chan struct{}, 1)
+	geoResourceUpdaters[kind] = func() error {
+		called <- struct{}{}
+		return nil
+	}
+	t.Cleanup(func() {
+		geoResourceUpdaters[kind] = original
+		releaseGeoUpdate(kind)
+	})
+
+	if message := handleUpdateGeoData(kind); message != "" {
+		t.Fatalf("handleUpdateGeoData(%q) = %q, want success", kind, message)
+	}
+	select {
+	case <-called:
+	case <-time.After(time.Second):
+		t.Fatal("the selected Geo updater was never executed")
 	}
 }
 
