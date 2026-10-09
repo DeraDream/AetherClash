@@ -1,4 +1,4 @@
-AetherClash v5.5.18：完善 macOS 应用身份、网络信息与系统代理体验。
+AetherClash v5.5.19：完善 macOS 应用身份、网络信息与系统代理体验。
 
 ## 更新
 
@@ -14,6 +14,7 @@ AetherClash v5.5.18：完善 macOS 应用身份、网络信息与系统代理体
 
 - 相关 Flutter 测试 35 项通过。
 - macOS x86_64 Release 构建通过。
+- CI 全量测试改为串行执行，避免共享状态并发导致预检失败。
 
 ## 发布目标
 

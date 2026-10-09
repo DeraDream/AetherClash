@@ -110,7 +110,7 @@ jobs:
 
       - name: Run tests
         if: ${{ steps.reuse.outputs.reuse != 'true' }}
-        run: flutter test --reporter compact
+        run: flutter test --reporter compact --concurrency=1
 
   brand-assets:
     # Icon generation is independent from Dart analysis/tests, so run it in
