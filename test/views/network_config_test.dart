@@ -4,6 +4,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/network.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -236,6 +237,43 @@ void main() {
 
       expect(find.byType(ListTile), findsOneWidget);
     });
+  });
+
+  testWidgets('copies Linux proxy environment variables after selection', (
+    tester,
+  ) async {
+    String? clipboard;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboard = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    container
+        .read(patchClashConfigProvider.notifier)
+        .update((state) => state.copyWith(mixedPort: 7899));
+
+    await pumpItem(tester, const ProxyEnvironmentItem());
+    await tester.tap(
+      find.byWidgetPredicate((widget) => widget is DropdownButton),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Linux').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.copy_rounded));
+    await tester.pump();
+
+    expect(
+      clipboard,
+      'export http_proxy=http://127.0.0.1:7899\n'
+      'export https_proxy=http://127.0.0.1:7899\n'
+      'export all_proxy=http://127.0.0.1:7899',
+    );
   });
 }
 

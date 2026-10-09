@@ -25,7 +25,7 @@ preserved.
 
 ## Install
 
-Download the build for your platform from [Releases](https://github.com/DeraDream/po0-clash/releases).
+Download the build for your platform from [Releases](https://github.com/DeraDream/AetherClash/releases).
 
 | Platform | How |
 |---|---|
@@ -35,15 +35,21 @@ Download the build for your platform from [Releases](https://github.com/DeraDrea
 | Linux / iOS | Not currently published by the standalone release workflow |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeraDream/po0-clash/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DeraDream/AetherClash/main/scripts/install-macos.sh | bash
 ```
 
 For macOS, `AETHERCLASH_VERSION`, `AETHERCLASH_DMG` and `AETHERCLASH_REPO` select a specific build or repository.
 The legacy `PO0CLASH_*` variable names are still accepted for upgrade compatibility.
 
-Existing po0-clash desktop installations are intentionally upgraded in place in v5.5.2. Some internal executable, helper,
-bundle and data-directory identifiers therefore remain unchanged so users keep their configuration and can upgrade without
-installing a second copy.
+Current macOS releases install as `/Applications/AetherClash.app`. If Gatekeeper blocks first launch, run:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/AetherClash.app"
+codesign --force --deep --sign - "/Applications/AetherClash.app"
+open "/Applications/AetherClash.app"
+```
+
+For an older installed bundle, replace `AetherClash.app` with `po0-clash.app` in all three commands.
 
 Only enable the system proxy or TUN in one proxy client at a time.
 

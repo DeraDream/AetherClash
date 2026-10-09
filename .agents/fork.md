@@ -14,8 +14,8 @@ fork. Human-facing documentation lives in `docs/` (Chinese).
   `docs/features/glass-ui.md`): neutral backgrounds and opaque content cells, glass only on floating controls, tokens in
   `lib/common/glass.dart`, widgets in `lib/widgets/glass.dart`, and a control sidebar / rail / floating dock chosen by
   window width. Widgets never branch on the platform for their look.
-- Its own app identity (`docs/adr/0006-standalone-app-identity.md`): app id `io.github.yuuukicreation.po0clash`, executable
-  and display name `po0-clash`, `Po0ClashCore` / `Po0ClashHelperService`, its own Inno Setup `AppId`, IPC names, data
+- Its own app identity (`docs/adr/0006-standalone-app-identity.md`): app id `io.github.yuuukicreation.po0clash`, macOS app
+  and executable name `AetherClash`, `Po0ClashCore` / `Po0ClashHelperService`, its own Inno Setup `AppId`, IPC names, data
   directory and `po0clash://` scheme. No Firebase.
 - Build and release plumbing: `.github/workflows/release.yaml`, `scripts/check-release-tag.sh`,
   `scripts/install-macos.sh`, `scripts/vps/*`.

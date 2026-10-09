@@ -19,7 +19,9 @@ po0-clash 成为全新的独立应用，与官方 FlClash（以及旧的 FlClash
 
 | 项目 | 取值 |
 |---|---|
-| 显示名 / 安装包名 / 可执行文件 | `po0-clash`（`po0-clash.exe` / `po0-clash.app`） |
+| 显示名 | `AetherClash` |
+| macOS 安装包 / 可执行文件 | `AetherClash.app` / `AetherClash` |
+| Windows 安装包 / 可执行文件 | `AetherClash-<version>-windows-amd64-setup.exe` / `po0-clash.exe` |
 | 应用 ID（Android applicationId、macOS bundle id、Linux APPLICATION_ID） | `io.github.yuuukicreation.po0clash` |
 | Windows Inno Setup `AppId` | `67A8CFA2-EC79-4DD3-AB44-75CDD5C3B591` |
 | 内核 / helper（兼 Windows 服务名） | `Po0ClashCore` / `Po0ClashHelperService` |

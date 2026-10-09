@@ -342,11 +342,12 @@ jobs:
 
           mapfile -t files < <(find dist -type f \( -name '*.exe' -o -name '*.zip' -o -name '*.dmg' -o -name '*.apk' \))
           files+=(scripts/install-macos.sh)
+          cat docs/release-notes.md .github/release-macos-note.md > release-notes.md
 
           if ! gh release view "$TAG" > /dev/null 2>&1; then
             gh release create "$TAG" \
               --target "$GITHUB_SHA" \
               --title "AetherClash $TAG" \
-              --notes-file docs/release-notes.md
+              --notes-file release-notes.md
           fi
           gh release upload "$TAG" "${files[@]}" --clobber

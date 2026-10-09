@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/event.dart';
@@ -468,6 +467,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     final color = tab == _ConnectionTab.active
         ? context.colorScheme.primary
         : context.colorScheme.error;
+    final glass = context.glass;
     final label = tab == _ConnectionTab.active
         ? _text('活动中', 'Active')
         : _text('已关闭', 'Closed');
@@ -496,20 +496,26 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
               ),
             ),
             const SizedBox(width: 6),
-            Container(
-              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: selected
-                    ? color.withValues(alpha: 0.14)
-                    : context.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: Text(
-                '$count',
-                style: context.textTheme.labelSmall?.copyWith(
-                  color: selected ? color : context.colorScheme.onSurfaceVariant,
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 18),
+              child: Container(
+                height: 18,
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? color.withValues(alpha: 0.12)
+                      : glass.fill.withValues(alpha: 0.62),
+                  borderRadius: AppRadius.full,
+                ),
+                child: Text(
+                  '$count',
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: selected
+                        ? color
+                        : context.colorScheme.onSurfaceVariant,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
             ),

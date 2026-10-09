@@ -231,6 +231,10 @@ void main() {
         IpInfo.fromIpAPIJson({'query': '3.3.3.3', 'countryCode': 'CN'}),
         const IpInfo(ip: '3.3.3.3', countryCode: 'CN'),
       );
+      expect(
+        IpInfo.fromIpPureJson({'ip': '4.4.4.4', 'countryCode': 'GB'}),
+        const IpInfo(ip: '4.4.4.4', countryCode: 'GB'),
+      );
     });
 
     test('throw FormatException for unsupported response shapes', () {

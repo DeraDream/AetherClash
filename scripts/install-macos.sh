@@ -4,16 +4,16 @@
 #   PO0CLASH_VERSION  release tag to install (default: latest release)
 #   PO0CLASH_DMG      local dmg path or URL; skips the release lookup
 #   AETHERCLASH_*     preferred variable names; PO0CLASH_* remain supported for compatibility
-#   AETHERCLASH_REPO  owner/repo (default: DeraDream/po0-clash)
+#   AETHERCLASH_REPO  owner/repo (default: DeraDream/AetherClash)
 #   GH_TOKEN          token for a private repository when gh is unavailable
 set -euo pipefail
 # macOS ships bash 3.2, where "${a[@]}" on an empty array trips set -u;
 # arrays below expand as ${a[@]+"${a[@]}"}.
 
-repo="${AETHERCLASH_REPO:-${PO0CLASH_REPO:-DeraDream/po0-clash}}"
+repo="${AETHERCLASH_REPO:-${PO0CLASH_REPO:-DeraDream/AetherClash}}"
 version="${AETHERCLASH_VERSION:-${PO0CLASH_VERSION:-latest}}"
 custom_dmg="${AETHERCLASH_DMG:-${PO0CLASH_DMG:-}}"
-app_name="po0-clash.app"
+app_name="AetherClash.app"
 target="/Applications/AetherClash.app"
 legacy_target="/Applications/po0-clash.app"
 if [ -d "$legacy_target" ] && [ ! -d "$target" ]; then
@@ -96,10 +96,11 @@ mkdir -p "$mountpoint"
 hdiutil attach "$dmg" -nobrowse -readonly -quiet -mountpoint "$mountpoint"
 [ -d "$mountpoint/$app_name" ] || die "$app_name not found in the dmg"
 
-if pgrep -x po0-clash >/dev/null 2>&1; then
+if pgrep -x AetherClash >/dev/null 2>&1 || pgrep -x po0-clash >/dev/null 2>&1; then
   echo "Quitting the running AetherClash process..."
   osascript -e 'quit app "AetherClash"' >/dev/null 2>&1 || true
   sleep 2
+  pkill -x AetherClash >/dev/null 2>&1 || true
   pkill -x po0-clash >/dev/null 2>&1 || true
 fi
 
@@ -113,6 +114,7 @@ ${sudo_cmd[@]+"${sudo_cmd[@]}"} rm -rf "$target"
 ${sudo_cmd[@]+"${sudo_cmd[@]}"} ditto "$mountpoint/$app_name" "$target"
 # The build is not notarized; without this Gatekeeper refuses the first launch.
 ${sudo_cmd[@]+"${sudo_cmd[@]}"} xattr -dr com.apple.quarantine "$target" 2>/dev/null || true
+${sudo_cmd[@]+"${sudo_cmd[@]}"} codesign --force --deep --sign - "$target"
 
 echo "AetherClash installed. Opening..."
 open "$target" || true

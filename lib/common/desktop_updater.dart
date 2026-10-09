@@ -384,7 +384,7 @@ fi
 
 /bin/mkdir -p "\$mountpoint"
 /usr/bin/hdiutil attach "\$dmg" -nobrowse -readonly -quiet -mountpoint "\$mountpoint"
-source_app="\$mountpoint/po0-clash.app"
+source_app="\$mountpoint/AetherClash.app"
 [ -d "\$source_app" ] || exit 2
 
 if [ -w "\$(/usr/bin/dirname "\$target")" ] && \
@@ -392,10 +392,11 @@ if [ -w "\$(/usr/bin/dirname "\$target")" ] && \
   /bin/rm -rf "\$replacement"
   /usr/bin/ditto "\$source_app" "\$replacement"
   /usr/bin/xattr -dr com.apple.quarantine "\$replacement" 2>/dev/null || true
+  /usr/bin/codesign --force --deep --sign - "\$replacement"
   /bin/rm -rf "\$target"
   /bin/mv "\$replacement" "\$target"
 else
-  command="/bin/rm -rf \$(printf '%q' "\$replacement") && /usr/bin/ditto \$(printf '%q' "\$source_app") \$(printf '%q' "\$replacement") && (/usr/bin/xattr -dr com.apple.quarantine \$(printf '%q' "\$replacement") 2>/dev/null || true) && /bin/rm -rf \$(printf '%q' "\$target") && /bin/mv \$(printf '%q' "\$replacement") \$(printf '%q' "\$target")"
+  command="/bin/rm -rf \$(printf '%q' "\$replacement") && /usr/bin/ditto \$(printf '%q' "\$source_app") \$(printf '%q' "\$replacement") && (/usr/bin/xattr -dr com.apple.quarantine \$(printf '%q' "\$replacement") 2>/dev/null || true) && /usr/bin/codesign --force --deep --sign - \$(printf '%q' "\$replacement") && /bin/rm -rf \$(printf '%q' "\$target") && /bin/mv \$(printf '%q' "\$replacement") \$(printf '%q' "\$target")"
   /usr/bin/osascript \
     -e 'on run argv' \
     -e 'do shell script item 1 of argv with administrator privileges' \

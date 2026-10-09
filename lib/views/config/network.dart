@@ -3,6 +3,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -345,6 +346,100 @@ List<Widget> networkOptionsItems({
   ];
 }
 
+enum _ProxyEnvironmentTarget { powershell, macos, linux }
+
+class ProxyEnvironmentItem extends ConsumerStatefulWidget {
+  const ProxyEnvironmentItem({super.key});
+
+  @override
+  ConsumerState<ProxyEnvironmentItem> createState() =>
+      _ProxyEnvironmentItemState();
+}
+
+class _ProxyEnvironmentItemState extends ConsumerState<ProxyEnvironmentItem> {
+  late _ProxyEnvironmentTarget _target;
+
+  @override
+  void initState() {
+    super.initState();
+    _target = switch (system) {
+      final value when value.isWindows => _ProxyEnvironmentTarget.powershell,
+      final value when value.isLinux => _ProxyEnvironmentTarget.linux,
+      _ => _ProxyEnvironmentTarget.macos,
+    };
+  }
+
+  String _label(_ProxyEnvironmentTarget target) => switch (target) {
+    _ProxyEnvironmentTarget.powershell => 'PowerShell',
+    _ProxyEnvironmentTarget.macos => 'macOS',
+    _ProxyEnvironmentTarget.linux => 'Linux',
+  };
+
+  String _command(int port) {
+    final proxyUrl = 'http://127.0.0.1:$port';
+    return switch (_target) {
+      _ProxyEnvironmentTarget.powershell =>
+        '\$env:http_proxy = "$proxyUrl"\n'
+            '\$env:https_proxy = "$proxyUrl"\n'
+            '\$env:all_proxy = "$proxyUrl"',
+      _ProxyEnvironmentTarget.macos || _ProxyEnvironmentTarget.linux =>
+        'export http_proxy=$proxyUrl\n'
+            'export https_proxy=$proxyUrl\n'
+            'export all_proxy=$proxyUrl',
+    };
+  }
+
+  Future<void> _copy(int port) async {
+    await Clipboard.setData(ClipboardData(text: _command(port)));
+    if (mounted) {
+      context.showNotifier(context.appLocalizations.copySuccess);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final port = ref.watch(
+      patchClashConfigProvider.select((state) => state.mixedPort),
+    );
+    final appLocalizations = context.appLocalizations;
+    return ListItem(
+      leading: const Icon(Icons.terminal_rounded),
+      title: Text(appLocalizations.copyEnvVar),
+      subtitle: Text('${_label(_target)} · 127.0.0.1:$port'),
+      onTap: () => _copy(port),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonHideUnderline(
+            child: DropdownButton<_ProxyEnvironmentTarget>(
+              value: _target,
+              isDense: true,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _target = value);
+                }
+              },
+              items: [
+                for (final target in _ProxyEnvironmentTarget.values)
+                  DropdownMenuItem<_ProxyEnvironmentTarget>(
+                    value: target,
+                    child: Text(_label(target)),
+                  ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: appLocalizations.copyEnvVar,
+            visualDensity: VisualDensity.compact,
+            onPressed: () => _copy(port),
+            icon: const Icon(Icons.copy_rounded, size: 18),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class NetworkListView extends StatelessWidget {
   const NetworkListView({super.key});
 
@@ -367,7 +462,11 @@ class NetworkListView extends StatelessWidget {
       if (system.isDesktop)
         ...generateSection(
           title: appLocalizations.system,
-          items: [const SystemProxyItem(), const BypassDomainItem()],
+          items: const [
+            SystemProxyItem(),
+            ProxyEnvironmentItem(),
+            BypassDomainItem(),
+          ],
         ),
       ...generateSection(
         title: appLocalizations.options,

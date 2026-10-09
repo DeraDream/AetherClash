@@ -122,22 +122,23 @@ class Request {
 
   final Map<String, IpInfo Function(Map<String, dynamic>)> _ipInfoSources = {
     'https://ipwho.is': IpInfo.fromIpWhoIsJson,
-    'https://api.myip.com': IpInfo.fromMyIpJson,
-    'https://ipapi.co/json': IpInfo.fromIpApiCoJson,
-    'https://ident.me/json': IpInfo.fromIdentMeJson,
     'http://ip-api.com/json': IpInfo.fromIpAPIJson,
     'https://api.ip.sb/geoip': IpInfo.fromIpSbJson,
-    'https://ipinfo.io/json': IpInfo.fromIpInfoIoJson,
+    'https://my.ippure.com/v1/info': IpInfo.fromIpPureJson,
   };
 
   Map<String, String> get ipInfoSourceLabels => const {
     'https://api.ip.sb/geoip': 'IP.SB',
     'https://ipwho.is': 'ipwho.is',
-    'https://ipapi.co/json': 'ipapi.co',
-    'https://ipinfo.io/json': 'ipinfo.io',
-    'https://ident.me/json': 'ident.me',
-    'https://api.myip.com': 'myip.com',
     'http://ip-api.com/json': 'ip-api.com',
+    'https://my.ippure.com/v1/info': 'IPPure',
+  };
+
+  Map<String, Uri> get ipInfoSourceWebsites => {
+    'https://ipwho.is': Uri(scheme: 'https', host: 'ipwho.is'),
+    'http://ip-api.com/json': Uri(scheme: 'https', host: 'ip-api.com'),
+    'https://api.ip.sb/geoip': Uri(scheme: 'https', host: 'ip.sb'),
+    'https://my.ippure.com/v1/info': Uri(scheme: 'https', host: 'ippure.com'),
   };
 
   Future<Result<Map<String, dynamic>?>> checkIpDetails({
@@ -158,10 +159,7 @@ class Request {
             )
             .timeout(const Duration(seconds: 8));
         if (res.statusCode == HttpStatus.ok && res.data != null) {
-          return Result.success({
-            ...res.data!,
-            '_source': source,
-          });
+          return Result.success({...res.data!, '_source': source});
         }
       } catch (e) {
         commonPrint.log(
@@ -173,26 +171,23 @@ class Request {
     return Result.success(null);
   }
 
-  Future<Result<IpInfo?>> checkIp({
+  Future<Result<IpCheckResult>> checkIp({
     CancelToken? cancelToken,
     String? sourceUrl,
   }) async {
     final sources = sourceUrl == null
         ? _ipInfoSources
-        : {
-            if (_ipInfoSources[sourceUrl] case final parser?)
-              sourceUrl: parser,
-          };
+        : {if (_ipInfoSources[sourceUrl] case final parser?) sourceUrl: parser};
     if (sources.isEmpty) {
       return Result.error('unknown IP info source');
     }
     var failureCount = 0;
     final token = cancelToken ?? CancelToken();
     final futures = sources.entries.map((source) async {
-      final Completer<Result<IpInfo?>> completer = Completer();
+      final Completer<Result<IpCheckResult>> completer = Completer();
       void handleFailRes() {
         if (!completer.isCompleted && failureCount == sources.length) {
-          completer.complete(Result.success(null));
+          completer.complete(Result.success(const IpCheckResult()));
         }
       }
 
@@ -207,7 +202,14 @@ class Request {
         future
             .then((res) {
               if (res.statusCode == HttpStatus.ok && res.data != null) {
-                completer.complete(Result.success(source.value(res.data!)));
+                completer.complete(
+                  Result.success(
+                    IpCheckResult(
+                      ipInfo: source.value(res.data!),
+                      sourceUrl: source.key,
+                    ),
+                  ),
+                );
                 return;
               }
               commonPrint.log('checkIp data empty', logLevel: LogLevel.info);
@@ -230,6 +232,13 @@ class Request {
     token.cancel();
     return res;
   }
+}
+
+class IpCheckResult {
+  const IpCheckResult({this.ipInfo, this.sourceUrl});
+
+  final IpInfo? ipInfo;
+  final String? sourceUrl;
 }
 
 final request = Request();

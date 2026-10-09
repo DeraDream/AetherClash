@@ -1,6 +1,6 @@
 # 安装
 
-从 [Releases](https://github.com/yuuuki-creation/po0-clash/releases) 下载对应平台的产物。
+从 [Releases](https://github.com/DeraDream/AetherClash/releases) 下载对应平台的产物。
 
 po0-clash 是一个**独立的应用**：应用 ID、安装标识、进程名、服务名和数据目录都与官方 FlClash 不同，
 可以和官方 FlClash 同时安装、同时运行，互不覆盖。多个代理客户端同时开启系统代理或 TUN 时会互相抢占，
@@ -26,10 +26,10 @@ po0-clash 是一个**独立的应用**：应用 ID、安装标识、进程名、
 
 ## macOS
 
-在「终端」中执行（自动识别 Apple Silicon / Intel，下载 dmg，安装到 `/Applications/po0-clash.app` 并移除隔离属性）：
+在「终端」中执行（自动识别 Apple Silicon / Intel，下载 dmg，安装到 `/Applications/AetherClash.app`、移除隔离属性并进行临时签名）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DeraDream/AetherClash/main/scripts/install-macos.sh | bash
 ```
 
 可选环境变量（写在 `bash` 前，例如 `curl -fsSL ... | PO0CLASH_VERSION=v5.0.0 bash`）：
@@ -38,10 +38,18 @@ curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scri
 |---|---|
 | `PO0CLASH_VERSION` | 指定 Release 标签，例如 `v5.0.0`；默认最新 Release |
 | `PO0CLASH_DMG` | 直接使用本地 dmg 文件或 URL，跳过下载 |
-| `PO0CLASH_REPO` | 从其他仓库（`owner/repo`）下载；默认 `yuuuki-creation/po0-clash` |
+| `PO0CLASH_REPO` | 从其他仓库（`owner/repo`）下载；默认 `DeraDream/AetherClash` |
 | `GH_TOKEN` | 可选，GitHub API 限流或私有仓库时使用的 token |
 
-应用未经 Apple 公证，脚本会执行 `xattr -dr com.apple.quarantine /Applications/po0-clash.app`，否则首次打开会被 Gatekeeper 拦截。
+应用未经 Apple 公证，脚本会移除隔离属性并进行临时签名。若手动拖拽安装后首次打开被 Gatekeeper 拦截，执行：
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/AetherClash.app"
+codesign --force --deep --sign - "/Applications/AetherClash.app"
+open "/Applications/AetherClash.app"
+```
+
+旧版本若仍安装为 `po0-clash.app`，把上述三条命令中的 `AetherClash.app` 全部替换为 `po0-clash.app`。
 脚本不会动 `/Applications/FlClash.app`。
 
 ## Android

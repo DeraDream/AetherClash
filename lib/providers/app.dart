@@ -481,6 +481,9 @@ class NetworkDetection extends _$NetworkDetection
   CancelToken? _cancelToken;
   Timer? _timeoutTimer;
   int _checkVersion = 0;
+  String? _sourceUrl;
+
+  String? get sourceUrl => _sourceUrl;
 
   @override
   NetworkDetectionState build() {
@@ -508,6 +511,7 @@ class NetworkDetection extends _$NetworkDetection
     final cancelToken = CancelToken();
     final version = _resetCheckSession(cancelToken);
     commonPrint.log('checkIp start');
+    _sourceUrl = null;
     state = state.copyWith(isLoading: true, ipInfo: null);
     _preIsStart = isStart;
     final res = await request.checkIp(cancelToken: cancelToken);
@@ -518,7 +522,9 @@ class NetworkDetection extends _$NetworkDetection
         cancelToken != _cancelToken) {
       return;
     }
-    final ipInfo = res.data;
+    final check = res.data;
+    final ipInfo = check?.ipInfo;
+    _sourceUrl = check?.sourceUrl;
     if (ipInfo == null) {
       _delayTimeoutDisplay(version);
       return;

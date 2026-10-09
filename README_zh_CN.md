@@ -24,7 +24,7 @@ AetherClash 是基于 [FlClash](https://github.com/chen08209/FlClash) 与 ClashM
 
 ## 安装
 
-从 [Releases](https://github.com/DeraDream/po0-clash/releases) 下载对应平台产物。
+从 [Releases](https://github.com/DeraDream/AetherClash/releases) 下载对应平台产物。
 
 | 平台 | 安装方式 |
 |---|---|
@@ -34,14 +34,21 @@ AetherClash 是基于 [FlClash](https://github.com/chen08209/FlClash) 与 ClashM
 | Linux / iOS | 当前独立 Release 工作流暂不发布 |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeraDream/po0-clash/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DeraDream/AetherClash/main/scripts/install-macos.sh | bash
 ```
 
 macOS 可使用 `AETHERCLASH_VERSION`、`AETHERCLASH_DMG`、`AETHERCLASH_REPO` 指定版本、DMG 或仓库；
 为兼容旧版升级，原来的 `PO0CLASH_*` 变量仍然可用。
 
-**v5.5.2 会优先原地升级已有 po0-clash 安装。** 为了不丢失配置并确保 5.5.1 能直接在线升级，
-这一版仍保留部分内部可执行文件名、Helper、Bundle ID 与数据目录标识；用户界面与新安装品牌统一显示为 AetherClash。
+当前 macOS 版本安装为 `/Applications/AetherClash.app`。若 Gatekeeper 阻止首次打开，执行：
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/AetherClash.app"
+codesign --force --deep --sign - "/Applications/AetherClash.app"
+open "/Applications/AetherClash.app"
+```
+
+旧版本若仍安装为 `po0-clash.app`，把上述三条命令中的 `AetherClash.app` 全部替换为 `po0-clash.app`。
 
 同一时间只在一个代理客户端里开启系统代理或 TUN，否则会互相抢占。
 

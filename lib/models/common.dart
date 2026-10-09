@@ -498,6 +498,14 @@ abstract class IpInfo with _$IpInfo {
     };
   }
 
+  static IpInfo fromIpPureJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {'ip': final String ip, 'countryCode': final String countryCode} =>
+        IpInfo(ip: ip, countryCode: countryCode),
+      _ => throw const FormatException('invalid json'),
+    };
+  }
+
   static IpInfo fromIpWhoIsJson(Map<String, dynamic> json) {
     return switch (json) {
       {'ip': final String ip, 'country_code': final String countryCode} =>

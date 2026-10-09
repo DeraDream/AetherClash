@@ -87,6 +87,7 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
       (prev, next) {
         if (prev != next) {
           systemAction.reconcileRoute(changed: DesktopRoute.systemProxy);
+          ref.read(checkIpNumProvider.notifier).add();
         }
       },
     );

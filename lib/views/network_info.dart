@@ -9,6 +9,7 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NetworkInfoView extends ConsumerStatefulWidget {
   const NetworkInfoView({super.key});
@@ -30,6 +31,11 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
       url: 'https://cp.cloudflare.com/generate_204',
     ),
     _LatencyTarget(label: 'GitHub', url: 'https://github.com/robots.txt'),
+    _LatencyTarget(
+      label: 'YouTube',
+      url: 'https://www.youtube.com/generate_204',
+    ),
+    _LatencyTarget(label: 'Netflix', url: 'https://www.netflix.com'),
   ];
 
   List<_LatencyTarget> _targets = List<_LatencyTarget>.from(_defaultTargets);
@@ -330,7 +336,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     ).wait;
     if (!mounted || version != _ipCheckVersion) return;
     setState(() {
-      _sourceIpInfo = results.$1.data;
+      _sourceIpInfo = results.$1.data?.ipInfo;
       _sourceIpLoading = false;
       _ipDetails = results.$2.data;
       _ipDetailsLoading = false;
@@ -398,6 +404,12 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
       _ipDetailsLoading = true;
     });
     unawaited(_refreshIp());
+  }
+
+  void _openIpSource(String source) {
+    final uri = request.ipInfoSourceWebsites[source];
+    if (uri == null) return;
+    unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
   }
 
   Future<void> _refreshLatency() async {
@@ -501,6 +513,9 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     final detection = ref.watch(networkDetectionProvider);
     final usingAutoSource = _selectedIpSource == _autoSource;
     final publicIp = usingAutoSource ? detection.ipInfo : _sourceIpInfo;
+    final source = usingAutoSource
+        ? ref.read(networkDetectionProvider.notifier).sourceUrl
+        : _selectedIpSource;
     final ipLoading = usingAutoSource
         ? detection.isLoading
         : _sourceIpLoading;
@@ -532,6 +547,15 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                IconButton(
+                  tooltip: context.appLocalizations.externalLink,
+                  visualDensity: VisualDensity.compact,
+                  onPressed: publicIp == null || ipLoading || source == null
+                      ? null
+                      : () => _openIpSource(source),
+                  icon: const Icon(Icons.open_in_browser_rounded, size: 18),
+                ),
+                const SizedBox(width: 2),
                 _IpSourceSelector(
                   selected: _selectedIpSource,
                   autoValue: _autoSource,
@@ -812,6 +836,7 @@ class _IpDetailData {
     final organization = textOf(
       raw['org'] ??
           raw['organization'] ??
+          raw['asOrganization'] ??
           connection['org'] ??
           connection['isp'] ??
           raw['isp'],
@@ -1451,49 +1476,90 @@ class _LatencyTargetsDialogState extends State<_LatencyTargetsDialog> {
         ),
       ],
       child: SizedBox(
-        width: 420,
+        width: 480,
+        height: 180,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            for (final (index, item) in _items.indexed) ...[
-              Row(
-                children: [
-                  SizedBox(
-                    width: 108,
-                    child: TextField(
-                      controller: item.label,
-                      decoration: InputDecoration(
-                        labelText: zh ? '名称' : 'Name',
-                        isDense: true,
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: _items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 6),
+                itemBuilder: (context, index) {
+                  final item = _items[index];
+                  final glass = context.glass;
+                  return Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: glass.fill.withValues(
+                        alpha: glass.isDark ? 0.38 : 0.54,
+                      ),
+                      borderRadius: AppRadius.extraSmall,
+                      border: Border.all(
+                        color: glass.separator.withValues(alpha: 0.42),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: item.url,
-                      decoration: const InputDecoration(
-                        labelText: 'URL',
-                        isDense: true,
-                      ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: TextField(
+                            controller: item.label,
+                            decoration: InputDecoration(
+                              hintText: zh ? '名称' : 'Name',
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 18,
+                          color: glass.separator.withValues(alpha: 0.5),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: item.url,
+                            decoration: const InputDecoration(
+                              hintText: 'https://',
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: context.appLocalizations.remove,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () => _remove(index),
+                          icon: Icon(
+                            Icons.remove_circle_outline_rounded,
+                            color: context.colorScheme.error.withValues(
+                              alpha: 0.8,
+                            ),
+                            size: 19,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  IconButton(
-                    tooltip: context.appLocalizations.remove,
-                    onPressed: () => _remove(index),
-                    icon: const Icon(Icons.delete_outline_rounded),
-                  ),
-                ],
+                  );
+                },
               ),
-              if (index != _items.length - 1) const SizedBox(height: 8),
-            ],
-            const SizedBox(height: 10),
+            ),
+            const SizedBox(height: 6),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: _add,
-                icon: const Icon(Icons.add_rounded),
-                label: Text(zh ? '添加目标' : 'Add target'),
+                icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                label: Text(zh ? '添加' : 'Add'),
               ),
             ),
           ],
