@@ -1,4 +1,4 @@
-AetherClash v5.5.19：完善 macOS 应用身份、网络信息与系统代理体验。
+AetherClash v5.5.20：完善 macOS 应用身份、网络信息与系统代理体验。
 
 ## 更新
 
@@ -10,11 +10,11 @@ AetherClash v5.5.19：完善 macOS 应用身份、网络信息与系统代理体
 - 系统代理页新增环境变量复制项，支持 PowerShell、macOS 与 Linux 格式。
 - 优化延迟检测目标弹窗和连接页面活动计数的视觉样式。
 
-## 验证
+- macOS Runner Xcode 选择添加动态回退，防止固定 Xcode 路径缺失导致打包中断。\n\n## 验证
 
 - 相关 Flutter 测试 35 项通过。
 - macOS x86_64 Release 构建通过。
-- CI 全量测试改为串行执行，避免共享状态并发导致预检失败。
+- CI 全量测试改为串行执行，避免共享状态并发导致预检失败。\n- 本次 Xcode 选择回退需通过 GitHub Actions macOS arm64 作业验证。
 
 ## 发布目标
 
