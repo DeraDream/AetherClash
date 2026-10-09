@@ -285,8 +285,23 @@ jobs:
 
       - name: Setup Xcode
         if: matrix.platform == 'macos'
+        shell: bash
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app
+          set -euo pipefail
+          # Runner image updates can remove pinned Xcode installations.
+          # Prefer tested versions, then use the image's selected Xcode.
+          if [[ -d /Applications/Xcode_26.3.app ]]; then
+            sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+          elif [[ -d /Applications/Xcode_26.2.app ]]; then
+            sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+          elif ! xcodebuild -version >/dev/null 2>&1; then
+            XCODE_APP="$(find /Applications -maxdepth 1 -type d -name 'Xcode*.app' | sort -V | tail -n 1)"
+            if [[ -z "$XCODE_APP" ]]; then
+              echo "::error::No usable Xcode installation on the macOS runner."
+              exit 1
+            fi
+            sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          fi
           xcodebuild -version
 
       - name: Get Flutter dependencies
