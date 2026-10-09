@@ -350,21 +350,56 @@ exit 0
     }
     final updateDirectory = dmg.parent;
     final script = File(path.join(updateDirectory.path, 'update.sh'));
-    await script.writeAsString('''
+    await script.writeAsString(
+      createMacOSUpdateScript(
+        appProcessId: pid,
+        dmgPath: dmg.path,
+        targetBundlePath: bundle.path,
+        updateDirectoryPath: updateDirectory.path,
+      ),
+    );
+    await Process.start(
+      '/bin/bash',
+      [script.path],
+      mode: ProcessStartMode.detached,
+    );
+  }
+}
+
+String createMacOSUpdateScript({
+  required int appProcessId,
+  required String dmgPath,
+  required String targetBundlePath,
+  required String updateDirectoryPath,
+}) => '''
 #!/bin/bash
 set -euo pipefail
-app_pid=$pid
-dmg=${_shellQuote(dmg.path)}
-target=${_shellQuote(bundle.path)}
-update_root=${_shellQuote(updateDirectory.path)}
+app_pid=$appProcessId
+dmg=${_shellQuote(dmgPath)}
+target=${_shellQuote(targetBundlePath)}
+update_root=${_shellQuote(updateDirectoryPath)}
 mountpoint="\$update_root/mnt"
 replacement="\${target}.po0-update"
+log_root="\$HOME/Library/Logs/AetherClash"
+log_path="\$log_root/update.log"
+
+/bin/mkdir -p "\$log_root"
+
+log() {
+  /usr/bin/printf '[%s] %s\\n' "\$(date '+%Y-%m-%dT%H:%M:%S%z')" "\$1" >> "\$log_path"
+}
 
 cleanup() {
+  status=\$?
   /usr/bin/hdiutil detach "\$mountpoint" -quiet >/dev/null 2>&1 || true
   /bin/rm -rf "\$replacement" "\$mountpoint"
+  if [ "\$status" -ne 0 ]; then
+    log "Update failed with exit code \$status."
+  fi
 }
 trap cleanup EXIT
+
+log "Updater started."
 
 for _ in {1..40}; do
   if ! /bin/kill -0 "\$app_pid" >/dev/null 2>&1; then
@@ -387,35 +422,23 @@ fi
 source_app="\$mountpoint/AetherClash.app"
 [ -d "\$source_app" ] || exit 2
 
-if [ -w "\$(/usr/bin/dirname "\$target")" ] && \
-   { [ ! -e "\$target" ] || [ -w "\$target" ]; }; then
+if [ -w "\$(/usr/bin/dirname "\$target")" ] && { [ ! -e "\$target" ] || [ -w "\$target" ]; }; then
   /bin/rm -rf "\$replacement"
   /usr/bin/ditto "\$source_app" "\$replacement"
   /usr/bin/xattr -dr com.apple.quarantine "\$replacement" 2>/dev/null || true
-  /usr/bin/codesign --force --deep --sign - "\$replacement"
   /bin/rm -rf "\$target"
   /bin/mv "\$replacement" "\$target"
 else
-  command="/bin/rm -rf \$(printf '%q' "\$replacement") && /usr/bin/ditto \$(printf '%q' "\$source_app") \$(printf '%q' "\$replacement") && (/usr/bin/xattr -dr com.apple.quarantine \$(printf '%q' "\$replacement") 2>/dev/null || true) && /usr/bin/codesign --force --deep --sign - \$(printf '%q' "\$replacement") && /bin/rm -rf \$(printf '%q' "\$target") && /bin/mv \$(printf '%q' "\$replacement") \$(printf '%q' "\$target")"
-  /usr/bin/osascript \
-    -e 'on run argv' \
-    -e 'do shell script item 1 of argv with administrator privileges' \
-    -e 'end run' \
-    "\$command"
+  command="/bin/rm -rf \$(printf '%q' "\$replacement") && /usr/bin/ditto \$(printf '%q' "\$source_app") \$(printf '%q' "\$replacement") && (/usr/bin/xattr -dr com.apple.quarantine \$(printf '%q' "\$replacement") 2>/dev/null || true) && /bin/rm -rf \$(printf '%q' "\$target") && /bin/mv \$(printf '%q' "\$replacement") \$(printf '%q' "\$target")"
+  /usr/bin/osascript -e 'on run argv' -e 'do shell script item 1 of argv with administrator privileges' -e 'end run' "\$command"
 fi
 
 /usr/bin/hdiutil detach "\$mountpoint" -quiet >/dev/null 2>&1 || true
 trap - EXIT
-/usr/bin/open "\$target"
+/usr/bin/open -n "\$target"
+log "Update installed and the replacement application was launched."
 /bin/rm -rf "\$update_root"
-''');
-    await Process.start(
-      '/bin/bash',
-      [script.path],
-      mode: ProcessStartMode.detached,
-    );
-  }
-}
+''';
 
 String _vbScriptQuote(String value) => '"${value.replaceAll('"', '""')}"';
 

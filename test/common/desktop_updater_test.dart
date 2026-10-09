@@ -77,4 +77,18 @@ void main() {
 
     expect(asset, isNull);
   });
+
+  test('macOS handoff preserves the downloaded bundle and relaunches it', () {
+    final script = createMacOSUpdateScript(
+      appProcessId: 42,
+      dmgPath: '/tmp/AetherClash.dmg',
+      targetBundlePath: '/Applications/AetherClash.app',
+      updateDirectoryPath: '/tmp/aetherclash-update',
+    );
+
+    expect(script, contains('app_pid=42'));
+    expect(script, contains(r'/usr/bin/ditto "$source_app" "$replacement"'));
+    expect(script, contains(r'/usr/bin/open -n "$target"'));
+    expect(script, isNot(contains('/usr/bin/codesign --force --deep')));
+  });
 }

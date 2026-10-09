@@ -36,8 +36,8 @@ env:
 
 jobs:
   preflight:
-    # Analyze and tests run on every main push. Native packaging is still
-    # gated below and only starts for release tags/manual runs/[release-build].
+    # Release packaging waits only for formatting and static analysis. The
+    # exhaustive test and coverage gates remain available in build.yaml.
     name: Preflight
     runs-on: ubuntu-latest
     steps:
@@ -102,15 +102,6 @@ jobs:
       - name: Analyze
         if: ${{ steps.reuse.outputs.reuse != 'true' }}
         run: flutter analyze --no-fatal-infos
-
-      - name: Skip native build hooks for tests
-        if: ${{ steps.reuse.outputs.reuse != 'true' }}
-        run: |
-          yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
-
-      - name: Run tests
-        if: ${{ steps.reuse.outputs.reuse != 'true' }}
-        run: flutter test --reporter compact --concurrency=1
 
   brand-assets:
     # Icon generation is independent from Dart analysis/tests, so run it in
@@ -224,6 +215,10 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: core/go.sum
+          # Restoring the 488 MB Windows module cache took longer than a fresh
+          # toolchain/module download on hosted runners. Native outputs below
+          # remain cached and still make the hook a cache hit.
+          cache: ${{ matrix.platform != 'windows' }}
 
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
@@ -257,7 +252,10 @@ jobs:
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          # On Windows, restoring the 1.9 GB SDK cache took 2m43s in the
+          # latest release, while hosted-runner download is faster. Keep the
+          # SDK cache on macOS and the smaller pub cache on both platforms.
+          cache: ${{ matrix.platform != 'windows' }}
           # Phase-2 A/B showed that disabling Pub cache only shifted ~53s from
           # cache restore to flutter pub get on Windows, so keep it enabled.
           pub-cache: true
