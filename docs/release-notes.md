@@ -1,4 +1,4 @@
-AetherClash v5.5.20：完善 macOS 应用身份、网络信息与系统代理体验。
+AetherClash v5.5.21：完善 macOS 应用身份、网络信息与系统代理体验。
 
 ## 更新
 
@@ -11,6 +11,8 @@ AetherClash v5.5.20：完善 macOS 应用身份、网络信息与系统代理体
 - 优化延迟检测目标弹窗和连接页面活动计数的视觉样式。
 
 - macOS Runner Xcode 选择添加动态回退，防止固定 Xcode 路径缺失导致打包中断。
+
+- 修复 NetworkDetection 取消旧请求测试：更新为现有 4 个 IP 检测源，避免旧的 7 源假设导致 CI 失败。
 
 ## 验证
 
