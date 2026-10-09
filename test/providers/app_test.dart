@@ -519,7 +519,8 @@ void main() {
 }
 
 class _DelayedCancelIpAdapter implements HttpClientAdapter {
-  static const _sourceCount = 7;
+  // Keep in sync with Request._ipInfoSources (four parallel endpoints).
+  static const _sourceCount = 4;
 
   int _requestCount = 0;
 
