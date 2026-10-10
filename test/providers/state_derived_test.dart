@@ -55,7 +55,10 @@ void main() {
         .read(patchClashConfigProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.global));
     expect(
-      container.read(currentGroupsStateProvider).value.map((group) => group.name),
+      container
+          .read(currentGroupsStateProvider)
+          .value
+          .map((group) => group.name),
       ['Visible', GroupName.GLOBAL.name],
     );
 

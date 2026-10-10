@@ -81,10 +81,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     super.dispose();
   }
 
-  Group? _leadingGroup(
-    List<Group> groups,
-    String? preferredGroupName,
-  ) {
+  Group? _leadingGroup(List<Group> groups, String? preferredGroupName) {
     if (preferredGroupName != null) {
       for (final group in groups) {
         if (group.name == preferredGroupName) {
@@ -117,9 +114,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     return resolved.proxyName.isEmpty ? rawName : resolved.proxyName;
   }
 
-  void _syncLatencyRoute({
-    required String signature,
-  }) {
+  void _syncLatencyRoute({required String signature}) {
     if (signature == _latencyRouteSignature) return;
     _latencyRouteSignature = signature;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -137,10 +132,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || signature != _speedContextSignature) return;
       unawaited(
-        _reloadSpeedTestServers(
-          proxyName: proxyName,
-          signature: signature,
-        ),
+        _reloadSpeedTestServers(proxyName: proxyName, signature: signature),
       );
     });
   }
@@ -177,10 +169,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     try {
       final core = ref.read(coreHandlerProvider);
       await core.changeProxy(
-        ChangeProxyParams(
-          groupName: speedTestGroupName,
-          proxyName: proxyName,
-        ),
+        ChangeProxyParams(groupName: speedTestGroupName, proxyName: proxyName),
       );
 
       final mixedPort = ref.read(patchClashConfigProvider).mixedPort;
@@ -269,10 +258,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
       // The user selects a Speedtest server in the UI; this hidden selector is
       // only the transport route and never changes the user's real group.
       await core.changeProxy(
-        ChangeProxyParams(
-          groupName: speedTestGroupName,
-          proxyName: proxyName,
-        ),
+        ChangeProxyParams(groupName: speedTestGroupName, proxyName: proxyName),
       );
 
       final result = await engine.run(
@@ -344,9 +330,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
   }
 
   Future<void> _refreshIpDetails() async {
-    final source = _selectedIpSource == _autoSource
-        ? null
-        : _selectedIpSource;
+    final source = _selectedIpSource == _autoSource ? null : _selectedIpSource;
     if (mounted) {
       setState(() => _ipDetailsLoading = true);
     }
@@ -388,8 +372,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
       _latencies.clear();
     });
     await preferences.saveNetworkLatencyTargets([
-      for (final target in result)
-        {'label': target.label, 'url': target.url},
+      for (final target in result) {'label': target.label, 'url': target.url},
     ]);
     await _refreshLatency();
   }
@@ -493,7 +476,8 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
             ),
           );
     final profileId = ref.watch(currentProfileIdProvider);
-    final groupMembersSignature = (coreGroup ?? currentGroup)?.all
+    final groupMembersSignature =
+        (coreGroup ?? currentGroup)?.all
             .map((proxy) => proxy.name)
             .join('\u0000') ??
         '';
@@ -516,9 +500,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
     final source = usingAutoSource
         ? ref.read(networkDetectionProvider.notifier).sourceUrl
         : _selectedIpSource;
-    final ipLoading = usingAutoSource
-        ? detection.isLoading
-        : _sourceIpLoading;
+    final ipLoading = usingAutoSource ? detection.isLoading : _sourceIpLoading;
 
     return CommonScaffold(
       title: _text(context, '网络信息', 'Network info'),
@@ -584,9 +566,8 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
                   loading: ipLoading,
                   onCopy: publicIp == null
                       ? null
-                      : () => Clipboard.setData(
-                            ClipboardData(text: publicIp.ip),
-                          ),
+                      : () =>
+                            Clipboard.setData(ClipboardData(text: publicIp.ip)),
                 ),
                 if (_ipDetailsLoading && _ipDetails == null) ...[
                   const SizedBox(height: 12),
@@ -629,7 +610,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
                   _speedDownloadMbps = null;
                   _speedUploadMbps = null;
                   _speedLiveMbps = 0;
-                            _speedError = null;
+                  _speedError = null;
                 });
               },
             ),
@@ -643,7 +624,8 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
               downloadMbps: _speedDownloadMbps,
               uploadMbps: _speedUploadMbps,
               error: _speedError,
-              onStart: _selectedSpeedServer == null ||
+              onStart:
+                  _selectedSpeedServer == null ||
                       _speedServersLoading ||
                       _speedTesting
                   ? null
@@ -695,8 +677,7 @@ class _NetworkInfoViewState extends ConsumerState<NetworkInfoView> {
                     delay: _latencies[target.label],
                     loading: _testing && !_latencies.containsKey(target.label),
                   ),
-                  if (index != _targets.length - 1)
-                    const SizedBox(height: 14),
+                  if (index != _targets.length - 1) const SizedBox(height: 14),
                 ],
               ],
             ),
@@ -755,9 +736,7 @@ class _IpSourceSelector extends StatelessWidget {
         decoration: BoxDecoration(
           color: glass.fill.withValues(alpha: glass.isDark ? 0.78 : 0.88),
           borderRadius: AppRadius.all(9),
-          border: Border.all(
-            color: glass.separator.withValues(alpha: 0.55),
-          ),
+          border: Border.all(color: glass.separator.withValues(alpha: 0.55)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -828,10 +807,7 @@ class _IpDetailData {
         ? textOf(countryValue['name'] ?? countryValue['code'])
         : textOf(countryValue);
     final asn = textOf(
-      raw['asn'] ??
-          connection['asn'] ??
-          raw['as'] ??
-          raw['asn_number'],
+      raw['asn'] ?? connection['asn'] ?? raw['as'] ?? raw['asn_number'],
     );
     final organization = textOf(
       raw['org'] ??
@@ -856,10 +832,7 @@ class _IpDetailData {
 }
 
 class _IpDetailGrid extends StatelessWidget {
-  const _IpDetailGrid({
-    required this.details,
-    required this.sourceLabel,
-  });
+  const _IpDetailGrid({required this.details, required this.sourceLabel});
 
   final _IpDetailData details;
   final String sourceLabel;
@@ -878,8 +851,7 @@ class _IpDetailGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 640 ? 3 : 2;
-        final width =
-            (constraints.maxWidth - (columns - 1) * 8) / columns;
+        final width = (constraints.maxWidth - (columns - 1) * 8) / columns;
         return Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -1081,10 +1053,7 @@ class _SpeedTestServerSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     if (loading) {
-      return const SizedBox.square(
-        dimension: 18,
-        child: CommonCircleLoading(),
-      );
+      return const SizedBox.square(dimension: 18, child: CommonCircleLoading());
     }
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 310),
@@ -1150,10 +1119,12 @@ class _SpeedTestPanel extends StatelessWidget {
     final glass = context.glass;
     final primary = context.colorScheme.primary;
     final teal = context.toneColor(GlassTone.teal);
-    final shownDownloadMbps =
-        testing && phase == SpeedTestPhase.download ? liveMbps : downloadMbps;
-    final shownUploadMbps =
-        testing && phase == SpeedTestPhase.upload ? liveMbps : uploadMbps;
+    final shownDownloadMbps = testing && phase == SpeedTestPhase.download
+        ? liveMbps
+        : downloadMbps;
+    final shownUploadMbps = testing && phase == SpeedTestPhase.upload
+        ? liveMbps
+        : uploadMbps;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1210,10 +1181,7 @@ class _SpeedTestPanel extends StatelessWidget {
           ),
         ] else if (server == null) ...[
           Text(
-            text(
-              '暂无可用的 Speedtest 测速节点。',
-              'No Speedtest server is available.',
-            ),
+            text('暂无可用的 Speedtest 测速节点。', 'No Speedtest server is available.'),
             style: context.textTheme.bodySmall?.copyWith(
               color: glass.secondaryLabel,
             ),
@@ -1571,8 +1539,8 @@ class _LatencyTargetsDialogState extends State<_LatencyTargetsDialog> {
 
 class _LatencyTargetDraft {
   _LatencyTargetDraft(String labelValue, String urlValue)
-      : label = TextEditingController(text: labelValue),
-        url = TextEditingController(text: urlValue);
+    : label = TextEditingController(text: labelValue),
+      url = TextEditingController(text: urlValue);
 
   final TextEditingController label;
   final TextEditingController url;
@@ -1634,7 +1602,11 @@ class _LatencyRow extends StatelessWidget {
         SizedBox(
           width: 66,
           child: Text(
-            loading ? '…' : delay == null ? 'Timeout' : '${delay}ms',
+            loading
+                ? '…'
+                : delay == null
+                ? 'Timeout'
+                : '${delay}ms',
             textAlign: TextAlign.right,
             style: context.textTheme.labelMedium?.copyWith(
               color: color,

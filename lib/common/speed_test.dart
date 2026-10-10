@@ -122,19 +122,12 @@ final class SpeedTestServer {
     if (segments.isNotEmpty) {
       segments.removeLast();
     }
-    return uri.replace(
-      pathSegments: segments,
-      query: null,
-      fragment: null,
-    );
+    return uri.replace(pathSegments: segments, query: null, fragment: null);
   }
 
   Uri downloadUri(int worker, int iteration) {
     final base = baseUri;
-    final path = [
-      ...base.pathSegments,
-      'random4000x4000.jpg',
-    ].join('/');
+    final path = [...base.pathSegments, 'random4000x4000.jpg'].join('/');
     return base.replace(
       path: '/$path',
       queryParameters: {
@@ -148,9 +141,7 @@ final class SpeedTestServer {
     final path = [...base.pathSegments, 'latency.txt'].join('/');
     return base.replace(
       path: '/$path',
-      queryParameters: {
-        'x': '${DateTime.now().microsecondsSinceEpoch}',
-      },
+      queryParameters: {'x': '${DateTime.now().microsecondsSinceEpoch}'},
     );
   }
 
@@ -183,10 +174,7 @@ final class SpeedTestProgress {
 }
 
 final class SpeedTestResult {
-  const SpeedTestResult({
-    required this.downloadMbps,
-    required this.uploadMbps,
-  });
+  const SpeedTestResult({required this.downloadMbps, required this.uploadMbps});
 
   final double downloadMbps;
   final double uploadMbps;
@@ -238,15 +226,11 @@ final class SpeedTestEngine {
     _cancelled = false;
     final client = _newClient();
     try {
-      final uri = Uri.https(
-        'www.speedtest.net',
-        '/api/js/servers',
-        {
-          'engine': 'js',
-          'https_functional': 'true',
-          'limit': '$limit',
-        },
-      );
+      final uri = Uri.https('www.speedtest.net', '/api/js/servers', {
+        'engine': 'js',
+        'https_functional': 'true',
+        'limit': '$limit',
+      });
       final request = await client.getUrl(uri);
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       request.headers.set(HttpHeaders.acceptEncodingHeader, 'gzip');
@@ -275,13 +259,15 @@ final class SpeedTestEngine {
       }
       final servers = decoded
           .whereType<Map>()
-          .map((item) => SpeedTestServer.fromJson(
-                Map<String, dynamic>.from(item),
-              ))
-          .where((server) =>
-              server.id.isNotEmpty &&
-              server.url.isNotEmpty &&
-              Uri.tryParse(server.url)?.hasScheme == true)
+          .map(
+            (item) => SpeedTestServer.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .where(
+            (server) =>
+                server.id.isNotEmpty &&
+                server.url.isNotEmpty &&
+                Uri.tryParse(server.url)?.hasScheme == true,
+          )
           .take(limit)
           .toList(growable: false);
       if (servers.isEmpty) {
@@ -293,14 +279,11 @@ final class SpeedTestEngine {
         for (var index = 0; index < count; index++)
           _withLatency(servers[index]),
       ]);
-      final ranked = measured.where((server) => server.latencyMs != null).toList()
-        ..sort((a, b) => a.latencyMs!.compareTo(b.latencyMs!));
+      final ranked =
+          measured.where((server) => server.latencyMs != null).toList()
+            ..sort((a, b) => a.latencyMs!.compareTo(b.latencyMs!));
       final timedOut = measured.where((server) => server.latencyMs == null);
-      return [
-        ...ranked,
-        ...timedOut,
-        ...servers.skip(count),
-      ];
+      return [...ranked, ...timedOut, ...servers.skip(count)];
     } finally {
       _disposeClient(client);
     }
@@ -373,10 +356,7 @@ final class SpeedTestEngine {
     if (_cancelled) {
       throw const SpeedTestCancelled();
     }
-    return SpeedTestResult(
-      downloadMbps: download,
-      uploadMbps: upload,
-    );
+    return SpeedTestResult(downloadMbps: download, uploadMbps: upload);
   }
 
   Future<double> _runDownload(
@@ -398,19 +378,12 @@ final class SpeedTestEngine {
               final request = await client.getUrl(
                 server.downloadUri(workerIndex, iteration++),
               );
-              request.headers.set(
-                HttpHeaders.acceptEncodingHeader,
-                'identity',
-              );
-              request.headers.set(
-                HttpHeaders.cacheControlHeader,
-                'no-store',
-              );
+              request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
+              request.headers.set(HttpHeaders.cacheControlHeader, 'no-store');
               final response = await request.close().timeout(
                 const Duration(seconds: 6),
               );
-              if (response.statusCode < 200 ||
-                  response.statusCode >= 400) {
+              if (response.statusCode < 200 || response.statusCode >= 400) {
                 await response.drain<void>();
                 continue;
               }
@@ -467,11 +440,8 @@ final class SpeedTestEngine {
               final response = await request.close().timeout(
                 const Duration(seconds: 8),
               );
-              await response.drain<void>().timeout(
-                const Duration(seconds: 4),
-              );
-              if (response.statusCode < 200 ||
-                  response.statusCode >= 400) {
+              await response.drain<void>().timeout(const Duration(seconds: 4));
+              if (response.statusCode < 200 || response.statusCode >= 400) {
                 continue;
               }
             } catch (_) {
@@ -494,7 +464,8 @@ final class SpeedTestEngine {
       int workerIndex,
       void Function(int bytes) addBytes,
       bool Function() isRunning,
-    ) worker,
+    )
+    worker,
   }) async {
     var transferred = 0;
     var lastTransferred = 0;

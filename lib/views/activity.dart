@@ -25,10 +25,7 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
     final openLogs = ref.watch(
       appSettingProvider.select((state) => state.openLogs),
     );
-    final tabs = [
-      PageLabel.connections,
-      if (openLogs) PageLabel.logs,
-    ];
+    final tabs = [PageLabel.connections, if (openLogs) PageLabel.logs];
     final current = tabs.contains(_current) ? _current : tabs.first;
     final child = KeyedSubtree(
       key: ValueKey(current),

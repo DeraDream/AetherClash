@@ -162,9 +162,7 @@ class CommonAction extends _$CommonAction {
                 }
                 rethrow;
               }
-              await ref
-                  .read(systemActionProvider.notifier)
-                  .handleUpdateExit();
+              await ref.read(systemActionProvider.notifier).handleUpdateExit();
             },
           );
         } else {

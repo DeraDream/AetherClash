@@ -468,5 +468,4 @@ class ProfileDisabledRuleIds extends _$ProfileDisabledRuleIds
     if (!value.contains(ruleId)) return;
     await database.rulesDao.delDisabledLink(profileId, ruleId);
   }
-
 }

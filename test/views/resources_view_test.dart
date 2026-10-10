@@ -77,10 +77,7 @@ void main() {
         child: const TestApp(child: ResourcesView()),
       ),
     );
-    await pumpUntilFound(
-      tester,
-      find.byType(DecorationListItem).hitTestable(),
-    );
+    await pumpUntilFound(tester, find.byType(DecorationListItem).hitTestable());
     await settle(tester, rounds: 5);
 
     expect(find.byType(DecorationListItem), findsNWidgets(8));

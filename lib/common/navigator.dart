@@ -67,7 +67,10 @@ class BaseNavigator {
     String routeName,
     Widget child,
   ) {
-    final activeRoutes = _workspaceRouteNames.putIfAbsent(label, () => <String>{});
+    final activeRoutes = _workspaceRouteNames.putIfAbsent(
+      label,
+      () => <String>{},
+    );
     if (!activeRoutes.add(routeName)) {
       return Future<T?>.value(null);
     }

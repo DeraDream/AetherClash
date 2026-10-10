@@ -103,7 +103,10 @@ void main() {
     expect(find.byType(NullStatus), findsOneWidget);
     final emptyState = tester.widget<NullStatus>(find.byType(NullStatus));
     expect(emptyState.alignment, Alignment.center);
-    expect(tester.getSize(find.byType(NullStatus)).width, lessThanOrEqualTo(1400));
+    expect(
+      tester.getSize(find.byType(NullStatus)).width,
+      lessThanOrEqualTo(1400),
+    );
     expect(tester.takeException(), null);
 
     await teardownView(tester);
@@ -129,9 +132,7 @@ void main() {
     await teardownView(tester);
   });
 
-  testWidgets('moves vanished connections into the closed tab', (
-    tester,
-  ) async {
+  testWidgets('moves vanished connections into the closed tab', (tester) async {
     var call = 0;
     when(core.getConnections).thenAnswer((_) async {
       call++;
@@ -197,11 +198,7 @@ void main() {
     var download = 0;
     when(core.getConnections).thenAnswer(
       (_) async => [
-        _tracker(
-          id: 'a',
-          host: 'alpha.test',
-          download: download += 128,
-        ),
+        _tracker(id: 'a', host: 'alpha.test', download: download += 128),
       ],
     );
 
@@ -213,10 +210,7 @@ void main() {
     await tester.pump();
 
     expect(field, findsOneWidget);
-    expect(
-      tester.widget<TextField>(field).controller?.text,
-      'alpha',
-    );
+    expect(tester.widget<TextField>(field).controller?.text, 'alpha');
     expect(find.textContaining('alpha.test'), findsWidgets);
 
     await teardownView(tester);
@@ -229,16 +223,8 @@ void main() {
     when(core.getConnections).thenAnswer((_) async {
       tick++;
       return [
-        _tracker(
-          id: 'slow',
-          host: 'slow.test',
-          download: tick * 100,
-        ),
-        _tracker(
-          id: 'fast',
-          host: 'fast.test',
-          download: tick * 1000,
-        ),
+        _tracker(id: 'slow', host: 'slow.test', download: tick * 100),
+        _tracker(id: 'fast', host: 'fast.test', download: tick * 1000),
       ];
     });
 
@@ -246,21 +232,25 @@ void main() {
     await tester.pump(const Duration(milliseconds: 550));
     await tester.pump();
 
-    final header = find.byKey(
-      const Key('connection-header-downloadSpeed'),
-    );
+    final header = find.byKey(const Key('connection-header-downloadSpeed'));
     await tester.tap(header);
     await tester.pump();
 
     final fastRow = find.byKey(const Key('connection-row-fast'));
     final slowRow = find.byKey(const Key('connection-row-slow'));
-    expect(tester.getTopLeft(fastRow).dy, lessThan(tester.getTopLeft(slowRow).dy));
+    expect(
+      tester.getTopLeft(fastRow).dy,
+      lessThan(tester.getTopLeft(slowRow).dy),
+    );
     expect(find.textContaining('Download speed ↓'), findsOneWidget);
 
     await tester.tap(header);
     await tester.pump();
 
-    expect(tester.getTopLeft(fastRow).dy, greaterThan(tester.getTopLeft(slowRow).dy));
+    expect(
+      tester.getTopLeft(fastRow).dy,
+      greaterThan(tester.getTopLeft(slowRow).dy),
+    );
     expect(find.textContaining('Download speed ↑'), findsOneWidget);
 
     await teardownView(tester);
@@ -272,13 +262,7 @@ void main() {
     var calls = 0;
     when(core.getConnections).thenAnswer((_) async {
       calls++;
-      return [
-        _tracker(
-          id: 'a',
-          host: 'alpha.test',
-          download: calls * 128,
-        ),
-      ];
+      return [_tracker(id: 'a', host: 'alpha.test', download: calls * 128)];
     });
 
     await pumpConnections(tester);

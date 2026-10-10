@@ -65,47 +65,59 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m20(count) => "${count} 分钟前";
 
-  static String m21(count) => "${count} 个月前";
+  static String m21(province) => "当前省份：${province}";
 
-  static String m22(label) => "暂无${label}";
+  static String m22(used, limit) => "IP 白名单 · ${used}/${limit}";
 
-  static String m23(label) => "${label}必须为数字";
+  static String m23(time) => "上次执行：${time}";
 
-  static String m24(ip) => "出口 ${ip}";
+  static String m24(count) => "每 ${count} 秒检查";
 
-  static String m25(time) => "上次执行：${time}";
+  static String m25(min, max) => "请输入 ${min}～${max} 秒";
 
-  static String m26(time) => "上次 ${time}";
+  static String m26(used, limit) => "已占用 ${used}/${limit}";
 
-  static String m27(count) => "每 ${count} 秒检查";
+  static String m27(count) => "${count} 个月前";
 
-  static String m28(min, max) => "请输入 ${min}～${max} 秒";
+  static String m28(label) => "暂无${label}";
 
-  static String m29(ip) => "出口 ${ip} 已在白名单";
+  static String m29(label) => "${label}必须为数字";
 
-  static String m30(message) => "请求失败：${message}";
+  static String m30(ip) => "出口 ${ip}";
 
-  static String m31(ip) => "出口 ${ip} 不在白名单";
+  static String m31(time) => "上次执行：${time}";
 
-  static String m32(message) => "请求被拒绝：${message}";
+  static String m32(time) => "上次 ${time}";
 
-  static String m33(ok, total) => "${ok}/${total} 已加白";
+  static String m33(count) => "每 ${count} 秒检查";
 
-  static String m34(used, limit) => "已占用 ${used}/${limit}";
+  static String m34(min, max) => "请输入 ${min}～${max} 秒";
 
-  static String m35(label) => "${label} 必须在 1024 到 49151 之间";
+  static String m35(ip) => "出口 ${ip} 已在白名单";
 
-  static String m36(count) => "${count} 个代理";
+  static String m36(message) => "请求失败：${message}";
 
-  static String m37(count) => "${count} 条规则";
+  static String m37(ip) => "出口 ${ip} 不在白名单";
 
-  static String m38(count) => "${count} 秒";
+  static String m38(message) => "请求被拒绝：${message}";
 
-  static String m39(count) => "已选择 ${count} 项";
+  static String m39(ok, total) => "${ok}/${total} 已加白";
 
-  static String m40(label) => "${label}必须为URL";
+  static String m40(used, limit) => "已占用 ${used}/${limit}";
 
-  static String m41(count) => "${count} 年前";
+  static String m41(label) => "${label} 必须在 1024 到 49151 之间";
+
+  static String m42(count) => "${count} 个代理";
+
+  static String m43(count) => "${count} 条规则";
+
+  static String m44(count) => "${count} 秒";
+
+  static String m45(count) => "已选择 ${count} 项";
+
+  static String m46(label) => "${label}必须为URL";
+
+  static String m47(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -495,9 +507,54 @@ class MessageLookup extends MessageLookupByLibrary {
     "minimizeOnExitDesc": MessageLookupByLibrary.simpleMessage("修改系统默认退出事件"),
     "minutesAgo": m20,
     "mixedPort": MessageLookupByLibrary.simpleMessage("混合端口"),
+    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("添加 IP 白名单"),
+    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API Key"),
+    "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage("自动加白"),
+    "mkcloudAutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
+      "开启后按刷新间隔维护当前生效的白名单模式",
+    ),
+    "mkcloudCurrentProvince": m21,
+    "mkcloudDirectTip": MessageLookupByLibrary.simpleMessage(
+      "加白请求会直连 MKCloud 与出口 IP 查询服务，并自动写入直连规则及 TUN 排除路由，以避免全局代理时把代理出口加入白名单。",
+    ),
+    "mkcloudFirewall": MessageLookupByLibrary.simpleMessage("MKCloud 加白"),
+    "mkcloudFirewallDesc": MessageLookupByLibrary.simpleMessage(
+      "维护 MKCloud 省白或 IP 白名单",
+    ),
+    "mkcloudInvalidIp": MessageLookupByLibrary.simpleMessage("请输入有效的 IPv4 地址"),
+    "mkcloudIpActive": MessageLookupByLibrary.simpleMessage("IP 白名单模式 · 已生效"),
+    "mkcloudIpHint": MessageLookupByLibrary.simpleMessage("例如 203.0.113.1"),
+    "mkcloudIpRule": m22,
+    "mkcloudKeyConfigured": MessageLookupByLibrary.simpleMessage("已配置，点击更换"),
+    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("尚未配置"),
+    "mkcloudLastRun": m23,
+    "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage("历史记录，时间未知"),
+    "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud 加白"),
+    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("尚未执行"),
+    "mkcloudPollEvery": m24,
+    "mkcloudPollInterval": MessageLookupByLibrary.simpleMessage("刷新间隔"),
+    "mkcloudPollIntervalRange": m25,
+    "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage("省白模式 · 已生效"),
+    "mkcloudProvinceHint": MessageLookupByLibrary.simpleMessage(
+      "设置省份后将切换为省白模式；已有 IP 白名单将不再生效。",
+    ),
+    "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage("省白规则"),
+    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("查询状态"),
+    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("执行中…"),
+    "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage("选择省份"),
+    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("立即加白"),
+    "mkcloudStatusNoKey": MessageLookupByLibrary.simpleMessage(
+      "添加 API Key 后开始加白",
+    ),
+    "mkcloudStatusOff": MessageLookupByLibrary.simpleMessage("自动加白未开启"),
+    "mkcloudStatusWaiting": MessageLookupByLibrary.simpleMessage("等待查询状态"),
+    "mkcloudSwitchIp": MessageLookupByLibrary.simpleMessage("切换为 IP 白名单"),
+    "mkcloudSwitchProvince": MessageLookupByLibrary.simpleMessage("切换为省白模式"),
+    "mkcloudUsage": m26,
+    "mkcloudWhitelistNow": MessageLookupByLibrary.simpleMessage("立即加白"),
     "mode": MessageLookupByLibrary.simpleMessage("模式"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("单色"),
-    "monthsAgo": m21,
+    "monthsAgo": m27,
     "more": MessageLookupByLibrary.simpleMessage("更多"),
     "multipleValuesTip": MessageLookupByLibrary.simpleMessage("多个值使用逗号分隔"),
     "name": MessageLookupByLibrary.simpleMessage("名称"),
@@ -527,8 +584,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "none": MessageLookupByLibrary.simpleMessage("无"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage("当前代理组无法选中"),
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage("没有配置文件,请先添加配置文件"),
-    "nullTip": m22,
-    "numberTip": m23,
+    "nullTip": m28,
+    "numberTip": m29,
     "onDemand": MessageLookupByLibrary.simpleMessage("按需运行"),
     "onDemandDesc": MessageLookupByLibrary.simpleMessage("配置程序特定场景运行状态"),
     "onlyIcon": MessageLookupByLibrary.simpleMessage("仅图标"),
@@ -575,29 +632,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "加白请求直连 124.221.69.228。开启后 AetherClash 会为该地址添加直连规则并将其排除出 TUN，确保加白的是真实出口而非代理 IP。安卓首次开启后请重启一次 VPN。",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("编辑 token"),
-    "po0Exit": m24,
+    "po0Exit": m30,
     "po0Firewall": MessageLookupByLibrary.simpleMessage("po0 防火墙加白"),
     "po0FirewallDesc": MessageLookupByLibrary.simpleMessage(
       "自动把本机出口 IP 加入 po0 防火墙白名单",
     ),
-    "po0LastRun": m25,
-    "po0LastShort": m26,
+    "po0LastRun": m31,
+    "po0LastShort": m32,
     "po0Nav": MessageLookupByLibrary.simpleMessage("po0 加白"),
     "po0NeverRun": MessageLookupByLibrary.simpleMessage("尚未执行"),
-    "po0PollEvery": m27,
+    "po0PollEvery": m33,
     "po0PollInterval": MessageLookupByLibrary.simpleMessage("刷新间隔"),
-    "po0PollIntervalRange": m28,
+    "po0PollIntervalRange": m34,
     "po0QueryStatus": MessageLookupByLibrary.simpleMessage("查询状态"),
-    "po0ResultApplied": m29,
+    "po0ResultApplied": m35,
     "po0ResultDisabled": MessageLookupByLibrary.simpleMessage("该机器未启用防火墙"),
-    "po0ResultError": m30,
-    "po0ResultNotApplied": m31,
-    "po0ResultRejected": m32,
+    "po0ResultError": m36,
+    "po0ResultNotApplied": m37,
+    "po0ResultRejected": m38,
     "po0Running": MessageLookupByLibrary.simpleMessage("执行中…"),
     "po0StatusApplied": MessageLookupByLibrary.simpleMessage("出口已加白"),
     "po0StatusNoToken": MessageLookupByLibrary.simpleMessage("添加 token 后开始加白"),
     "po0StatusOff": MessageLookupByLibrary.simpleMessage("自动加白未开启"),
-    "po0StatusPartial": m33,
+    "po0StatusPartial": m39,
     "po0StatusWaiting": MessageLookupByLibrary.simpleMessage("等待首次执行"),
     "po0Token": MessageLookupByLibrary.simpleMessage("token"),
     "po0TokenDuplicate": MessageLookupByLibrary.simpleMessage("该 token 已在列表中"),
@@ -610,12 +667,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0TokensInvalid": MessageLookupByLibrary.simpleMessage(
       "token 应以 pgnfw_ 开头，且不能包含空格或分隔符",
     ),
-    "po0Usage": m34,
+    "po0Usage": m40,
     "po0Whitelist": MessageLookupByLibrary.simpleMessage("白名单"),
     "po0WhitelistNow": MessageLookupByLibrary.simpleMessage("立即加白"),
     "port": MessageLookupByLibrary.simpleMessage("端口"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("请输入不同的端口"),
-    "portTip": m35,
+    "portTip": m41,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage("优先使用DOH的http/3"),
     "prerequisites": MessageLookupByLibrary.simpleMessage("前置条件"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("请按下按键"),
@@ -644,7 +701,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "project": MessageLookupByLibrary.simpleMessage("项目"),
     "providers": MessageLookupByLibrary.simpleMessage("外部资源"),
     "proxies": MessageLookupByLibrary.simpleMessage("代理"),
-    "proxiesCount": m36,
+    "proxiesCount": m42,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("代理为空"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("代理链"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
@@ -803,7 +860,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("规则集"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("规则目标"),
     "rules": MessageLookupByLibrary.simpleMessage("规则"),
-    "rulesCount": m37,
+    "rulesCount": m43,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("是否保存更改？"),
     "script": MessageLookupByLibrary.simpleMessage("脚本"),
@@ -813,7 +870,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "scrollToSelected": MessageLookupByLibrary.simpleMessage("滚动到已选"),
     "search": MessageLookupByLibrary.simpleMessage("搜索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
-    "secondsCount": m38,
+    "secondsCount": m44,
     "selectAll": MessageLookupByLibrary.simpleMessage("全选"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "选择 MATCH-TARGET",
@@ -824,7 +881,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectSplitStrategy": MessageLookupByLibrary.simpleMessage("请选择分流策略"),
     "selectSubRule": MessageLookupByLibrary.simpleMessage("请选择子规则"),
     "selected": MessageLookupByLibrary.simpleMessage("已选择"),
-    "selectedCountTitle": m39,
+    "selectedCountTitle": m45,
     "settings": MessageLookupByLibrary.simpleMessage("设置"),
     "show": MessageLookupByLibrary.simpleMessage("显示"),
     "showLess": MessageLookupByLibrary.simpleMessage("收起"),
@@ -919,7 +976,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("上传"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("通过URL获取配置文件"),
-    "urlTip": m40,
+    "urlTip": m46,
     "useHosts": MessageLookupByLibrary.simpleMessage("使用Hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系统Hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("已用流量"),
@@ -936,7 +993,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("重启VPN后改变生效"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV配置"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("白名单模式"),
-    "yearsAgo": m41,
+    "yearsAgo": m47,
     "zhCN": MessageLookupByLibrary.simpleMessage("中文简体"),
   };
 }

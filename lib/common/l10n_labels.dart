@@ -17,6 +17,7 @@ extension PageLabelL10n on PageLabel {
       PageLabel.rules => appLocalizations.rules,
       PageLabel.connections => appLocalizations.connections,
       PageLabel.po0 => appLocalizations.po0Nav,
+      PageLabel.mkcloud => appLocalizations.mkcloudNav,
       PageLabel.core => appLocalizations.core,
       PageLabel.activity => appLocalizations.activity,
     };
@@ -31,12 +32,14 @@ extension PageLabelL10n on PageLabel {
       PageLabel.rules => appLocalizations.rules,
       PageLabel.connections => appLocalizations.connectionsDesc,
       PageLabel.po0 => appLocalizations.po0FirewallDesc,
+      PageLabel.mkcloud => appLocalizations.mkcloudFirewallDesc,
       PageLabel.core => appLocalizations.coreStatus,
       PageLabel.activity => appLocalizations.activityDesc,
       PageLabel.dashboard ||
       PageLabel.proxies ||
       PageLabel.profiles ||
-      PageLabel.tools => null,
+      PageLabel.tools ||
+      PageLabel.mkcloud => null,
     };
   }
 }

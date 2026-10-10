@@ -10,10 +10,7 @@ void main() {
       (tun: true, systemProxy: true),
     ]) {
       expect(reconcileDesktopRoute(state), state);
-      expect(
-        reconcileDesktopRoute(state, changed: DesktopRoute.tun),
-        state,
-      );
+      expect(reconcileDesktopRoute(state, changed: DesktopRoute.tun), state);
       expect(
         reconcileDesktopRoute(state, changed: DesktopRoute.systemProxy),
         state,

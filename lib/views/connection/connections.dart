@@ -175,10 +175,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     for (final previous in _previousActive.values) {
       if (currentIds.contains(previous.id)) continue;
       closed.removeWhere((item) => item.id == previous.id);
-      closed.insert(
-        0,
-        previous.copyWith(downloadSpeed: 0, uploadSpeed: 0),
-      );
+      closed.insert(0, previous.copyWith(downloadSpeed: 0, uploadSpeed: 0));
     }
 
     final active = <TrackerInfo>[];
@@ -260,20 +257,14 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     result.sort((a, b) {
       final comparison = _compareByColumn(a, b, _sortColumn);
       if (comparison == 0) {
-        return _sortDescending
-            ? b.id.compareTo(a.id)
-            : a.id.compareTo(b.id);
+        return _sortDescending ? b.id.compareTo(a.id) : a.id.compareTo(b.id);
       }
       return _sortDescending ? -comparison : comparison;
     });
     return result;
   }
 
-  int _compareByColumn(
-    TrackerInfo a,
-    TrackerInfo b,
-    _ConnectionColumn column,
-  ) {
+  int _compareByColumn(TrackerInfo a, TrackerInfo b, _ConnectionColumn column) {
     switch (column) {
       case _ConnectionColumn.status:
         final aStatus = _tab == _ConnectionTab.active ? 1 : 0;
@@ -294,9 +285,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       case _ConnectionColumn.rule:
         return _ruleText(a).toLowerCase().compareTo(_ruleText(b).toLowerCase());
       case _ConnectionColumn.proxyChain:
-        return _proxyChainText(a).toLowerCase().compareTo(
-          _proxyChainText(b).toLowerCase(),
-        );
+        return _proxyChainText(
+          a,
+        ).toLowerCase().compareTo(_proxyChainText(b).toLowerCase());
       case _ConnectionColumn.uploadSpeed:
         return (a.uploadSpeed ?? 0).compareTo(b.uploadSpeed ?? 0);
       case _ConnectionColumn.downloadSpeed:
@@ -306,9 +297,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       case _ConnectionColumn.download:
         return a.download.compareTo(b.download);
       case _ConnectionColumn.remoteDestination:
-        return _remoteDestinationText(a).toLowerCase().compareTo(
-          _remoteDestinationText(b).toLowerCase(),
-        );
+        return _remoteDestinationText(
+          a,
+        ).toLowerCase().compareTo(_remoteDestinationText(b).toLowerCase());
     }
   }
 
@@ -431,14 +422,17 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   String _cellText(TrackerInfo connection, _ConnectionColumn column) {
     final metadata = connection.metadata;
     return switch (column) {
-      _ConnectionColumn.status => _tab == _ConnectionTab.active
-          ? _text('活动中', 'Active')
-          : _text('已关闭', 'Closed'),
-      _ConnectionColumn.establishTime =>
-        connection.start.getLastUpdateTimeDesc(context),
+      _ConnectionColumn.status =>
+        _tab == _ConnectionTab.active
+            ? _text('活动中', 'Active')
+            : _text('已关闭', 'Closed'),
+      _ConnectionColumn.establishTime => connection.start.getLastUpdateTimeDesc(
+        context,
+      ),
       _ConnectionColumn.connectionType => metadata.network.toUpperCase(),
       _ConnectionColumn.host => _hostText(connection),
-      _ConnectionColumn.process => metadata.process.isEmpty ? '-' : metadata.process,
+      _ConnectionColumn.process =>
+        metadata.process.isEmpty ? '-' : metadata.process,
       _ConnectionColumn.rule => _ruleText(connection),
       _ConnectionColumn.proxyChain =>
         _proxyChainText(connection).isEmpty ? '-' : _proxyChainText(connection),
@@ -688,11 +682,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
                 behavior: HitTestBehavior.opaque,
                 onHorizontalDragUpdate: (details) {
                   setState(() {
-                    _columnWidths[spec.column] =
-                        (width + details.delta.dx).clamp(
-                          _minimumColumnWidth,
-                          520.0,
-                        ).toDouble();
+                    _columnWidths[spec.column] = (width + details.delta.dx)
+                        .clamp(_minimumColumnWidth, 520.0)
+                        .toDouble();
                     _cachedColumnWidths = Map.of(_columnWidths);
                   });
                 },
@@ -714,7 +706,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   Widget _buildDataCell(TrackerInfo connection, _ColumnSpec spec) {
     if (spec.column == _ConnectionColumn.status) {
       final active = _tab == _ConnectionTab.active;
-      final color = active ? context.colorScheme.primary : context.colorScheme.error;
+      final color = active
+          ? context.colorScheme.primary
+          : context.colorScheme.error;
       return SizedBox(
         width: _columnWidth(spec),
         child: Padding(
@@ -771,7 +765,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       builder: (_) => AdaptiveSheetScaffold(
         sheetTransparentToolBar: true,
         body: TrackerInfoDetailView(trackerInfo: connection),
-        title: context.appLocalizations.details(context.appLocalizations.connection),
+        title: context.appLocalizations.details(
+          context.appLocalizations.connection,
+        ),
       ),
     );
   }
@@ -868,7 +864,8 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
                               bottom: 16 + BottomInsetScope.of(context),
                             ),
                             itemCount: visible.length,
-                            itemBuilder: (_, index) => _buildRow(visible[index]),
+                            itemBuilder: (_, index) =>
+                                _buildRow(visible[index]),
                           ),
                   ),
                 ],
@@ -963,7 +960,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
             tooltip: _tab == _ConnectionTab.active
                 ? _text('清除当前连接', 'Close current connections')
                 : _text('清除已关闭记录', 'Clear closed history'),
-            onPressed: visible.isEmpty ? null : () => unawaited(_closeVisible(visible)),
+            onPressed: visible.isEmpty
+                ? null
+                : () => unawaited(_closeVisible(visible)),
             icon: Icon(
               _tab == _ConnectionTab.active
                   ? Icons.close_rounded

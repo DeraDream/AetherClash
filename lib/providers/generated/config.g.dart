@@ -685,6 +685,60 @@ abstract class _$Po0FirewallSetting extends $Notifier<Po0FirewallProps> {
   }
 }
 
+@ProviderFor(MkcloudFirewallSetting)
+final mkcloudFirewallSettingProvider = MkcloudFirewallSettingProvider._();
+
+final class MkcloudFirewallSettingProvider
+    extends $NotifierProvider<MkcloudFirewallSetting, MkcloudFirewallProps> {
+  MkcloudFirewallSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mkcloudFirewallSettingProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$mkcloudFirewallSettingHash();
+
+  @$internal
+  @override
+  MkcloudFirewallSetting create() => MkcloudFirewallSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MkcloudFirewallProps value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MkcloudFirewallProps>(value),
+    );
+  }
+}
+
+String _$mkcloudFirewallSettingHash() =>
+    r'c8b9c70a1f6f13e72bf54016034a4c4829a13c53';
+
+abstract class _$MkcloudFirewallSetting
+    extends $Notifier<MkcloudFirewallProps> {
+  MkcloudFirewallProps build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<MkcloudFirewallProps, MkcloudFirewallProps>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<MkcloudFirewallProps, MkcloudFirewallProps>,
+              MkcloudFirewallProps,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(_config)
 final configProvider = _ConfigProvider._();
 
@@ -723,4 +777,4 @@ final class _ConfigProvider extends $FunctionalProvider<Config, Config, Config>
   }
 }
 
-String _$_configHash() => r'086453adc679b9c5831caf18a377ad308d13e8a6';
+String _$_configHash() => r'1a30b7be932a160e8e833929fb56fc5d1e57aa52';

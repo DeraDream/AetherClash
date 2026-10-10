@@ -270,6 +270,9 @@ abstract class Config with _$Config {
     @JsonKey(fromJson: Po0FirewallProps.safeFromJson)
     @Default(defaultPo0FirewallProps)
     Po0FirewallProps po0FirewallProps,
+    @JsonKey(fromJson: MkcloudFirewallProps.safeFromJson)
+    @Default(defaultMkcloudFirewallProps)
+    MkcloudFirewallProps mkcloudFirewallProps,
   }) = _Config;
 
   factory Config.fromJson(Map<String, Object?> json) => _$ConfigFromJson(json);

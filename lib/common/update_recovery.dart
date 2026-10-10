@@ -52,10 +52,7 @@ final class UpdateRecoveryState {
       running: running,
       systemProxy: systemProxy,
       tun: tun,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-        createdAtMs,
-        isUtc: true,
-      ),
+      createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtMs, isUtc: true),
     );
   }
 
@@ -80,12 +77,8 @@ final class UpdateRecoveryState {
 
 Config applyUpdateRecoveryState(Config config, UpdateRecoveryState state) {
   return config.copyWith(
-    networkProps: config.networkProps.copyWith(
-      systemProxy: state.systemProxy,
-    ),
-    patchClashConfig: config.patchClashConfig.copyWith.tun(
-      enable: state.tun,
-    ),
+    networkProps: config.networkProps.copyWith(systemProxy: state.systemProxy),
+    patchClashConfig: config.patchClashConfig.copyWith.tun(enable: state.tun),
   );
 }
 

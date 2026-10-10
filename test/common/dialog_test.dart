@@ -199,7 +199,6 @@ void main() {
     expect(await result, isTrue);
   });
 
-
   testWidgets('showNotifier delivers text through the StatusManager host', (
     tester,
   ) async {

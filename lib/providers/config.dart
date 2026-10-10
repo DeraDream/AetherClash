@@ -112,6 +112,13 @@ class Po0FirewallSetting extends _$Po0FirewallSetting
   }
 }
 
+@riverpod
+class MkcloudFirewallSetting extends _$MkcloudFirewallSetting
+    with AutoDisposeNotifierMixin {
+  @override
+  MkcloudFirewallProps build() => defaultMkcloudFirewallProps;
+}
+
 @Riverpod(name: 'configProvider')
 Config _config(Ref ref) {
   final appSettingProps = ref.watch(appSettingProvider);
@@ -127,6 +134,7 @@ Config _config(Ref ref) {
   final patchClashConfig = ref.watch(patchClashConfigProvider);
   final excludeSSIDs = ref.watch(excludeSSIDsProvider);
   final po0FirewallProps = ref.watch(po0FirewallSettingProvider);
+  final mkcloudFirewallProps = ref.watch(mkcloudFirewallSettingProvider);
   return Config(
     appSettingProps: appSettingProps,
     windowProps: windowProps,
@@ -141,6 +149,7 @@ Config _config(Ref ref) {
     patchClashConfig: patchClashConfig,
     excludeSSIDs: excludeSSIDs,
     po0FirewallProps: po0FirewallProps,
+    mkcloudFirewallProps: mkcloudFirewallProps,
   );
 }
 
@@ -166,6 +175,9 @@ List<Override> buildConfigOverrides(Config config) {
     excludeSSIDsProvider.overrideWithBuild((_, _) => config.excludeSSIDs),
     po0FirewallSettingProvider.overrideWithBuild(
       (_, _) => config.po0FirewallProps,
+    ),
+    mkcloudFirewallSettingProvider.overrideWithBuild(
+      (_, _) => config.mkcloudFirewallProps,
     ),
   ];
 }

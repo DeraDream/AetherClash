@@ -71,10 +71,7 @@ void main() {
       host: 'example.com:443',
     );
 
-    expect(
-      server.downloadUri(1, 2).path,
-      '/speedtest/random4000x4000.jpg',
-    );
+    expect(server.downloadUri(1, 2).path, '/speedtest/random4000x4000.jpg');
     expect(server.latencyUri.path, '/speedtest/latency.txt');
     expect(server.label, 'Example ISP · Singapore, Singapore');
   });

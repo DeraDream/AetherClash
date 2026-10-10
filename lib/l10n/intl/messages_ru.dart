@@ -72,51 +72,63 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m20(count) =>
       "${Intl.plural(count, one: '${count} минуту назад', few: '${count} минуты назад', many: '${count} минут назад', other: '${count} минуты назад')}";
 
-  static String m21(count) =>
+  static String m21(province) => "Current province: ${province}";
+
+  static String m22(used, limit) => "IP whitelist · ${used}/${limit}";
+
+  static String m23(time) => "Last run: ${time}";
+
+  static String m24(count) => "Check every ${count}s";
+
+  static String m25(min, max) => "Enter ${min}–${max} seconds";
+
+  static String m26(used, limit) => "Used ${used}/${limit}";
+
+  static String m27(count) =>
       "${Intl.plural(count, one: '${count} месяц назад', few: '${count} месяца назад', many: '${count} месяцев назад', other: '${count} месяца назад')}";
 
-  static String m22(label) => "Пока нет: ${label}";
+  static String m28(label) => "Пока нет: ${label}";
 
-  static String m23(label) => "Значение «${label}» должно быть числом";
+  static String m29(label) => "Значение «${label}» должно быть числом";
 
-  static String m24(ip) => "Выход ${ip}";
+  static String m30(ip) => "Выход ${ip}";
 
-  static String m25(time) => "Последний запуск: ${time}";
+  static String m31(time) => "Последний запуск: ${time}";
 
-  static String m26(time) => "Последний ${time}";
+  static String m32(time) => "Последний ${time}";
 
-  static String m27(count) => "Каждые ${count} с";
+  static String m33(count) => "Каждые ${count} с";
 
-  static String m28(min, max) => "Введите от ${min} до ${max} секунд";
+  static String m34(min, max) => "Введите от ${min} до ${max} секунд";
 
-  static String m29(ip) => "Выход ${ip} в белом списке";
+  static String m35(ip) => "Выход ${ip} в белом списке";
 
-  static String m30(message) => "Ошибка запроса: ${message}";
+  static String m36(message) => "Ошибка запроса: ${message}";
 
-  static String m31(ip) => "Выход ${ip} не в белом списке";
+  static String m37(ip) => "Выход ${ip} не в белом списке";
 
-  static String m32(message) => "Отклонено: ${message}";
+  static String m38(message) => "Отклонено: ${message}";
 
-  static String m33(ok, total) => "${ok}/${total} в белом списке";
+  static String m39(ok, total) => "${ok}/${total} в белом списке";
 
-  static String m34(used, limit) => "Занято ${used}/${limit}";
+  static String m40(used, limit) => "Занято ${used}/${limit}";
 
-  static String m35(label) =>
+  static String m41(label) =>
       "Значение «${label}» должно быть от 1024 до 49151";
 
-  static String m36(count) => "${count} прокси";
+  static String m42(count) => "${count} прокси";
 
-  static String m37(count) =>
+  static String m43(count) =>
       "${Intl.plural(count, one: '${count} правило', few: '${count} правила', many: '${count} правил', other: '${count} правила')}";
 
-  static String m38(count) =>
+  static String m44(count) =>
       "${Intl.plural(count, one: '${count} секунда', few: '${count} секунды', many: '${count} секунд', other: '${count} секунды')}";
 
-  static String m39(count) => "Выбрано: ${count}";
+  static String m45(count) => "Выбрано: ${count}";
 
-  static String m40(label) => "Значение «${label}» должно быть URL";
+  static String m46(label) => "Значение «${label}» должно быть URL";
 
-  static String m41(count) =>
+  static String m47(count) =>
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -702,9 +714,86 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "minutesAgo": m20,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Смешанный порт"),
+    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("Add IP whitelist"),
+    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API Key"),
+    "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage(
+      "Auto whitelist",
+    ),
+    "mkcloudAutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
+      "Maintain the active whitelist mode at the selected interval",
+    ),
+    "mkcloudCurrentProvince": m21,
+    "mkcloudDirectTip": MessageLookupByLibrary.simpleMessage(
+      "Whitelist requests directly connect to MKCloud and the IP lookup service. Direct rules and TUN route exclusions are applied automatically so a global proxy cannot whitelist its own exit.",
+    ),
+    "mkcloudFirewall": MessageLookupByLibrary.simpleMessage(
+      "MKCloud whitelist",
+    ),
+    "mkcloudFirewallDesc": MessageLookupByLibrary.simpleMessage(
+      "Maintain MKCloud whitelists",
+    ),
+    "mkcloudInvalidIp": MessageLookupByLibrary.simpleMessage(
+      "Enter a valid IPv4 address",
+    ),
+    "mkcloudIpActive": MessageLookupByLibrary.simpleMessage(
+      "IP whitelist mode · active",
+    ),
+    "mkcloudIpHint": MessageLookupByLibrary.simpleMessage(
+      "For example, 203.0.113.1",
+    ),
+    "mkcloudIpRule": m22,
+    "mkcloudKeyConfigured": MessageLookupByLibrary.simpleMessage(
+      "Configured, tap to change",
+    ),
+    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("Not configured"),
+    "mkcloudLastRun": m23,
+    "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage(
+      "Legacy entry; date unknown",
+    ),
+    "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud whitelist"),
+    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("Not run yet"),
+    "mkcloudPollEvery": m24,
+    "mkcloudPollInterval": MessageLookupByLibrary.simpleMessage(
+      "Refresh interval",
+    ),
+    "mkcloudPollIntervalRange": m25,
+    "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage(
+      "Province mode · active",
+    ),
+    "mkcloudProvinceHint": MessageLookupByLibrary.simpleMessage(
+      "Setting a province switches to province mode; existing IP rules no longer apply.",
+    ),
+    "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage(
+      "Province rule",
+    ),
+    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("Query status"),
+    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("Running…"),
+    "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage(
+      "Select province",
+    ),
+    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("Whitelist now"),
+    "mkcloudStatusNoKey": MessageLookupByLibrary.simpleMessage(
+      "Add an API key to start",
+    ),
+    "mkcloudStatusOff": MessageLookupByLibrary.simpleMessage(
+      "Auto whitelist is off",
+    ),
+    "mkcloudStatusWaiting": MessageLookupByLibrary.simpleMessage(
+      "Waiting for status",
+    ),
+    "mkcloudSwitchIp": MessageLookupByLibrary.simpleMessage(
+      "Switch to IP whitelist",
+    ),
+    "mkcloudSwitchProvince": MessageLookupByLibrary.simpleMessage(
+      "Switch to province mode",
+    ),
+    "mkcloudUsage": m26,
+    "mkcloudWhitelistNow": MessageLookupByLibrary.simpleMessage(
+      "Whitelist now",
+    ),
     "mode": MessageLookupByLibrary.simpleMessage("Режим"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("Монохром"),
-    "monthsAgo": m21,
+    "monthsAgo": m27,
     "more": MessageLookupByLibrary.simpleMessage("Ещё"),
     "multipleValuesTip": MessageLookupByLibrary.simpleMessage(
       "Разделяйте несколько значений запятыми",
@@ -754,8 +843,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage(
       "Профилей пока нет. Сначала добавьте профиль",
     ),
-    "nullTip": m22,
-    "numberTip": m23,
+    "nullTip": m28,
+    "numberTip": m29,
     "onDemand": MessageLookupByLibrary.simpleMessage("По условию"),
     "onDemandDesc": MessageLookupByLibrary.simpleMessage(
       "Настройте состояние работы приложения для определённых сценариев",
@@ -824,28 +913,28 @@ class MessageLookup extends MessageLookupByLibrary {
       "Запросы идут напрямую на 124.221.69.228. Пока функция включена, AetherClash направляет этот адрес DIRECT и исключает его из TUN, поэтому в белый список попадает реальный выход, а не прокси. На Android после включения один раз перезапустите VPN.",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("Изменить токен"),
-    "po0Exit": m24,
+    "po0Exit": m30,
     "po0Firewall": MessageLookupByLibrary.simpleMessage("Белый список po0"),
     "po0FirewallDesc": MessageLookupByLibrary.simpleMessage(
       "Держать выходной IP этой сети в белом списке брандмауэра po0",
     ),
-    "po0LastRun": m25,
-    "po0LastShort": m26,
+    "po0LastRun": m31,
+    "po0LastShort": m32,
     "po0Nav": MessageLookupByLibrary.simpleMessage("po0"),
     "po0NeverRun": MessageLookupByLibrary.simpleMessage("Ещё не запускалось"),
-    "po0PollEvery": m27,
+    "po0PollEvery": m33,
     "po0PollInterval": MessageLookupByLibrary.simpleMessage(
       "Интервал обновления",
     ),
-    "po0PollIntervalRange": m28,
+    "po0PollIntervalRange": m34,
     "po0QueryStatus": MessageLookupByLibrary.simpleMessage("Проверить"),
-    "po0ResultApplied": m29,
+    "po0ResultApplied": m35,
     "po0ResultDisabled": MessageLookupByLibrary.simpleMessage(
       "Брандмауэр для этого сервера не включён",
     ),
-    "po0ResultError": m30,
-    "po0ResultNotApplied": m31,
-    "po0ResultRejected": m32,
+    "po0ResultError": m36,
+    "po0ResultNotApplied": m37,
+    "po0ResultRejected": m38,
     "po0Running": MessageLookupByLibrary.simpleMessage("Выполняется…"),
     "po0StatusApplied": MessageLookupByLibrary.simpleMessage(
       "Выход в белом списке",
@@ -856,7 +945,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0StatusOff": MessageLookupByLibrary.simpleMessage(
       "Автодобавление выключено",
     ),
-    "po0StatusPartial": m33,
+    "po0StatusPartial": m39,
     "po0StatusWaiting": MessageLookupByLibrary.simpleMessage(
       "Ожидание первого запуска",
     ),
@@ -875,14 +964,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0TokensInvalid": MessageLookupByLibrary.simpleMessage(
       "Токен начинается с pgnfw_ и не содержит пробелов и разделителей",
     ),
-    "po0Usage": m34,
+    "po0Usage": m40,
     "po0Whitelist": MessageLookupByLibrary.simpleMessage("Белый список"),
     "po0WhitelistNow": MessageLookupByLibrary.simpleMessage("Добавить сейчас"),
     "port": MessageLookupByLibrary.simpleMessage("Порт"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Введите другой порт",
     ),
-    "portTip": m35,
+    "portTip": m41,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Предпочитать HTTP/3 для DoH",
     ),
@@ -917,7 +1006,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "project": MessageLookupByLibrary.simpleMessage("Проект"),
     "providers": MessageLookupByLibrary.simpleMessage("Внешние ресурсы"),
     "proxies": MessageLookupByLibrary.simpleMessage("Прокси"),
-    "proxiesCount": m36,
+    "proxiesCount": m42,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("Список прокси пуст"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
@@ -1154,7 +1243,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("Набор правил"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),
     "rules": MessageLookupByLibrary.simpleMessage("Правила"),
-    "rulesCount": m37,
+    "rulesCount": m43,
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
     "script": MessageLookupByLibrary.simpleMessage("Скрипт"),
@@ -1166,7 +1255,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Поиск"),
     "seconds": MessageLookupByLibrary.simpleMessage("секунд"),
-    "secondsCount": m38,
+    "secondsCount": m44,
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать всё"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "Выбрать MATCH-TARGET",
@@ -1185,7 +1274,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Выберите подправило",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m39,
+    "selectedCountTitle": m45,
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
     "showLess": MessageLookupByLibrary.simpleMessage("Свернуть"),
@@ -1316,7 +1405,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Получить профиль по URL"),
-    "urlTip": m40,
+    "urlTip": m46,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системный hosts",
@@ -1343,7 +1432,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage(
       "Режим белого списка",
     ),
-    "yearsAgo": m41,
+    "yearsAgo": m47,
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
   };
 }

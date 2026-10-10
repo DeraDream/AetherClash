@@ -81,11 +81,12 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
       var rules = await ref.read(coreHandlerProvider).getRules();
       final profileId = ref.read(currentProfileIdProvider);
       if (profileId != null) {
-        final disabledIds = (await database.rulesDao
-                .queryProfileDisabledRules(profileId)
-                .map((item) => item.id)
-                .get())
-            .toSet();
+        final disabledIds =
+            (await database.rulesDao
+                    .queryProfileDisabledRules(profileId)
+                    .map((item) => item.id)
+                    .get())
+                .toSet();
         var changed = false;
         for (final rule in rules) {
           final extra = rule.extra;
@@ -120,11 +121,7 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
 
   bool _matches(RuntimeRule rule, String query) {
     if (query.isEmpty) return true;
-    final value = [
-      rule.type,
-      rule.payload,
-      rule.proxy,
-    ].join(' ').toLowerCase();
+    final value = [rule.type, rule.payload, rule.proxy].join(' ').toLowerCase();
     return value.contains(query.toLowerCase());
   }
 
@@ -190,28 +187,28 @@ class _RoutingRulesViewState extends ConsumerState<RoutingRulesView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             child: TextField(
-                  controller: _searchController,
-                  onChanged: (_) => setState(() {}),
-                  inputFormatters: TextInputLimits.limit(TextInputLimits.search),
-                  decoration: InputDecoration(
-                    hintText: _text(
-                      context,
-                      '搜索规则、策略或规则类型',
-                      'Search rule, policy or type',
-                    ),
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: _searchController.text.isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: _text(context, '清除搜索', 'Clear search'),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {});
-                            },
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                  ),
+              controller: _searchController,
+              onChanged: (_) => setState(() {}),
+              inputFormatters: TextInputLimits.limit(TextInputLimits.search),
+              decoration: InputDecoration(
+                hintText: _text(
+                  context,
+                  '搜索规则、策略或规则类型',
+                  'Search rule, policy or type',
                 ),
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchController.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: _text(context, '清除搜索', 'Clear search'),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+              ),
+            ),
           ),
           Expanded(child: _buildBody(context, rules, query)),
         ],
@@ -309,9 +306,11 @@ class _RuntimeRuleItem extends StatelessWidget {
               children: [
                 Expanded(
                   child: Tooltip(
-                    message: [rule.type, rule.payload, rule.proxy]
-                        .where((item) => item.isNotEmpty)
-                        .join(','),
+                    message: [
+                      rule.type,
+                      rule.payload,
+                      rule.proxy,
+                    ].where((item) => item.isNotEmpty).join(','),
                     child: Text(
                       payload,
                       maxLines: 1,

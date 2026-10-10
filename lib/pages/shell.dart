@@ -408,10 +408,7 @@ class _SidebarItem extends ConsumerWidget {
 }
 
 class _SidebarFooter extends ConsumerWidget {
-  const _SidebarFooter({
-    required this.selected,
-    required this.onTap,
-  });
+  const _SidebarFooter({required this.selected, required this.onTap});
 
   final bool selected;
   final VoidCallback onTap;
@@ -466,11 +463,7 @@ class _SidebarFooter extends ConsumerWidget {
           onTap: onTap,
           child: Row(
             children: [
-              Icon(
-                Icons.public_rounded,
-                size: 14,
-                color: glass.secondaryLabel,
-              ),
+              Icon(Icons.public_rounded, size: 14, color: glass.secondaryLabel),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(

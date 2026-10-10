@@ -124,9 +124,7 @@ class _Segment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseColor = context.colorScheme.onSurface;
-    final color = selected
-        ? (selectedForegroundColor ?? baseColor)
-        : baseColor;
+    final color = selected ? (selectedForegroundColor ?? baseColor) : baseColor;
     final icon = this.icon;
     return Semantics(
       button: true,

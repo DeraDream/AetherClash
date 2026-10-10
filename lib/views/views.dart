@@ -11,6 +11,7 @@ export 'core.dart';
 export 'developer.dart';
 export 'logs.dart';
 export 'po0_firewall.dart';
+export 'mkcloud_firewall.dart';
 export 'profiles/profiles.dart';
 export 'proxies/proxies.dart';
 export 'resources.dart';

@@ -333,7 +333,6 @@ class UpdateGeoUrlFormDialog extends StatelessWidget {
   }
 }
 
-
 class _GeoDataModeItem extends ConsumerStatefulWidget {
   const _GeoDataModeItem();
 
@@ -387,10 +386,7 @@ class _GeoDataModeItemState extends ConsumerState<_GeoDataModeItem> {
             : 'DB uses MMDB; DAT uses geoip.dat',
       ),
       trailing: value == null
-          ? const SizedBox.square(
-              dimension: 24,
-              child: CommonCircleLoading(),
-            )
+          ? const SizedBox.square(dimension: 24, child: CommonCircleLoading())
           : SizedBox(
               width: 128,
               child: GlassSegmented<bool>(
@@ -576,10 +572,7 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
           messages.add(
             UpdatingMessage(
               label: provider.name,
-              message: userFacingErrorMessage(
-                error,
-                context.appLocalizations,
-              ),
+              message: userFacingErrorMessage(error, context.appLocalizations),
             ),
           );
         }
@@ -634,9 +627,7 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
           if (readOnly)
             IconButton(
               tooltip: _text(
-                format == 'mrs'
-                    ? 'MRS 已解析为文本，仅供查看'
-                    : '内联规则来自当前配置，仅供查看',
+                format == 'mrs' ? 'MRS 已解析为文本，仅供查看' : '内联规则来自当前配置，仅供查看',
                 format == 'mrs'
                     ? 'MRS is decoded to text and is read-only'
                     : 'Inline rules come from the current profile and are read-only',
@@ -691,9 +682,7 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
                 if (editorContext.mounted) {
                   editorContext.showNotifier(
                     _text(
-                      isRemote
-                          ? '已保存到本地缓存；下次远程更新会覆盖'
-                          : '规则集已保存',
+                      isRemote ? '已保存到本地缓存；下次远程更新会覆盖' : '规则集已保存',
                       isRemote
                           ? 'Saved to local cache; the next remote update will overwrite it'
                           : 'Rule-set saved',
@@ -774,7 +763,10 @@ class _RuleProvidersPanelState extends ConsumerState<_RuleProvidersPanel> {
             child: Center(
               child: Text(
                 _searchController.text.isEmpty
-                    ? _text('当前配置没有规则集合', 'No rule providers in the current profile')
+                    ? _text(
+                        '当前配置没有规则集合',
+                        'No rule providers in the current profile',
+                      )
                     : _text('没有匹配的规则集合', 'No matching rule providers'),
               ),
             ),

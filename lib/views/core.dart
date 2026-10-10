@@ -212,10 +212,14 @@ class CoreView extends ConsumerWidget {
                         const Divider(height: 0.5, indent: 58),
                         _CoreActionRow(
                           icon: Icons.code_rounded,
-                          title: Localizations.localeOf(context).languageCode == 'zh'
+                          title:
+                              Localizations.localeOf(context).languageCode ==
+                                  'zh'
                               ? '运行时配置'
                               : 'Runtime config',
-                          subtitle: Localizations.localeOf(context).languageCode == 'zh'
+                          subtitle:
+                              Localizations.localeOf(context).languageCode ==
+                                  'zh'
                               ? '查看最终送入 mihomo 的 YAML 配置'
                               : 'View the final YAML passed to mihomo',
                           onTap: () => BaseNavigator.push(
@@ -227,8 +231,7 @@ class CoreView extends ConsumerWidget {
                         _CoreActionRow(
                           icon: Icons.system_update_alt_rounded,
                           title: appLocalizations.checkUpdate,
-                          subtitle:
-                              '${appLocalizations.source}: $appName',
+                          subtitle: '${appLocalizations.source}: $appName',
                           onTap: () => _checkUpdate(context, ref),
                         ),
                       ],
@@ -287,10 +290,7 @@ class _CoreInfoRow extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 12),
-            trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
         ],
       ),
     );

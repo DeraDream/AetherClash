@@ -72,51 +72,63 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m20(count) =>
       "${Intl.plural(count, one: '1 minute ago', other: '${count} minutes ago')}";
 
-  static String m21(count) =>
+  static String m21(province) => "Current province: ${province}";
+
+  static String m22(used, limit) => "IP whitelist · ${used}/${limit}";
+
+  static String m23(time) => "Last run: ${time}";
+
+  static String m24(count) => "Check every ${count}s";
+
+  static String m25(min, max) => "Enter ${min}–${max} seconds";
+
+  static String m26(used, limit) => "Used ${used}/${limit}";
+
+  static String m27(count) =>
       "${Intl.plural(count, one: '1 month ago', other: '${count} months ago')}";
 
-  static String m22(label) => "No ${label} yet";
+  static String m28(label) => "No ${label} yet";
 
-  static String m23(label) => "${label} must be a number";
+  static String m29(label) => "${label} must be a number";
 
-  static String m24(ip) => "Exit ${ip}";
+  static String m30(ip) => "Exit ${ip}";
 
-  static String m25(time) => "Last run: ${time}";
+  static String m31(time) => "Last run: ${time}";
 
-  static String m26(time) => "Last ${time}";
+  static String m32(time) => "Last ${time}";
 
-  static String m27(count) => "Every ${count} s";
+  static String m33(count) => "Every ${count} s";
 
-  static String m28(min, max) => "Enter ${min}–${max} seconds";
+  static String m34(min, max) => "Enter ${min}–${max} seconds";
 
-  static String m29(ip) => "Exit ${ip} is whitelisted";
+  static String m35(ip) => "Exit ${ip} is whitelisted";
 
-  static String m30(message) => "Request failed: ${message}";
+  static String m36(message) => "Request failed: ${message}";
 
-  static String m31(ip) => "Exit ${ip} is not whitelisted";
+  static String m37(ip) => "Exit ${ip} is not whitelisted";
 
-  static String m32(message) => "Rejected: ${message}";
+  static String m38(message) => "Rejected: ${message}";
 
-  static String m33(ok, total) => "${ok}/${total} whitelisted";
+  static String m39(ok, total) => "${ok}/${total} whitelisted";
 
-  static String m34(used, limit) => "${used}/${limit} used";
+  static String m40(used, limit) => "${used}/${limit} used";
 
-  static String m35(label) => "${label} must be between 1024 and 49151";
+  static String m41(label) => "${label} must be between 1024 and 49151";
 
-  static String m36(count) =>
+  static String m42(count) =>
       "${Intl.plural(count, one: '1 proxy', other: '${count} proxies')}";
 
-  static String m37(count) =>
+  static String m43(count) =>
       "${Intl.plural(count, one: '1 rule', other: '${count} rules')}";
 
-  static String m38(count) =>
+  static String m44(count) =>
       "${Intl.plural(count, one: '1 second', other: '${count} seconds')}";
 
-  static String m39(count) => "${count} selected";
+  static String m45(count) => "${count} selected";
 
-  static String m40(label) => "${label} must be a URL";
+  static String m46(label) => "${label} must be a URL";
 
-  static String m41(count) =>
+  static String m47(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -682,9 +694,86 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "minutesAgo": m20,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Mixed port"),
+    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("Add IP whitelist"),
+    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API Key"),
+    "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage(
+      "Auto whitelist",
+    ),
+    "mkcloudAutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
+      "Maintain the active whitelist mode at the selected interval",
+    ),
+    "mkcloudCurrentProvince": m21,
+    "mkcloudDirectTip": MessageLookupByLibrary.simpleMessage(
+      "Whitelist requests directly connect to MKCloud and the IP lookup service. Direct rules and TUN route exclusions are applied automatically so a global proxy cannot whitelist its own exit.",
+    ),
+    "mkcloudFirewall": MessageLookupByLibrary.simpleMessage(
+      "MKCloud whitelist",
+    ),
+    "mkcloudFirewallDesc": MessageLookupByLibrary.simpleMessage(
+      "Maintain MKCloud whitelists",
+    ),
+    "mkcloudInvalidIp": MessageLookupByLibrary.simpleMessage(
+      "Enter a valid IPv4 address",
+    ),
+    "mkcloudIpActive": MessageLookupByLibrary.simpleMessage(
+      "IP whitelist mode · active",
+    ),
+    "mkcloudIpHint": MessageLookupByLibrary.simpleMessage(
+      "For example, 203.0.113.1",
+    ),
+    "mkcloudIpRule": m22,
+    "mkcloudKeyConfigured": MessageLookupByLibrary.simpleMessage(
+      "Configured, tap to change",
+    ),
+    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("Not configured"),
+    "mkcloudLastRun": m23,
+    "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage(
+      "Legacy entry; date unknown",
+    ),
+    "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud whitelist"),
+    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("Not run yet"),
+    "mkcloudPollEvery": m24,
+    "mkcloudPollInterval": MessageLookupByLibrary.simpleMessage(
+      "Refresh interval",
+    ),
+    "mkcloudPollIntervalRange": m25,
+    "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage(
+      "Province mode · active",
+    ),
+    "mkcloudProvinceHint": MessageLookupByLibrary.simpleMessage(
+      "Setting a province switches to province mode; existing IP rules no longer apply.",
+    ),
+    "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage(
+      "Province rule",
+    ),
+    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("Query status"),
+    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("Running…"),
+    "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage(
+      "Select province",
+    ),
+    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("Whitelist now"),
+    "mkcloudStatusNoKey": MessageLookupByLibrary.simpleMessage(
+      "Add an API key to start",
+    ),
+    "mkcloudStatusOff": MessageLookupByLibrary.simpleMessage(
+      "Auto whitelist is off",
+    ),
+    "mkcloudStatusWaiting": MessageLookupByLibrary.simpleMessage(
+      "Waiting for status",
+    ),
+    "mkcloudSwitchIp": MessageLookupByLibrary.simpleMessage(
+      "Switch to IP whitelist",
+    ),
+    "mkcloudSwitchProvince": MessageLookupByLibrary.simpleMessage(
+      "Switch to province mode",
+    ),
+    "mkcloudUsage": m26,
+    "mkcloudWhitelistNow": MessageLookupByLibrary.simpleMessage(
+      "Whitelist now",
+    ),
     "mode": MessageLookupByLibrary.simpleMessage("Mode"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("Monochrome"),
-    "monthsAgo": m21,
+    "monthsAgo": m27,
     "more": MessageLookupByLibrary.simpleMessage("More"),
     "multipleValuesTip": MessageLookupByLibrary.simpleMessage(
       "Separate multiple values with commas",
@@ -738,8 +827,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage(
       "No profiles yet, please add one first",
     ),
-    "nullTip": m22,
-    "numberTip": m23,
+    "nullTip": m28,
+    "numberTip": m29,
     "onDemand": MessageLookupByLibrary.simpleMessage("On demand"),
     "onDemandDesc": MessageLookupByLibrary.simpleMessage(
       "Configure the app\'s running state for specific scenarios",
@@ -798,28 +887,28 @@ class MessageLookup extends MessageLookupByLibrary {
       "Requests go straight to 124.221.69.228. While enabled, AetherClash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy\'s. On Android, restart the VPN once after enabling.",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("Edit token"),
-    "po0Exit": m24,
+    "po0Exit": m30,
     "po0Firewall": MessageLookupByLibrary.simpleMessage(
       "po0 firewall whitelist",
     ),
     "po0FirewallDesc": MessageLookupByLibrary.simpleMessage(
       "Keep this network\'s exit IP on the po0 firewall whitelist",
     ),
-    "po0LastRun": m25,
-    "po0LastShort": m26,
+    "po0LastRun": m31,
+    "po0LastShort": m32,
     "po0Nav": MessageLookupByLibrary.simpleMessage("po0"),
     "po0NeverRun": MessageLookupByLibrary.simpleMessage("Not run yet"),
-    "po0PollEvery": m27,
+    "po0PollEvery": m33,
     "po0PollInterval": MessageLookupByLibrary.simpleMessage("Refresh interval"),
-    "po0PollIntervalRange": m28,
+    "po0PollIntervalRange": m34,
     "po0QueryStatus": MessageLookupByLibrary.simpleMessage("Check status"),
-    "po0ResultApplied": m29,
+    "po0ResultApplied": m35,
     "po0ResultDisabled": MessageLookupByLibrary.simpleMessage(
       "The firewall is not enabled for this server",
     ),
-    "po0ResultError": m30,
-    "po0ResultNotApplied": m31,
-    "po0ResultRejected": m32,
+    "po0ResultError": m36,
+    "po0ResultNotApplied": m37,
+    "po0ResultRejected": m38,
     "po0Running": MessageLookupByLibrary.simpleMessage("Running…"),
     "po0StatusApplied": MessageLookupByLibrary.simpleMessage(
       "Exit whitelisted",
@@ -830,7 +919,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0StatusOff": MessageLookupByLibrary.simpleMessage(
       "Auto whitelist is off",
     ),
-    "po0StatusPartial": m33,
+    "po0StatusPartial": m39,
     "po0StatusWaiting": MessageLookupByLibrary.simpleMessage(
       "Waiting for the first run",
     ),
@@ -847,14 +936,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0TokensInvalid": MessageLookupByLibrary.simpleMessage(
       "A token starts with pgnfw_ and has no spaces or separators",
     ),
-    "po0Usage": m34,
+    "po0Usage": m40,
     "po0Whitelist": MessageLookupByLibrary.simpleMessage("Whitelist"),
     "po0WhitelistNow": MessageLookupByLibrary.simpleMessage("Whitelist now"),
     "port": MessageLookupByLibrary.simpleMessage("Port"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Please enter a different port",
     ),
-    "portTip": m35,
+    "portTip": m41,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Prefer HTTP/3 for DoH",
     ),
@@ -887,7 +976,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "project": MessageLookupByLibrary.simpleMessage("Project"),
     "providers": MessageLookupByLibrary.simpleMessage("External resources"),
     "proxies": MessageLookupByLibrary.simpleMessage("Proxies"),
-    "proxiesCount": m36,
+    "proxiesCount": m42,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("Proxies are empty"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("Proxy chain"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
@@ -1110,7 +1199,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("Rule set"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Rule target"),
     "rules": MessageLookupByLibrary.simpleMessage("Rules"),
-    "rulesCount": m37,
+    "rulesCount": m43,
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Save the changes?"),
     "script": MessageLookupByLibrary.simpleMessage("Script"),
@@ -1122,7 +1211,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Search"),
     "seconds": MessageLookupByLibrary.simpleMessage("seconds"),
-    "secondsCount": m38,
+    "secondsCount": m44,
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "Select MATCH-TARGET",
@@ -1141,7 +1230,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please select a sub-rule",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m39,
+    "selectedCountTitle": m45,
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "show": MessageLookupByLibrary.simpleMessage("Show"),
     "showLess": MessageLookupByLibrary.simpleMessage("Collapse"),
@@ -1262,7 +1351,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Obtain a profile from a URL",
     ),
-    "urlTip": m40,
+    "urlTip": m46,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("Used traffic"),
@@ -1283,7 +1372,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "WebDAV configuration",
     ),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
-    "yearsAgo": m41,
+    "yearsAgo": m47,
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
   };
 }

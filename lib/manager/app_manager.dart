@@ -58,6 +58,7 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
     ref.listenManual(initProvider, (prev, next) {
       if (next) {
         ref.read(po0FirewallProvider.notifier).start();
+        ref.read(mkcloudFirewallProvider.notifier).start();
       }
     }, fireImmediately: true);
     po0Screen?.listen(ref.read(po0FirewallProvider.notifier).setScreenOn);

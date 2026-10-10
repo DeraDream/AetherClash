@@ -176,14 +176,21 @@ SharedState sharedState(Ref ref) {
   final po0FirewallEnable = ref.watch(
     po0FirewallSettingProvider.select((state) => state.enable),
   );
-  final routeAddress = po0FirewallEnable
-      ? excludeIpv4Route(
-          clashConfig.routeAddress.isEmpty
-              ? const ['0.0.0.0/0']
-              : clashConfig.routeAddress,
-          po0FirewallDirectCidr,
-        )
-      : clashConfig.routeAddress;
+  final mkcloudDirectCidrs = ref.watch(
+    mkcloudFirewallSettingProvider.select(
+      (state) => state.apiKey.isNotEmpty ? state.directCidrs : const <String>[],
+    ),
+  );
+  final routeAddress =
+      [
+        if (po0FirewallEnable) po0FirewallDirectCidr,
+        ...mkcloudDirectCidrs,
+      ].fold<List<String>>(
+        clashConfig.routeAddress.isEmpty
+            ? const ['0.0.0.0/0']
+            : clashConfig.routeAddress,
+        (routes, cidr) => excludeIpv4Route(routes, cidr),
+      );
   final currentProfileName = currentProfile.label;
   final selectedMap = currentProfile.selectedMap;
   final onlyStatisticsProxy = appSetting.onlyStatisticsProxy;

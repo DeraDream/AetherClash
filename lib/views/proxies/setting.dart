@@ -40,10 +40,7 @@ class ProxiesSettingsSidePanel extends StatelessWidget {
               ],
             ),
           ),
-          Divider(
-            height: 1,
-            color: glass.separator.withValues(alpha: 0.7),
-          ),
+          Divider(height: 1, color: glass.separator.withValues(alpha: 0.7)),
           const Expanded(child: ProxiesSetting()),
         ],
       ),
@@ -281,9 +278,7 @@ class _SegmentedSetting<T> extends StatelessWidget {
       decoration: BoxDecoration(
         color: glass.fill.withValues(alpha: glass.isDark ? 0.72 : 0.82),
         borderRadius: AppRadius.all(10),
-        border: Border.all(
-          color: glass.separator.withValues(alpha: 0.55),
-        ),
+        border: Border.all(color: glass.separator.withValues(alpha: 0.55)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(3),
@@ -365,9 +360,7 @@ class _SegmentedSettingItem extends StatelessWidget {
                 Icon(
                   icon,
                   size: 17,
-                  color: selected
-                      ? colorScheme.primary
-                      : glass.secondaryLabel,
+                  color: selected ? colorScheme.primary : glass.secondaryLabel,
                 ),
                 const SizedBox(width: 6),
               ],

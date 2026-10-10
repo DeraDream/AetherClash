@@ -322,6 +322,7 @@ enum PageLabel {
   rules,
   connections,
   po0,
+  mkcloud,
   core,
   activity,
 }

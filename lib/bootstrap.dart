@@ -92,7 +92,9 @@ class Bootstrap {
   ) async {
     globalState.packageInfo = await PackageInfo.fromPlatform();
     var config = await migration.run();
-    _updateRecoveryState = system.isDesktop ? await updateRecovery.take() : null;
+    _updateRecoveryState = system.isDesktop
+        ? await updateRecovery.take()
+        : null;
     final recoveryState = _updateRecoveryState;
     if (recoveryState != null) {
       config = applyUpdateRecoveryState(config, recoveryState);
@@ -233,7 +235,6 @@ class Bootstrap {
     // Saving here would rewrite the preferences file the user just chose to delete.
     await _container.read(systemActionProvider.notifier).handleExit(false);
   }
-
 }
 
 final bootstrap = Bootstrap();

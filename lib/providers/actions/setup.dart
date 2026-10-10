@@ -336,6 +336,12 @@ class SetupAction extends _$SetupAction {
     final po0FirewallEnable = ref.read(
       po0FirewallSettingProvider.select((state) => state.enable),
     );
+    final mkcloudDirectCidrs = ref.read(
+      mkcloudFirewallSettingProvider.select(
+        (state) =>
+            state.apiKey.isNotEmpty ? state.directCidrs : const <String>[],
+      ),
+    );
     final appendSystemDns = networkSetting.appendSystemDns;
     final routeMode = networkSetting.routeMode;
     final configMap = await _core.getConfig(profileId);
@@ -363,10 +369,7 @@ class SetupAction extends _$SetupAction {
       'geodata-mode': await preferences.getGeoDataMode(),
     };
     final snifferConfig = await preferences.getSnifferConfig();
-    rawConfig = {
-      ...rawConfig,
-      'sniffer': snifferConfig.toRawConfig(),
-    };
+    rawConfig = {...rawConfig, 'sniffer': snifferConfig.toRawConfig()};
     final directory = await appPath.profilesPath;
     final res = makeRealProfileTask(
       MakeRealProfileState(
@@ -382,7 +385,10 @@ class SetupAction extends _$SetupAction {
         defaultUA: defaultUA,
         authentication: networkSetting.authentication.credentials,
         matchTarget: setupState.matchTarget,
-        directCidrs: po0FirewallEnable ? const [po0FirewallDirectCidr] : [],
+        directCidrs: [
+          if (po0FirewallEnable) po0FirewallDirectCidr,
+          ...mkcloudDirectCidrs,
+        ],
       ),
     );
     return res;
@@ -494,11 +500,12 @@ class SetupAction extends _$SetupAction {
   }
 
   Future<void> _applyRulePageOverrides(int profileId) async {
-    final disabledIds = (await database.rulesDao
-            .queryProfileDisabledRules(profileId)
-            .map((item) => item.id)
-            .get())
-        .toSet();
+    final disabledIds =
+        (await database.rulesDao
+                .queryProfileDisabledRules(profileId)
+                .map((item) => item.id)
+                .get())
+            .toSet();
     if (disabledIds.isEmpty) return;
     final rules = await _core.getRules();
     for (final rule in rules) {

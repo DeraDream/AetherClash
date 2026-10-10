@@ -43,10 +43,7 @@ class _SnifferViewState extends ConsumerState<SnifferView> {
       'HTTP',
       () => const SnifferConfig(ports: ['80', '8080-8880']),
     );
-    sniff.putIfAbsent(
-      'TLS',
-      () => const SnifferConfig(ports: ['443', '8443']),
-    );
+    sniff.putIfAbsent('TLS', () => const SnifferConfig(ports: ['443', '8443']));
     sniff.putIfAbsent(
       'QUIC',
       () => const SnifferConfig(ports: ['443', '8443']),
@@ -225,17 +222,15 @@ class _SnifferViewState extends ConsumerState<SnifferView> {
                 title: _text(context, '跳过来源地址', 'Skip source addresses'),
                 subtitle: _text(context, '支持 IP / CIDR', 'IP / CIDR supported'),
                 values: _config.skipSrcAddress,
-                onChanged: (values) => unawaited(
-                  _save(_config.copyWith(skipSrcAddress: values)),
-                ),
+                onChanged: (values) =>
+                    unawaited(_save(_config.copyWith(skipSrcAddress: values))),
               ),
               _listSetting(
                 title: _text(context, '跳过目标地址', 'Skip destination addresses'),
                 subtitle: _text(context, '支持 IP / CIDR', 'IP / CIDR supported'),
                 values: _config.skipDstAddress,
-                onChanged: (values) => unawaited(
-                  _save(_config.copyWith(skipDstAddress: values)),
-                ),
+                onChanged: (values) =>
+                    unawaited(_save(_config.copyWith(skipDstAddress: values))),
               ),
             ],
           ),

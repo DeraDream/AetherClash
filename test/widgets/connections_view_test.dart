@@ -90,9 +90,7 @@ void main() {
       matching: find.byType(Scrollable),
     );
     expect(verticalScrollable, findsOneWidget);
-    final position = tester
-        .state<ScrollableState>(verticalScrollable)
-        .position;
+    final position = tester.state<ScrollableState>(verticalScrollable).position;
     position.jumpTo(position.maxScrollExtent);
     await tester.pumpAndSettle();
 

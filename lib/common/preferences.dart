@@ -164,12 +164,13 @@ class Preferences {
       }
       return decoded
           .whereType<Map>()
-          .map((item) => Map<String, String>.from(
-                item.map((key, value) => MapEntry(
-                      key.toString(),
-                      value.toString(),
-                    )),
-              ))
+          .map(
+            (item) => Map<String, String>.from(
+              item.map(
+                (key, value) => MapEntry(key.toString(), value.toString()),
+              ),
+            ),
+          )
           .toList(growable: false);
     } catch (e) {
       commonPrint.log(

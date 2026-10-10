@@ -68,9 +68,7 @@ DesktopUpdateAsset? findDesktopUpdateAsset(
     }
     final name = rawAsset['name'];
     final downloadUrl = rawAsset['browser_download_url'];
-    if (name is! String ||
-        downloadUrl is! String ||
-        !name.endsWith(suffix)) {
+    if (name is! String || downloadUrl is! String || !name.endsWith(suffix)) {
       continue;
     }
     final uri = Uri.tryParse(downloadUrl);
@@ -162,10 +160,7 @@ final class DesktopUpdater {
         ),
       );
       if (Platform.isWindows) {
-        await _launchWindowsUpdater(
-          package,
-          launchElevated: launchElevated,
-        );
+        await _launchWindowsUpdater(package, launchElevated: launchElevated);
       } else {
         await _launchMacOSUpdater(package);
       }
@@ -326,10 +321,7 @@ exit 0
     }
   }
 
-  Future<bool> _waitForFile(
-    File file, {
-    required Duration timeout,
-  }) async {
+  Future<bool> _waitForFile(File file, {required Duration timeout}) async {
     final stopwatch = Stopwatch()..start();
     while (stopwatch.elapsed < timeout) {
       if (await file.exists()) {
@@ -358,11 +350,9 @@ exit 0
         updateDirectoryPath: updateDirectory.path,
       ),
     );
-    await Process.start(
-      '/bin/bash',
-      [script.path],
-      mode: ProcessStartMode.detached,
-    );
+    await Process.start('/bin/bash', [
+      script.path,
+    ], mode: ProcessStartMode.detached);
   }
 }
 
@@ -371,7 +361,8 @@ String createMacOSUpdateScript({
   required String dmgPath,
   required String targetBundlePath,
   required String updateDirectoryPath,
-}) => '''
+}) =>
+    '''
 #!/bin/bash
 set -euo pipefail
 app_pid=$appProcessId

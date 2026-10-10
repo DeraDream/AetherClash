@@ -45,7 +45,9 @@ mixin CoreInterface {
 
   Future<ExternalProvider?> getExternalProvider(String externalProviderName);
 
-  Future<ExternalProviderContent> getExternalProviderContent(String externalProviderName);
+  Future<ExternalProviderContent> getExternalProviderContent(
+    String externalProviderName,
+  );
 
   Future<String> updateGeoData(String type);
 
@@ -272,9 +274,7 @@ abstract class CoreHandlerInterface with CoreInterface {
         message: 'Core returned empty provider content',
       );
     }
-    return ExternalProviderContent.fromJson(
-      Map<String, Object?>.from(data),
-    );
+    return ExternalProviderContent.fromJson(Map<String, Object?>.from(data));
   }
 
   @override
@@ -318,13 +318,13 @@ abstract class CoreHandlerInterface with CoreInterface {
 
   @override
   Future<List<RuntimeRule>> getRules() async {
-    final data = await _invokeMethod<List<dynamic>>(method: CoreMethod.getRules);
+    final data = await _invokeMethod<List<dynamic>>(
+      method: CoreMethod.getRules,
+    );
     return data
             ?.whereType<Map>()
             .map(
-              (item) => RuntimeRule.fromJson(
-                Map<String, Object?>.from(item),
-              ),
+              (item) => RuntimeRule.fromJson(Map<String, Object?>.from(item)),
             )
             .toList() ??
         const [];

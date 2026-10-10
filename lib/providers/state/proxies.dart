@@ -18,8 +18,7 @@ GroupsState currentGroupsState(Ref ref) {
   return GroupsState(
     value: switch (mode) {
       Mode.direct => [],
-      Mode.global =>
-        groups.where((item) => item.hidden != true).toList(),
+      Mode.global => groups.where((item) => item.hidden != true).toList(),
       Mode.rule =>
         groups
             .where((item) => item.hidden == false)

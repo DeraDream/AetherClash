@@ -274,10 +274,7 @@ void main() {
         parsePureIp: true,
         sniff: {
           'HTTP': SnifferConfig(ports: ['80', '8080-8880']),
-          'TLS': SnifferConfig(
-            ports: ['443', '8443'],
-            overrideDest: true,
-          ),
+          'TLS': SnifferConfig(ports: ['443', '8443'], overrideDest: true),
         },
       );
 

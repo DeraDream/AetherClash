@@ -386,9 +386,7 @@ void main() {
     final proxyGroups = config['proxy-groups'] as YamlList;
     expect(proxyGroups, hasLength(2));
     expect(
-      proxyGroups.where(
-        (item) => item is YamlMap && item['name'] == 'Select',
-      ),
+      proxyGroups.where((item) => item is YamlMap && item['name'] == 'Select'),
       hasLength(1),
     );
     expect(

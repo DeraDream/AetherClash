@@ -666,5 +666,9 @@
   "currentProxy": "当前节点",
   "appearance": "外观",
   "networkAndCore": "网络与内核",
-  "tunAuthorizationFallbackTip": "虚拟网卡未获得授权，已自动改用系统代理。再次开启虚拟网卡会重新请求授权。"
+  "tunAuthorizationFallbackTip": "虚拟网卡未获得授权，已自动改用系统代理。再次开启虚拟网卡会重新请求授权。",
+  "mkcloudFirewall": "MKCloud 加白", "mkcloudFirewallDesc": "维护 MKCloud 省白或 IP 白名单", "mkcloudNav": "MKCloud 加白",
+  "mkcloudIpActive": "IP 白名单模式 · 已生效", "mkcloudProvinceActive": "省白模式 · 已生效", "mkcloudStatusOff": "自动加白未开启", "mkcloudStatusNoKey": "添加 API Key 后开始加白", "mkcloudStatusWaiting": "等待查询状态", "mkcloudRunning": "执行中…",
+  "mkcloudCurrentProvince": "当前省份：{province}", "mkcloudUsage": "已占用 {used}/{limit}", "mkcloudNeverRun": "尚未执行", "mkcloudLastRun": "上次执行：{time}", "mkcloudPollEvery": "每 {count} 秒检查", "mkcloudQueryStatus": "查询状态", "mkcloudSwitchProvince": "切换为省白模式", "mkcloudSwitchIp": "切换为 IP 白名单", "mkcloudWhitelistNow": "立即加白",
+  "mkcloudAutoWhitelist": "自动加白", "mkcloudAutoWhitelistDesc": "开启后按刷新间隔维护当前生效的白名单模式", "mkcloudPollInterval": "刷新间隔", "mkcloudPollIntervalRange": "请输入 {min}～{max} 秒", "mkcloudApiKey": "API Key", "mkcloudKeyEmpty": "尚未配置", "mkcloudKeyConfigured": "已配置，点击更换", "mkcloudProvinceRule": "省白规则", "mkcloudProvinceHint": "设置省份后将切换为省白模式；已有 IP 白名单将不再生效。", "mkcloudIpRule": "IP 白名单 · {used}/{limit}", "mkcloudAddIp": "添加 IP 白名单", "mkcloudIpHint": "例如 203.0.113.1", "mkcloudInvalidIp": "请输入有效的 IPv4 地址", "mkcloudLegacyEntry": "历史记录，时间未知", "mkcloudDirectTip": "加白请求会直连 MKCloud 与出口 IP 查询服务，并自动写入直连规则及 TUN 排除路由，以避免全局代理时把代理出口加入白名单。", "mkcloudSelectProvince": "选择省份", "mkcloudSetProvince": "立即加白"
 }

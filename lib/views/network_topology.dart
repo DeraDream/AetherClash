@@ -73,8 +73,8 @@ class _NetworkTopologyViewState extends ConsumerState<NetworkTopologyView> {
   bool _isExpanded(_TopologyNode node) {
     if (!node.hasChildren) return false;
     return switch (node.type) {
-      _TopologyNodeType.rule || _TopologyNodeType.client =>
-        _expandedDetailNodes.contains(node.id),
+      _TopologyNodeType.rule ||
+      _TopologyNodeType.client => _expandedDetailNodes.contains(node.id),
       _ => !_collapsedSummaryNodes.contains(node.id),
     };
   }
@@ -487,7 +487,9 @@ class _TopologyCanvas extends StatelessWidget {
           viewportWidth: constraints.maxWidth,
           isExpanded: isExpanded,
         );
-        final viewportHeight = layout.size.height.clamp(300.0, 460.0).toDouble();
+        final viewportHeight = layout.size.height
+            .clamp(300.0, 460.0)
+            .toDouble();
         return Container(
           height: viewportHeight,
           decoration: BoxDecoration(
@@ -569,7 +571,9 @@ class _TopologyLayout {
     var nextY = paddingY + nodeBoxHeight / 2;
 
     double visit(_TopologyNode node, int depth) {
-      final visibleChildren = isExpanded(node) ? node.children : const <_TopologyNode>[];
+      final visibleChildren = isExpanded(node)
+          ? node.children
+          : const <_TopologyNode>[];
       double y;
       if (visibleChildren.isEmpty) {
         y = nextY;
@@ -583,12 +587,7 @@ class _TopologyLayout {
         y = (childYs.first + childYs.last) / 2;
       }
       entries.add(
-        _RawLayoutNode(
-          node: node,
-          depth: depth,
-          y: y,
-          width: _nodeWidth(node),
-        ),
+        _RawLayoutNode(node: node, depth: depth, y: y, width: _nodeWidth(node)),
       );
       return y;
     }
@@ -725,10 +724,7 @@ class _TopologyEdge {
 }
 
 class _TopologyLinkPainter extends CustomPainter {
-  const _TopologyLinkPainter({
-    required this.edges,
-    required this.lineColor,
-  });
+  const _TopologyLinkPainter({required this.edges, required this.lineColor});
 
   final List<_TopologyEdge> edges;
   final Color lineColor;
@@ -808,9 +804,7 @@ class _TopologyNodeWidget extends StatelessWidget {
                   height: _TopologyLayout.nodeHeight,
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
-                    color: color.withValues(
-                      alpha: glass.isDark ? 0.15 : 0.10,
-                    ),
+                    color: color.withValues(alpha: glass.isDark ? 0.15 : 0.10),
                     borderRadius: AppRadius.all(6),
                     border: Border.all(color: color, width: 1.5),
                   ),

@@ -41,10 +41,15 @@ class Navigation implements NavigationPort {
             const Po0FirewallView(key: GlobalObjectKey(PageLabel.po0)),
       ),
       NavigationItem(
+        icon: const Icon(Icons.shield_outlined),
+        label: PageLabel.mkcloud,
+        builder: (_) =>
+            const MkcloudFirewallView(key: GlobalObjectKey(PageLabel.mkcloud)),
+      ),
+      NavigationItem(
         icon: const Icon(Icons.memory_rounded),
         label: PageLabel.core,
-        builder: (_) =>
-            const CoreView(key: GlobalObjectKey(PageLabel.core)),
+        builder: (_) => const CoreView(key: GlobalObjectKey(PageLabel.core)),
         modes: const [NavigationItemMode.laptop, NavigationItemMode.desktop],
       ),
       NavigationItem(

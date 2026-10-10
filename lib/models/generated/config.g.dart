@@ -361,6 +361,11 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
       : Po0FirewallProps.safeFromJson(
           json['po0FirewallProps'] as Map<String, Object?>?,
         ),
+  mkcloudFirewallProps: json['mkcloudFirewallProps'] == null
+      ? defaultMkcloudFirewallProps
+      : MkcloudFirewallProps.safeFromJson(
+          json['mkcloudFirewallProps'] as Map<String, Object?>?,
+        ),
 );
 
 Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
@@ -377,4 +382,5 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'patchClashConfig': instance.patchClashConfig,
   'excludeSSIDs': instance.excludeSSIDs,
   'po0FirewallProps': instance.po0FirewallProps,
+  'mkcloudFirewallProps': instance.mkcloudFirewallProps,
 };

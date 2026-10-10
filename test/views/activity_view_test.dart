@@ -57,7 +57,8 @@ void main() {
         matching: find.byType(GlassSegmented<PageLabel>),
       ),
       findsNothing,
-      reason: 'a single Connections page must not render a segmented title pill',
+      reason:
+          'a single Connections page must not render a segmented title pill',
     );
     expect(find.byType(ConnectionsView), findsOneWidget);
     expect(find.text('Logs'), findsNothing);

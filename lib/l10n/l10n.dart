@@ -3700,30 +3700,30 @@ class AppLocalizations {
     );
   }
 
-  /// `Helper service unavailable; TUN mode cannot be enabled. Reinstall po0-clash to restore it.`
+  /// `Helper service unavailable; TUN mode cannot be enabled. Reinstall AetherClash to restore it.`
   String get helperCorruptTip {
     return Intl.message(
-      'Helper service unavailable; TUN mode cannot be enabled. Reinstall po0-clash to restore it.',
+      'Helper service unavailable; TUN mode cannot be enabled. Reinstall AetherClash to restore it.',
       name: 'helperCorruptTip',
       desc: '',
       args: [],
     );
   }
 
-  /// `Windows refused to run Po0ClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow po0-clash in that policy or turn it off, then try again.`
+  /// `Windows refused to run Po0ClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow AetherClash in that policy or turn it off, then try again.`
   String coreBlockedByPolicyTip(Object code) {
     return Intl.message(
-      'Windows refused to run Po0ClashCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow po0-clash in that policy or turn it off, then try again.',
+      'Windows refused to run Po0ClashCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow AetherClash in that policy or turn it off, then try again.',
       name: 'coreBlockedByPolicyTip',
       desc: '',
       args: [code],
     );
   }
 
-  /// `Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start po0-clash again. Smart App Control cannot be turned back on without reinstalling Windows.`
+  /// `Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start AetherClash again. Smart App Control cannot be turned back on without reinstalling Windows.`
   String get coreBlockedBySmartAppControlTip {
     return Intl.message(
-      'Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start po0-clash again. Smart App Control cannot be turned back on without reinstalling Windows.',
+      'Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start AetherClash again. Smart App Control cannot be turned back on without reinstalling Windows.',
       name: 'coreBlockedBySmartAppControlTip',
       desc: '',
       args: [],
@@ -5105,10 +5105,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Checks the whitelist at the refresh interval while po0-clash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on`
+  /// `Checks the whitelist at the refresh interval while AetherClash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on`
   String get po0AutoWhitelistDesc {
     return Intl.message(
-      'Checks the whitelist at the refresh interval while po0-clash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on',
+      'Checks the whitelist at the refresh interval while AetherClash is open, whether or not the proxy is running, and adds the exit as soon as it drops off. Android checks only while the screen is on',
       name: 'po0AutoWhitelistDesc',
       desc: '',
       args: [],
@@ -5240,10 +5240,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Requests go straight to 124.221.69.228. While enabled, po0-clash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy's. On Android, restart the VPN once after enabling.`
+  /// `Requests go straight to 124.221.69.228. While enabled, AetherClash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy's. On Android, restart the VPN once after enabling.`
   String get po0DirectTip {
     return Intl.message(
-      'Requests go straight to 124.221.69.228. While enabled, po0-clash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy\'s. On Android, restart the VPN once after enabling.',
+      'Requests go straight to 124.221.69.228. While enabled, AetherClash routes that address DIRECT and keeps it out of TUN, so the real exit is whitelisted instead of the proxy\'s. On Android, restart the VPN once after enabling.',
       name: 'po0DirectTip',
       desc: '',
       args: [],
@@ -5525,11 +5525,351 @@ class AppLocalizations {
     );
   }
 
-  /// `TUN was not authorized, so po0-clash switched to the system proxy. Turn TUN on again to retry the authorization.`
+  /// `TUN was not authorized, so AetherClash switched to the system proxy. Turn TUN on again to retry the authorization.`
   String get tunAuthorizationFallbackTip {
     return Intl.message(
-      'TUN was not authorized, so po0-clash switched to the system proxy. Turn TUN on again to retry the authorization.',
+      'TUN was not authorized, so AetherClash switched to the system proxy. Turn TUN on again to retry the authorization.',
       name: 'tunAuthorizationFallbackTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `MKCloud whitelist`
+  String get mkcloudFirewall {
+    return Intl.message(
+      'MKCloud whitelist',
+      name: 'mkcloudFirewall',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maintain MKCloud whitelists`
+  String get mkcloudFirewallDesc {
+    return Intl.message(
+      'Maintain MKCloud whitelists',
+      name: 'mkcloudFirewallDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `MKCloud whitelist`
+  String get mkcloudNav {
+    return Intl.message(
+      'MKCloud whitelist',
+      name: 'mkcloudNav',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IP whitelist mode · active`
+  String get mkcloudIpActive {
+    return Intl.message(
+      'IP whitelist mode · active',
+      name: 'mkcloudIpActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Province mode · active`
+  String get mkcloudProvinceActive {
+    return Intl.message(
+      'Province mode · active',
+      name: 'mkcloudProvinceActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto whitelist is off`
+  String get mkcloudStatusOff {
+    return Intl.message(
+      'Auto whitelist is off',
+      name: 'mkcloudStatusOff',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add an API key to start`
+  String get mkcloudStatusNoKey {
+    return Intl.message(
+      'Add an API key to start',
+      name: 'mkcloudStatusNoKey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting for status`
+  String get mkcloudStatusWaiting {
+    return Intl.message(
+      'Waiting for status',
+      name: 'mkcloudStatusWaiting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Running…`
+  String get mkcloudRunning {
+    return Intl.message('Running…', name: 'mkcloudRunning', desc: '', args: []);
+  }
+
+  /// `Current province: {province}`
+  String mkcloudCurrentProvince(Object province) {
+    return Intl.message(
+      'Current province: $province',
+      name: 'mkcloudCurrentProvince',
+      desc: '',
+      args: [province],
+    );
+  }
+
+  /// `Used {used}/{limit}`
+  String mkcloudUsage(Object used, Object limit) {
+    return Intl.message(
+      'Used $used/$limit',
+      name: 'mkcloudUsage',
+      desc: '',
+      args: [used, limit],
+    );
+  }
+
+  /// `Not run yet`
+  String get mkcloudNeverRun {
+    return Intl.message(
+      'Not run yet',
+      name: 'mkcloudNeverRun',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last run: {time}`
+  String mkcloudLastRun(Object time) {
+    return Intl.message(
+      'Last run: $time',
+      name: 'mkcloudLastRun',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Check every {count}s`
+  String mkcloudPollEvery(Object count) {
+    return Intl.message(
+      'Check every ${count}s',
+      name: 'mkcloudPollEvery',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Query status`
+  String get mkcloudQueryStatus {
+    return Intl.message(
+      'Query status',
+      name: 'mkcloudQueryStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch to province mode`
+  String get mkcloudSwitchProvince {
+    return Intl.message(
+      'Switch to province mode',
+      name: 'mkcloudSwitchProvince',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch to IP whitelist`
+  String get mkcloudSwitchIp {
+    return Intl.message(
+      'Switch to IP whitelist',
+      name: 'mkcloudSwitchIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whitelist now`
+  String get mkcloudWhitelistNow {
+    return Intl.message(
+      'Whitelist now',
+      name: 'mkcloudWhitelistNow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto whitelist`
+  String get mkcloudAutoWhitelist {
+    return Intl.message(
+      'Auto whitelist',
+      name: 'mkcloudAutoWhitelist',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maintain the active whitelist mode at the selected interval`
+  String get mkcloudAutoWhitelistDesc {
+    return Intl.message(
+      'Maintain the active whitelist mode at the selected interval',
+      name: 'mkcloudAutoWhitelistDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh interval`
+  String get mkcloudPollInterval {
+    return Intl.message(
+      'Refresh interval',
+      name: 'mkcloudPollInterval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter {min}–{max} seconds`
+  String mkcloudPollIntervalRange(Object min, Object max) {
+    return Intl.message(
+      'Enter $min–$max seconds',
+      name: 'mkcloudPollIntervalRange',
+      desc: '',
+      args: [min, max],
+    );
+  }
+
+  /// `API Key`
+  String get mkcloudApiKey {
+    return Intl.message('API Key', name: 'mkcloudApiKey', desc: '', args: []);
+  }
+
+  /// `Not configured`
+  String get mkcloudKeyEmpty {
+    return Intl.message(
+      'Not configured',
+      name: 'mkcloudKeyEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Configured, tap to change`
+  String get mkcloudKeyConfigured {
+    return Intl.message(
+      'Configured, tap to change',
+      name: 'mkcloudKeyConfigured',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Province rule`
+  String get mkcloudProvinceRule {
+    return Intl.message(
+      'Province rule',
+      name: 'mkcloudProvinceRule',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Setting a province switches to province mode; existing IP rules no longer apply.`
+  String get mkcloudProvinceHint {
+    return Intl.message(
+      'Setting a province switches to province mode; existing IP rules no longer apply.',
+      name: 'mkcloudProvinceHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IP whitelist · {used}/{limit}`
+  String mkcloudIpRule(Object used, Object limit) {
+    return Intl.message(
+      'IP whitelist · $used/$limit',
+      name: 'mkcloudIpRule',
+      desc: '',
+      args: [used, limit],
+    );
+  }
+
+  /// `Add IP whitelist`
+  String get mkcloudAddIp {
+    return Intl.message(
+      'Add IP whitelist',
+      name: 'mkcloudAddIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For example, 203.0.113.1`
+  String get mkcloudIpHint {
+    return Intl.message(
+      'For example, 203.0.113.1',
+      name: 'mkcloudIpHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a valid IPv4 address`
+  String get mkcloudInvalidIp {
+    return Intl.message(
+      'Enter a valid IPv4 address',
+      name: 'mkcloudInvalidIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Legacy entry; date unknown`
+  String get mkcloudLegacyEntry {
+    return Intl.message(
+      'Legacy entry; date unknown',
+      name: 'mkcloudLegacyEntry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whitelist requests directly connect to MKCloud and the IP lookup service. Direct rules and TUN route exclusions are applied automatically so a global proxy cannot whitelist its own exit.`
+  String get mkcloudDirectTip {
+    return Intl.message(
+      'Whitelist requests directly connect to MKCloud and the IP lookup service. Direct rules and TUN route exclusions are applied automatically so a global proxy cannot whitelist its own exit.',
+      name: 'mkcloudDirectTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select province`
+  String get mkcloudSelectProvince {
+    return Intl.message(
+      'Select province',
+      name: 'mkcloudSelectProvince',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whitelist now`
+  String get mkcloudSetProvince {
+    return Intl.message(
+      'Whitelist now',
+      name: 'mkcloudSetProvince',
       desc: '',
       args: [],
     );

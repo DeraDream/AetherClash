@@ -267,11 +267,7 @@ class Windows {
     return _runas(command, arguments, showWindow: false);
   }
 
-  bool _runas(
-    String command,
-    String arguments, {
-    required bool showWindow,
-  }) {
+  bool _runas(String command, String arguments, {required bool showWindow}) {
     final commandPtr = command.toNativeUtf16();
     final argumentsPtr = arguments.toNativeUtf16();
     final operationPtr = 'runas'.toNativeUtf16();

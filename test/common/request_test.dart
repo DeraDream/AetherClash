@@ -34,12 +34,15 @@ void main() {
   });
 
   test('keeps browser destinations aligned with the IP sources', () {
-    expect(request.ipInfoSourceLabels.keys, unorderedEquals({
-      'https://ipwho.is',
-      'http://ip-api.com/json',
-      'https://api.ip.sb/geoip',
-      'https://my.ippure.com/v1/info',
-    }));
+    expect(
+      request.ipInfoSourceLabels.keys,
+      unorderedEquals({
+        'https://ipwho.is',
+        'http://ip-api.com/json',
+        'https://api.ip.sb/geoip',
+        'https://my.ippure.com/v1/info',
+      }),
+    );
     expect(
       request.ipInfoSourceWebsites['https://api.ip.sb/geoip'],
       Uri.parse('https://ip.sb'),
