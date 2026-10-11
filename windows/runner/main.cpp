@@ -12,6 +12,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
   if (HWND running = WindowManagerFindRunningWindow()) {
     SendAppLink(running);
+    ::ShowWindow(running, ::IsIconic(running) ? SW_RESTORE : SW_SHOW);
+    ::SetForegroundWindow(running);
     WindowManagerActivateWindow(running);
     return EXIT_SUCCESS;
   }

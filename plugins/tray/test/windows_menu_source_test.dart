@@ -26,6 +26,12 @@ void main() {
     expect(pluginSource, isNot(contains('WM_COMMAND')));
   });
 
+  test('windows recursively builds proxy submenus', () {
+    expect(pluginSource, contains('HMENU submenu = ::CreatePopupMenu();'));
+    expect(pluginSource, contains('RebuildMenu(submenu, *children);'));
+    expect(pluginSource, contains('flags |= MF_POPUP;'));
+  });
+
   test('windows show reports a failed icon load', () {
     expect(
       pluginSource,

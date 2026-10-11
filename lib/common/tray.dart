@@ -136,7 +136,8 @@ class AppTray implements TrayPort {
           },
         ),
       const TrayMenuSeparator(),
-      if (isMacOS) ..._buildGroupMenu(trayState: trayState, read: read),
+      if (isMacOS || isWindows)
+        ..._buildGroupMenu(trayState: trayState, read: read),
       if (trayState.isStart) ...[
         TrayMenuCheckbox(
           label: appLocalizations.tun,
@@ -186,8 +187,7 @@ class AppTray implements TrayPort {
             for (final proxy in group.all)
               TrayMenuCheckbox(
                 label: proxy.name,
-                checked:
-                    read(selectedProxyNameProvider(group.name)) == proxy.name,
+                checked: trayState.selectedMap[group.name] == proxy.name,
                 onSelected: () {
                   read(
                     proxiesActionProvider.notifier,

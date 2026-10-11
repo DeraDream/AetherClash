@@ -43,6 +43,7 @@ TrayState _trayState({
   bool showTrayTitle = false,
   Mode mode = Mode.rule,
   List<Group> groups = const [],
+  Map<String, String> selectedMap = const {},
 }) {
   return TrayState(
     mode: mode,
@@ -52,7 +53,7 @@ TrayState _trayState({
     tunEnable: tunEnable,
     isStart: isStart,
     groups: groups,
-    selectedMap: const {},
+    selectedMap: selectedMap,
     showTrayTitle: showTrayTitle,
   );
 }
@@ -225,6 +226,7 @@ void main() {
             all: [Proxy(name: 'A', type: 'Direct')],
           ),
         ],
+        selectedMap: const {'Proxy': 'A'},
       ),
     );
 
@@ -234,16 +236,17 @@ void main() {
     expect(submenu['label'], 'Proxy');
     final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
     expect(children.map((item) => item['label']), contains('A'));
+    expect(children.single['checked'], isTrue);
   });
 
-  group('a platform that is not macOS', () {
+  group('Windows', () {
     late AppTray windows;
 
     setUp(() {
       windows = AppTray.forPlatform(isMacOS: false, isWindows: true);
     });
 
-    test('gets a plain icon, no group submenus and no speed toggle', () async {
+    test('gets a plain icon, group submenus and no speed toggle', () async {
       await update(
         _trayState(
           isStart: true,
@@ -254,16 +257,21 @@ void main() {
               all: [Proxy(name: 'A', type: 'Direct')],
             ),
           ],
+          selectedMap: const {'Proxy': 'A'},
         ),
         on: windows,
       );
 
       final arguments = showCall()!.arguments as Map;
       expect((arguments['icon'] as Map)['isTemplate'], isFalse);
-      expect(
-        _items(showCall()).where((item) => item['type'] == 'submenu'),
-        isEmpty,
-      );
+      final submenu = _items(
+        showCall(),
+      ).firstWhere((item) => item['type'] == 'submenu');
+      expect(submenu['label'], 'Proxy');
+      final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+      expect(children.map((item) => item['label']), contains('A'));
+      expect(children.single['type'], 'checkbox');
+      expect(children.single['checked'], isTrue);
       expect(
         _labels(showCall()),
         isNot(contains(currentAppLocalizations.speedStatistics)),
