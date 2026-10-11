@@ -18,6 +18,84 @@ const _referencePurple = Color(0xFF8757F5);
 const _referenceGreen = Color(0xFF21C66A);
 const _referenceCell = Color(0xFFF0F2F6);
 
+String _provinceLabel(MkcloudResult result, String? value) {
+  if (value == null || value.isEmpty) return '-';
+  const chineseNames = {
+    'anhui': '安徽',
+    'beijing': '北京',
+    'chongqing': '重庆',
+    'fujian': '福建',
+    'gansu': '甘肃',
+    'guangdong': '广东',
+    'guangxi': '广西',
+    'guizhou': '贵州',
+    'hainan': '海南',
+    'hebei': '河北',
+    'heilongjiang': '黑龙江',
+    'henan': '河南',
+    'hubei': '湖北',
+    'hunan': '湖南',
+    'jiangsu': '江苏',
+    'jiangxi': '江西',
+    'jilin': '吉林',
+    'liaoning': '辽宁',
+    'neimenggu': '内蒙古',
+    'ningxia': '宁夏',
+    'qinghai': '青海',
+    'shaanxi': '陕西',
+    'shandong': '山东',
+    'shanghai': '上海',
+    'shanxi': '山西',
+    'sichuan': '四川',
+    'tianjin': '天津',
+    'xinjiang': '新疆',
+    'yunnan': '云南',
+    'zhejiang': '浙江',
+    'xizang': '西藏',
+    'taiwan': '台湾',
+    'hongkong': '香港',
+    'macau': '澳门',
+  };
+  final chineseName = chineseNames[value.toLowerCase()];
+  if (chineseName != null) return chineseName;
+  for (final province in result.provinces) {
+    if (province.value == value) return province.label;
+  }
+  return value;
+}
+
+Future<void> _showRequestLoading(
+  BuildContext context,
+  Future<dynamic> request,
+) async {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  unawaited(
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CommonCircleLoading(),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  try {
+    await request.timeout(const Duration(seconds: 60));
+  } on TimeoutException {
+    // The provider records the eventual request result; the UI must never
+    // block the user longer than a minute.
+  } finally {
+    if (navigator.canPop()) navigator.pop();
+  }
+}
+
 class _ReferenceCard extends StatelessWidget {
   const _ReferenceCard({
     required this.child,
@@ -153,7 +231,7 @@ class _Overview extends ConsumerWidget {
     final subtitle = failed
         ? l10n.mkcloudStatusErrorDesc
         : provinceMode
-        ? l10n.mkcloudCurrentProvince(result?.province ?? '-')
+        ? l10n.mkcloudCurrentProvince(_provinceLabel(result!, result.province))
         : ipMode
         ? l10n.mkcloudUsage(result?.count ?? 0, result?.limit ?? 10)
         : state.lastRunAt == null
@@ -221,7 +299,9 @@ class _Overview extends ConsumerWidget {
             children: [
               OutlinedButton.icon(
                 onPressed: ready && !state.isRunning
-                    ? () => unawaited(notifier.query())
+                    ? () => unawaited(
+                        _showRequestLoading(context, notifier.query()),
+                      )
                     : null,
                 icon: const Icon(Icons.travel_explore_rounded, size: 18),
                 label: Text(l10n.mkcloudQueryStatus),
@@ -243,7 +323,12 @@ class _Overview extends ConsumerWidget {
                   onPressed: ready && !state.isRunning
                       ? () => ipMode
                             ? _showProvinceDialog(context, ref, result!)
-                            : unawaited(notifier.switchToIp())
+                            : unawaited(
+                                _showRequestLoading(
+                                  context,
+                                  notifier.switchToIp(),
+                                ),
+                              )
                       : null,
                   icon: Icon(
                     ipMode ? Icons.map_rounded : Icons.public_rounded,
@@ -267,7 +352,9 @@ class _Overview extends ConsumerWidget {
                 ),
               FilledButton.icon(
                 onPressed: ready && !state.isRunning
-                    ? () => unawaited(notifier.whitelist())
+                    ? () => unawaited(
+                        _showRequestLoading(context, notifier.whitelist()),
+                      )
                     : null,
                 icon: const Icon(Icons.bolt_rounded, size: 18),
                 label: Text(l10n.mkcloudWhitelistNow),
@@ -312,7 +399,9 @@ class _Overview extends ConsumerWidget {
       builder: (context) => _ProvinceDialog(provinces: result.provinces),
     );
     if (selected != null) {
-      unawaited(
+      if (!context.mounted) return;
+      await _showRequestLoading(
+        context,
         ref.read(mkcloudFirewallProvider.notifier).setProvince(selected),
       );
     }
@@ -569,6 +658,7 @@ class _Rules extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     if (result.mode == 'province') {
+      final selectedProvince = state.selectedProvince ?? result.province;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -586,28 +676,10 @@ class _Rules extends ConsumerWidget {
                   style: context.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.mkcloudCurrentProvince(result.province ?? '-'),
-                      ),
-                    ),
-                    FilledButton.icon(
-                      onPressed: state.isRunning
-                          ? null
-                          : () => _showProvincePicker(context, ref, result),
-                      icon: const Icon(Icons.check_rounded, size: 18),
-                      label: Text(l10n.mkcloudSetProvince),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _referencePurple,
-                        foregroundColor: Colors.white,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.small,
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  l10n.mkcloudCurrentProvince(
+                    _provinceLabel(result, result.province),
+                  ),
                 ),
                 const Divider(height: 24),
                 Wrap(
@@ -615,23 +687,14 @@ class _Rules extends ConsumerWidget {
                   runSpacing: 8,
                   children: [
                     for (final province in result.provinces)
-                      ChoiceChip(
-                        label: Text(province.label),
-                        selected: province.value == result.province,
-                        selectedColor: const Color(0xFFEFE8FF),
-                        labelStyle: TextStyle(
-                          color: province.value == result.province
-                              ? _referencePurple
-                              : _referenceMuted,
-                        ),
-                        onSelected:
-                            state.isRunning || province.value == result.province
-                            ? null
-                            : (_) => unawaited(
-                                ref
-                                    .read(mkcloudFirewallProvider.notifier)
-                                    .setProvince(province.value),
-                              ),
+                      _ProvinceChip(
+                        label: province.label,
+                        selected: province.value == selectedProvince,
+                        applied: province.value == result.province,
+                        enabled: !state.isRunning,
+                        onTap: () => ref
+                            .read(mkcloudFirewallProvider.notifier)
+                            .selectProvince(province.value),
                       ),
                   ],
                 ),
@@ -643,10 +706,6 @@ class _Rules extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 22),
-          _RuleHeading(title: l10n.mkcloudIpRule(result.count, result.limit)),
-          const SizedBox(height: 10),
-          _IpRules(result: result),
         ],
       );
     }
@@ -660,22 +719,54 @@ class _Rules extends ConsumerWidget {
       ],
     );
   }
+}
 
-  Future<void> _showProvincePicker(
-    BuildContext context,
-    WidgetRef ref,
-    MkcloudResult result,
-  ) async {
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (context) => _ProvinceDialog(provinces: result.provinces),
-    );
-    if (selected != null) {
-      unawaited(
-        ref.read(mkcloudFirewallProvider.notifier).setProvince(selected),
-      );
-    }
-  }
+class _ProvinceChip extends StatelessWidget {
+  const _ProvinceChip({
+    required this.label,
+    required this.selected,
+    required this.applied,
+    required this.enabled,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final bool applied;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? const Color(0xFFEFE8FF) : _referenceCell,
+    borderRadius: AppRadius.small,
+    child: InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: AppRadius.small,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (applied) ...[
+              const Icon(
+                Icons.check_rounded,
+                size: 16,
+                color: _referencePurple,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? _referencePurple : _referenceMuted,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _RuleHeading extends StatelessWidget {
@@ -713,7 +804,12 @@ class _IpRulesState extends ConsumerState<_IpRules> {
     final value = _controller.text.trim();
     if (!isIpv4(value)) return;
     _controller.clear();
-    unawaited(ref.read(mkcloudFirewallProvider.notifier).addIp(value));
+    unawaited(
+      _showRequestLoading(
+        context,
+        ref.read(mkcloudFirewallProvider.notifier).addIp(value),
+      ),
+    );
   }
 
   @override
@@ -770,9 +866,12 @@ class _IpRulesState extends ConsumerState<_IpRules> {
                     onPressed: disabled
                         ? null
                         : () => unawaited(
-                            ref
-                                .read(mkcloudFirewallProvider.notifier)
-                                .switchToIp(),
+                            _showRequestLoading(
+                              context,
+                              ref
+                                  .read(mkcloudFirewallProvider.notifier)
+                                  .switchToIp(),
+                            ),
                           ),
                     icon: const Icon(Icons.public_rounded, size: 18),
                     label: Text(l10n.mkcloudAddCurrentExit),

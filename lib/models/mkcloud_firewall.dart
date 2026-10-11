@@ -63,6 +63,7 @@ abstract class MkcloudResult with _$MkcloudResult {
 abstract class MkcloudFirewallState with _$MkcloudFirewallState {
   const factory MkcloudFirewallState({
     @Default(false) bool isRunning,
+    String? selectedProvince,
     DateTime? lastRunAt,
     @Default(MkcloudRunKind.poll) MkcloudRunKind lastRunKind,
     MkcloudResult? result,

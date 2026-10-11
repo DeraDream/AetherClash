@@ -89,7 +89,7 @@ final class MkcloudFirewallProvider
   }
 }
 
-String _$mkcloudFirewallHash() => r'1ce45c5da52200952b3d1d4ef8af9788d3415d45';
+String _$mkcloudFirewallHash() => r'71e07f710bec9d968fbc99fdc755a816ec192346';
 
 abstract class _$MkcloudFirewall extends $Notifier<MkcloudFirewallState> {
   MkcloudFirewallState build();

@@ -11,6 +11,7 @@ class _FakeMkcloudClient extends MkcloudDirectTransport {
   final requests = <String>[];
   Completer<void>? gate;
   var mode = 'province';
+  var province = 'jiangsu';
 
   @override
   Future<String> currentIp() async => '203.0.113.1';
@@ -25,16 +26,18 @@ class _FakeMkcloudClient extends MkcloudDirectTransport {
     final action = body['api_action']! as String;
     requests.add(action);
     if (action == 'add_whitelist') mode = 'ip';
+    if (action == 'set_province') province = body['province']! as String;
     return {
       'code': 0,
       'data': {
         'mode': mode,
-        'province': mode == 'province' ? 'jiangsu' : null,
+        'province': mode == 'province' ? province : null,
         'entries': const [],
         'count': 0,
         'limit': 10,
         'provinces': const [
           {'value': 'jiangsu', 'label': '江苏'},
+          {'value': 'beijing', 'label': '北京'},
         ],
       },
     };
@@ -94,11 +97,45 @@ void main() {
       notifier.start();
       await settle();
       await settle();
+      client.requests.clear();
 
       expect(await notifier.switchToIp(), isTrue);
       expect(client.mode, 'ip');
-      expect(client.requests, contains('add_whitelist'));
+      expect(client.requests, ['add_whitelist']);
       expect(container.read(mkcloudFirewallProvider).result?.mode, 'ip');
+    },
+  );
+
+  test(
+    'a province selection stays local until whitelist is requested',
+    () async {
+      createContainer();
+      final notifier = container.read(mkcloudFirewallProvider.notifier);
+
+      notifier.start();
+      await settle();
+      await settle();
+      client.requests.clear();
+
+      notifier.selectProvince('beijing');
+      expect(
+        container.read(mkcloudFirewallProvider).selectedProvince,
+        'beijing',
+      );
+      expect(
+        container.read(mkcloudFirewallProvider).result?.province,
+        'jiangsu',
+      );
+      expect(client.requests, isEmpty);
+
+      await notifier.whitelist();
+      expect(client.province, 'beijing');
+      expect(client.requests, ['get_provinces', 'set_province']);
+      expect(
+        container.read(mkcloudFirewallProvider).result?.province,
+        'beijing',
+      );
+      expect(container.read(mkcloudFirewallProvider).selectedProvince, isNull);
     },
   );
 }

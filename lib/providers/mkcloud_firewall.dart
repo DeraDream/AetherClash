@@ -37,6 +37,13 @@ class MkcloudFirewall extends _$MkcloudFirewall {
   Future<void> query() => _run(MkcloudRunKind.query);
   Future<void> whitelist() => _run(MkcloudRunKind.whitelist);
 
+  /// Select a province locally. The selection is applied only when the user
+  /// explicitly runs the whitelist action.
+  void selectProvince(String province) {
+    if (state.result?.mode != 'province' || _inFlight) return;
+    state = state.copyWith(selectedProvince: province);
+  }
+
   Future<bool> setProvince(String province) =>
       _mutate({'api': 1, 'api_action': 'set_province', 'province': province});
 
@@ -159,16 +166,11 @@ class MkcloudFirewall extends _$MkcloudFirewall {
             (it) => it.cidr == '$ip/32' || it.cidr == ip,
           );
           if (!exists) {
-            await client.post(
-              Uri.parse(mkcloudApiUri),
-              apiKey: setting.apiKey,
-              body: {'api': 1, 'api_action': 'add_whitelist', 'ip': ip},
-            );
             result = mkcloudResultOf(
               await client.post(
                 Uri.parse(mkcloudApiUri),
                 apiKey: setting.apiKey,
-                body: {'api': 1, 'api_action': 'get_provinces'},
+                body: {'api': 1, 'api_action': 'add_whitelist', 'ip': ip},
               ),
               currentIp: ip,
             ).copyWith(type: MkcloudResultType.applied);
@@ -176,31 +178,33 @@ class MkcloudFirewall extends _$MkcloudFirewall {
             result = result.copyWith(type: MkcloudResultType.applied);
           }
         } else if (result.mode == 'province' && result.province != null) {
-          await client.post(
-            Uri.parse(mkcloudApiUri),
-            apiKey: setting.apiKey,
-            body: {
-              'api': 1,
-              'api_action': 'set_province',
-              'province': result.province!,
-            },
-          );
+          final province = kind == MkcloudRunKind.whitelist
+              ? state.selectedProvince ?? result.province!
+              : result.province!;
           result = mkcloudResultOf(
             await client.post(
               Uri.parse(mkcloudApiUri),
               apiKey: setting.apiKey,
-              body: {'api': 1, 'api_action': 'get_provinces'},
+              body: {
+                'api': 1,
+                'api_action': 'set_province',
+                'province': province,
+              },
             ),
           ).copyWith(type: MkcloudResultType.applied);
         }
       }
       state = MkcloudFirewallState(
+        selectedProvince: kind == MkcloudRunKind.whitelist
+            ? null
+            : state.selectedProvince,
         lastRunAt: DateTime.now(),
         lastRunKind: kind,
         result: result,
       );
     } catch (error) {
       state = MkcloudFirewallState(
+        selectedProvince: null,
         lastRunAt: DateTime.now(),
         lastRunKind: kind,
         result: MkcloudResult(type: MkcloudResultType.error, message: '$error'),
@@ -226,15 +230,10 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     }
     try {
       final client = ref.read(mkcloudFirewallClientProvider);
-      await client.post(
-        Uri.parse(mkcloudApiUri),
-        apiKey: setting.apiKey,
-        body: body,
-      );
       final response = await client.post(
         Uri.parse(mkcloudApiUri),
         apiKey: setting.apiKey,
-        body: {'api': 1, 'api_action': 'get_provinces'},
+        body: body,
       );
       state = MkcloudFirewallState(
         lastRunAt: DateTime.now(),

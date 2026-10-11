@@ -1134,7 +1134,7 @@ as String?,
 /// @nodoc
 mixin _$MkcloudFirewallState {
 
- bool get isRunning; DateTime? get lastRunAt; MkcloudRunKind get lastRunKind; MkcloudResult? get result;
+ bool get isRunning; String? get selectedProvince; DateTime? get lastRunAt; MkcloudRunKind get lastRunKind; MkcloudResult? get result;
 /// Create a copy of MkcloudFirewallState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1146,20 +1146,20 @@ $MkcloudFirewallStateCopyWith<MkcloudFirewallState> get copyWith => _$MkcloudFir
 @override
 bool operator ==(Object other) {
   final _this = this as MkcloudFirewallState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MkcloudFirewallState&&(identical(other.isRunning, _this.isRunning) || other.isRunning == _this.isRunning)&&(identical(other.lastRunAt, _this.lastRunAt) || other.lastRunAt == _this.lastRunAt)&&(identical(other.lastRunKind, _this.lastRunKind) || other.lastRunKind == _this.lastRunKind)&&(identical(other.result, _this.result) || other.result == _this.result));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MkcloudFirewallState&&(identical(other.isRunning, _this.isRunning) || other.isRunning == _this.isRunning)&&(identical(other.selectedProvince, _this.selectedProvince) || other.selectedProvince == _this.selectedProvince)&&(identical(other.lastRunAt, _this.lastRunAt) || other.lastRunAt == _this.lastRunAt)&&(identical(other.lastRunKind, _this.lastRunKind) || other.lastRunKind == _this.lastRunKind)&&(identical(other.result, _this.result) || other.result == _this.result));
 }
 
 
 @override
 int get hashCode {
   final _this = this as MkcloudFirewallState;
-  return Object.hash(runtimeType,_this.isRunning,_this.lastRunAt,_this.lastRunKind,_this.result);
+  return Object.hash(runtimeType,_this.isRunning,_this.selectedProvince,_this.lastRunAt,_this.lastRunKind,_this.result);
 }
 
 @override
 String toString() {
   final _this = this as MkcloudFirewallState;
-  return 'MkcloudFirewallState(isRunning: ${_this.isRunning}, lastRunAt: ${_this.lastRunAt}, lastRunKind: ${_this.lastRunKind}, result: ${_this.result})';
+  return 'MkcloudFirewallState(isRunning: ${_this.isRunning}, selectedProvince: ${_this.selectedProvince}, lastRunAt: ${_this.lastRunAt}, lastRunKind: ${_this.lastRunKind}, result: ${_this.result})';
 }
 
 
@@ -1170,7 +1170,7 @@ abstract mixin class $MkcloudFirewallStateCopyWith<$Res>  {
   factory $MkcloudFirewallStateCopyWith(MkcloudFirewallState value, $Res Function(MkcloudFirewallState) _then) = _$MkcloudFirewallStateCopyWithImpl;
 @useResult
 $Res call({
- bool isRunning, DateTime? lastRunAt, MkcloudRunKind lastRunKind, MkcloudResult? result
+ bool isRunning, String? selectedProvince, DateTime? lastRunAt, MkcloudRunKind lastRunKind, MkcloudResult? result
 });
 
 
@@ -1187,10 +1187,11 @@ class _$MkcloudFirewallStateCopyWithImpl<$Res>
 
 /// Create a copy of MkcloudFirewallState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isRunning = null,Object? lastRunAt = freezed,Object? lastRunKind = null,Object? result = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isRunning = null,Object? selectedProvince = freezed,Object? lastRunAt = freezed,Object? lastRunKind = null,Object? result = freezed,}) {
   return _then(MkcloudFirewallState(
 isRunning: null == isRunning ? _self.isRunning : isRunning // ignore: cast_nullable_to_non_nullable
-as bool,lastRunAt: freezed == lastRunAt ? _self.lastRunAt : lastRunAt // ignore: cast_nullable_to_non_nullable
+as bool,selectedProvince: freezed == selectedProvince ? _self.selectedProvince : selectedProvince // ignore: cast_nullable_to_non_nullable
+as String?,lastRunAt: freezed == lastRunAt ? _self.lastRunAt : lastRunAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,lastRunKind: null == lastRunKind ? _self.lastRunKind : lastRunKind // ignore: cast_nullable_to_non_nullable
 as MkcloudRunKind,result: freezed == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as MkcloudResult?,
@@ -1290,10 +1291,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isRunning,  DateTime? lastRunAt,  MkcloudRunKind lastRunKind,  MkcloudResult? result)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isRunning,  String? selectedProvince,  DateTime? lastRunAt,  MkcloudRunKind lastRunKind,  MkcloudResult? result)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MkcloudFirewallState() when $default != null:
-return $default(_that.isRunning,_that.lastRunAt,_that.lastRunKind,_that.result);case _:
+return $default(_that.isRunning,_that.selectedProvince,_that.lastRunAt,_that.lastRunKind,_that.result);case _:
   return orElse();
 
 }
@@ -1311,10 +1312,10 @@ return $default(_that.isRunning,_that.lastRunAt,_that.lastRunKind,_that.result);
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isRunning,  DateTime? lastRunAt,  MkcloudRunKind lastRunKind,  MkcloudResult? result)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isRunning,  String? selectedProvince,  DateTime? lastRunAt,  MkcloudRunKind lastRunKind,  MkcloudResult? result)  $default,) {final _that = this;
 switch (_that) {
 case _MkcloudFirewallState():
-return $default(_that.isRunning,_that.lastRunAt,_that.lastRunKind,_that.result);case _:
+return $default(_that.isRunning,_that.selectedProvince,_that.lastRunAt,_that.lastRunKind,_that.result);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1331,10 +1332,10 @@ return $default(_that.isRunning,_that.lastRunAt,_that.lastRunKind,_that.result);
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isRunning,  DateTime? lastRunAt,  MkcloudRunKind lastRunKind,  MkcloudResult? result)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isRunning,  String? selectedProvince,  DateTime? lastRunAt,  MkcloudRunKind lastRunKind,  MkcloudResult? result)?  $default,) {final _that = this;
 switch (_that) {
 case _MkcloudFirewallState() when $default != null:
-return $default(_that.isRunning,_that.lastRunAt,_that.lastRunKind,_that.result);case _:
+return $default(_that.isRunning,_that.selectedProvince,_that.lastRunAt,_that.lastRunKind,_that.result);case _:
   return null;
 
 }
@@ -1346,10 +1347,11 @@ return $default(_that.isRunning,_that.lastRunAt,_that.lastRunKind,_that.result);
 
 
 class _MkcloudFirewallState implements MkcloudFirewallState {
-  const _MkcloudFirewallState({this.isRunning = false, this.lastRunAt, this.lastRunKind = MkcloudRunKind.poll, this.result});
+  const _MkcloudFirewallState({this.isRunning = false, this.selectedProvince, this.lastRunAt, this.lastRunKind = MkcloudRunKind.poll, this.result});
   
 
 @override@JsonKey() final  bool isRunning;
+@override final  String? selectedProvince;
 @override final  DateTime? lastRunAt;
 @override@JsonKey() final  MkcloudRunKind lastRunKind;
 @override final  MkcloudResult? result;
@@ -1364,18 +1366,18 @@ _$MkcloudFirewallStateCopyWith<_MkcloudFirewallState> get copyWith => __$Mkcloud
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MkcloudFirewallState&&(identical(other.isRunning, isRunning) || other.isRunning == isRunning)&&(identical(other.lastRunAt, lastRunAt) || other.lastRunAt == lastRunAt)&&(identical(other.lastRunKind, lastRunKind) || other.lastRunKind == lastRunKind)&&(identical(other.result, result) || other.result == result));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MkcloudFirewallState&&(identical(other.isRunning, isRunning) || other.isRunning == isRunning)&&(identical(other.selectedProvince, selectedProvince) || other.selectedProvince == selectedProvince)&&(identical(other.lastRunAt, lastRunAt) || other.lastRunAt == lastRunAt)&&(identical(other.lastRunKind, lastRunKind) || other.lastRunKind == lastRunKind)&&(identical(other.result, result) || other.result == result));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,isRunning,lastRunAt,lastRunKind,result);
+    return Object.hash(runtimeType,isRunning,selectedProvince,lastRunAt,lastRunKind,result);
 }
 
 @override
 String toString() {
-    return 'MkcloudFirewallState(isRunning: $isRunning, lastRunAt: $lastRunAt, lastRunKind: $lastRunKind, result: $result)';
+    return 'MkcloudFirewallState(isRunning: $isRunning, selectedProvince: $selectedProvince, lastRunAt: $lastRunAt, lastRunKind: $lastRunKind, result: $result)';
 }
 
 
@@ -1386,7 +1388,7 @@ abstract mixin class _$MkcloudFirewallStateCopyWith<$Res> implements $MkcloudFir
   factory _$MkcloudFirewallStateCopyWith(_MkcloudFirewallState value, $Res Function(_MkcloudFirewallState) _then) = __$MkcloudFirewallStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isRunning, DateTime? lastRunAt, MkcloudRunKind lastRunKind, MkcloudResult? result
+ bool isRunning, String? selectedProvince, DateTime? lastRunAt, MkcloudRunKind lastRunKind, MkcloudResult? result
 });
 
 
@@ -1403,10 +1405,11 @@ class __$MkcloudFirewallStateCopyWithImpl<$Res>
 
 /// Create a copy of MkcloudFirewallState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isRunning = null,Object? lastRunAt = freezed,Object? lastRunKind = null,Object? result = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isRunning = null,Object? selectedProvince = freezed,Object? lastRunAt = freezed,Object? lastRunKind = null,Object? result = freezed,}) {
   return _then(_MkcloudFirewallState(
 isRunning: null == isRunning ? _self.isRunning : isRunning // ignore: cast_nullable_to_non_nullable
-as bool,lastRunAt: freezed == lastRunAt ? _self.lastRunAt : lastRunAt // ignore: cast_nullable_to_non_nullable
+as bool,selectedProvince: freezed == selectedProvince ? _self.selectedProvince : selectedProvince // ignore: cast_nullable_to_non_nullable
+as String?,lastRunAt: freezed == lastRunAt ? _self.lastRunAt : lastRunAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,lastRunKind: null == lastRunKind ? _self.lastRunKind : lastRunKind // ignore: cast_nullable_to_non_nullable
 as MkcloudRunKind,result: freezed == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as MkcloudResult?,

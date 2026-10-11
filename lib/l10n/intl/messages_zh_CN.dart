@@ -547,7 +547,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage("省白模式 · 已生效"),
     "mkcloudProvinceHint": MessageLookupByLibrary.simpleMessage(
-      "设置省份后将切换为省白模式；已有 IP 白名单将不再生效。",
+      "选择省份后，点击右上角「立即加白」提交；当前生效省份以对勾标记。",
     ),
     "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage("省白规则"),
     "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("查询状态"),
