@@ -72,17 +72,17 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m20(count) =>
       "${Intl.plural(count, one: '${count} минуту назад', few: '${count} минуты назад', many: '${count} минут назад', other: '${count} минуты назад')}";
 
-  static String m21(province) => "Current province: ${province}";
+  static String m21(province) => "Текущая провинция: ${province}";
 
-  static String m22(used, limit) => "IP whitelist · ${used}/${limit}";
+  static String m22(used, limit) => "Белый список IP · ${used}/${limit}";
 
-  static String m23(time) => "Last run: ${time}";
+  static String m23(time) => "Последний запуск: ${time}";
 
-  static String m24(count) => "Check every ${count}s";
+  static String m24(count) => "Проверять каждые ${count} с";
 
-  static String m25(min, max) => "Enter ${min}–${max} seconds";
+  static String m25(min, max) => "Введите от ${min} до ${max} секунд";
 
-  static String m26(used, limit) => "Used ${used}/${limit}";
+  static String m26(used, limit) => "Использовано ${used}/${limit}";
 
   static String m27(count) =>
       "${Intl.plural(count, one: '${count} месяц назад', few: '${count} месяца назад', many: '${count} месяцев назад', other: '${count} месяца назад')}";
@@ -596,9 +596,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Введите содержимое правила",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -714,82 +715,115 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "minutesAgo": m20,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Смешанный порт"),
-    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("Add IP whitelist"),
-    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API Key"),
+    "mkcloudAddCurrentExit": MessageLookupByLibrary.simpleMessage(
+      "Добавить текущий выход",
+    ),
+    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage(
+      "Добавить IP в белый список",
+    ),
+    "mkcloudAddedAt": MessageLookupByLibrary.simpleMessage("Добавлено"),
+    "mkcloudApiEndpoint": MessageLookupByLibrary.simpleMessage(
+      "Адрес API (ключ передаётся в заголовке X-API-Key)",
+    ),
+    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API-ключ"),
     "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage(
-      "Auto whitelist",
+      "Автоматический белый список",
     ),
     "mkcloudAutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
-      "Maintain the active whitelist mode at the selected interval",
+      "Поддерживать активный режим белого списка с выбранным интервалом",
+    ),
+    "mkcloudChangeApiKey": MessageLookupByLibrary.simpleMessage(
+      "Изменить API-ключ",
     ),
     "mkcloudCurrentProvince": m21,
     "mkcloudDirectTip": MessageLookupByLibrary.simpleMessage(
-      "Whitelist requests directly connect to MKCloud and the IP lookup service. Direct rules and TUN route exclusions are applied automatically so a global proxy cannot whitelist its own exit.",
+      "Запросы белого списка подключаются напрямую к MKCloud и службе определения выходного IP. Правила DIRECT и исключения маршрутов TUN применяются автоматически, чтобы глобальный прокси не добавил в белый список собственный выходной адрес.",
     ),
     "mkcloudFirewall": MessageLookupByLibrary.simpleMessage(
-      "MKCloud whitelist",
+      "Белый список MKCloud",
     ),
     "mkcloudFirewallDesc": MessageLookupByLibrary.simpleMessage(
-      "Maintain MKCloud whitelists",
+      "Управление белыми списками MKCloud",
     ),
     "mkcloudInvalidIp": MessageLookupByLibrary.simpleMessage(
-      "Enter a valid IPv4 address",
+      "Введите корректный IPv4-адрес",
     ),
     "mkcloudIpActive": MessageLookupByLibrary.simpleMessage(
-      "IP whitelist mode · active",
+      "Режим белого списка IP · активен",
     ),
+    "mkcloudIpAddress": MessageLookupByLibrary.simpleMessage("IP-адрес"),
     "mkcloudIpHint": MessageLookupByLibrary.simpleMessage(
-      "For example, 203.0.113.1",
+      "Например, 203.0.113.1",
     ),
     "mkcloudIpRule": m22,
     "mkcloudKeyConfigured": MessageLookupByLibrary.simpleMessage(
-      "Configured, tap to change",
+      "Настроено, нажмите для изменения",
     ),
-    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("Not configured"),
+    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("Не настроено"),
     "mkcloudLastRun": m23,
     "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage(
-      "Legacy entry; date unknown",
+      "Старая запись; дата неизвестна",
     ),
-    "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud whitelist"),
-    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("Not run yet"),
+    "mkcloudLocal": MessageLookupByLibrary.simpleMessage("Это устройство"),
+    "mkcloudNav": MessageLookupByLibrary.simpleMessage("Белый список MKCloud"),
+    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage(
+      "Ещё не запускалось",
+    ),
     "mkcloudPollEvery": m24,
     "mkcloudPollInterval": MessageLookupByLibrary.simpleMessage(
-      "Refresh interval",
+      "Интервал обновления",
     ),
     "mkcloudPollIntervalRange": m25,
+    "mkcloudProductService": MessageLookupByLibrary.simpleMessage(
+      "Продукт · ID службы 3438",
+    ),
     "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage(
-      "Province mode · active",
+      "Режим провинции · активен",
     ),
     "mkcloudProvinceHint": MessageLookupByLibrary.simpleMessage(
-      "Setting a province switches to province mode; existing IP rules no longer apply.",
+      "При выборе провинции включается режим провинции; существующие правила IP больше не применяются.",
     ),
     "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage(
-      "Province rule",
+      "Правило провинции",
     ),
-    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("Query status"),
-    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("Running…"),
+    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage(
+      "Запросить статус",
+    ),
+    "mkcloudRemoveApiKey": MessageLookupByLibrary.simpleMessage(
+      "Удалить API-ключ",
+    ),
+    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("Выполняется…"),
     "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage(
-      "Select province",
+      "Выберите провинцию",
     ),
-    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("Whitelist now"),
+    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage(
+      "Добавить сейчас",
+    ),
+    "mkcloudSource": MessageLookupByLibrary.simpleMessage("Источник"),
+    "mkcloudStatusError": MessageLookupByLibrary.simpleMessage(
+      "Не удалось обновить белый список",
+    ),
+    "mkcloudStatusErrorDesc": MessageLookupByLibrary.simpleMessage(
+      "Проверьте подключение к сети и API-ключ, затем повторите попытку.",
+    ),
     "mkcloudStatusNoKey": MessageLookupByLibrary.simpleMessage(
-      "Add an API key to start",
+      "Добавьте API-ключ для начала",
     ),
     "mkcloudStatusOff": MessageLookupByLibrary.simpleMessage(
-      "Auto whitelist is off",
+      "Автоматическое добавление в белый список выключено",
     ),
     "mkcloudStatusWaiting": MessageLookupByLibrary.simpleMessage(
-      "Waiting for status",
+      "Ожидание статуса",
     ),
     "mkcloudSwitchIp": MessageLookupByLibrary.simpleMessage(
-      "Switch to IP whitelist",
+      "Переключить на белый список IP",
     ),
     "mkcloudSwitchProvince": MessageLookupByLibrary.simpleMessage(
-      "Switch to province mode",
+      "Переключить в режим провинции",
     ),
     "mkcloudUsage": m26,
     "mkcloudWhitelistNow": MessageLookupByLibrary.simpleMessage(
-      "Whitelist now",
+      "Добавить сейчас",
     ),
     "mode": MessageLookupByLibrary.simpleMessage("Режим"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("Монохром"),

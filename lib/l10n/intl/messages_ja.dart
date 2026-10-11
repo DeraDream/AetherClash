@@ -65,17 +65,17 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m20(count) => "${count} 分前";
 
-  static String m21(province) => "Current province: ${province}";
+  static String m21(province) => "現在の省: ${province}";
 
-  static String m22(used, limit) => "IP whitelist · ${used}/${limit}";
+  static String m22(used, limit) => "IP ホワイトリスト · ${used}/${limit}";
 
-  static String m23(time) => "Last run: ${time}";
+  static String m23(time) => "前回の実行: ${time}";
 
-  static String m24(count) => "Check every ${count}s";
+  static String m24(count) => "${count} 秒ごとに確認";
 
-  static String m25(min, max) => "Enter ${min}–${max} seconds";
+  static String m25(min, max) => "${min}～${max} 秒で入力してください";
 
-  static String m26(used, limit) => "Used ${used}/${limit}";
+  static String m26(used, limit) => "使用量 ${used}/${limit}";
 
   static String m27(count) => "${count} か月前";
 
@@ -577,83 +577,76 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "minutesAgo": m20,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Mixedポート"),
-    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("Add IP whitelist"),
-    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API Key"),
-    "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage(
-      "Auto whitelist",
+    "mkcloudAddCurrentExit": MessageLookupByLibrary.simpleMessage("現在の出口を追加"),
+    "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("IP ホワイトリストを追加"),
+    "mkcloudAddedAt": MessageLookupByLibrary.simpleMessage("追加日時"),
+    "mkcloudApiEndpoint": MessageLookupByLibrary.simpleMessage(
+      "API リクエスト先（キーは X-API-Key ヘッダーで送信されます）",
     ),
+    "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API キー"),
+    "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage("自動ホワイトリスト"),
     "mkcloudAutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
-      "Maintain the active whitelist mode at the selected interval",
+      "選択した間隔で有効なホワイトリストモードを維持します",
     ),
+    "mkcloudChangeApiKey": MessageLookupByLibrary.simpleMessage("API キーを変更"),
     "mkcloudCurrentProvince": m21,
     "mkcloudDirectTip": MessageLookupByLibrary.simpleMessage(
-      "Whitelist requests directly connect to MKCloud and the IP lookup service. Direct rules and TUN route exclusions are applied automatically so a global proxy cannot whitelist its own exit.",
+      "ホワイトリストのリクエストは MKCloud と出口 IP 取得サービスへ直接接続します。グローバルプロキシが自身の出口をホワイトリストに追加しないよう、DIRECT ルールと TUN の除外ルートが自動的に適用されます。",
     ),
-    "mkcloudFirewall": MessageLookupByLibrary.simpleMessage(
-      "MKCloud whitelist",
-    ),
+    "mkcloudFirewall": MessageLookupByLibrary.simpleMessage("MKCloud ホワイトリスト"),
     "mkcloudFirewallDesc": MessageLookupByLibrary.simpleMessage(
-      "Maintain MKCloud whitelists",
+      "MKCloud のホワイトリストを管理",
     ),
     "mkcloudInvalidIp": MessageLookupByLibrary.simpleMessage(
-      "Enter a valid IPv4 address",
+      "有効な IPv4 アドレスを入力してください",
     ),
     "mkcloudIpActive": MessageLookupByLibrary.simpleMessage(
-      "IP whitelist mode · active",
+      "IP ホワイトリストモード · 有効",
     ),
-    "mkcloudIpHint": MessageLookupByLibrary.simpleMessage(
-      "For example, 203.0.113.1",
-    ),
+    "mkcloudIpAddress": MessageLookupByLibrary.simpleMessage("IP アドレス"),
+    "mkcloudIpHint": MessageLookupByLibrary.simpleMessage("例: 203.0.113.1"),
     "mkcloudIpRule": m22,
     "mkcloudKeyConfigured": MessageLookupByLibrary.simpleMessage(
-      "Configured, tap to change",
+      "設定済み、タップして変更",
     ),
-    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("Not configured"),
+    "mkcloudKeyEmpty": MessageLookupByLibrary.simpleMessage("未設定"),
     "mkcloudLastRun": m23,
-    "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage(
-      "Legacy entry; date unknown",
-    ),
-    "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud whitelist"),
-    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("Not run yet"),
+    "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage("以前のエントリー、日付不明"),
+    "mkcloudLocal": MessageLookupByLibrary.simpleMessage("この端末"),
+    "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud ホワイトリスト"),
+    "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("未実行"),
     "mkcloudPollEvery": m24,
-    "mkcloudPollInterval": MessageLookupByLibrary.simpleMessage(
-      "Refresh interval",
-    ),
+    "mkcloudPollInterval": MessageLookupByLibrary.simpleMessage("更新間隔"),
     "mkcloudPollIntervalRange": m25,
-    "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage(
-      "Province mode · active",
+    "mkcloudProductService": MessageLookupByLibrary.simpleMessage(
+      "製品 · サービス ID 3438",
     ),
+    "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage("省モード · 有効"),
     "mkcloudProvinceHint": MessageLookupByLibrary.simpleMessage(
-      "Setting a province switches to province mode; existing IP rules no longer apply.",
+      "省を設定すると省モードに切り替わり、既存の IP ルールは適用されなくなります。",
     ),
-    "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage(
-      "Province rule",
+    "mkcloudProvinceRule": MessageLookupByLibrary.simpleMessage("省ルール"),
+    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("ステータスを取得"),
+    "mkcloudRemoveApiKey": MessageLookupByLibrary.simpleMessage("API キーを削除"),
+    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("実行中…"),
+    "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage("省を選択"),
+    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("今すぐ追加"),
+    "mkcloudSource": MessageLookupByLibrary.simpleMessage("ソース"),
+    "mkcloudStatusError": MessageLookupByLibrary.simpleMessage(
+      "ホワイトリストの更新に失敗しました",
     ),
-    "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("Query status"),
-    "mkcloudRunning": MessageLookupByLibrary.simpleMessage("Running…"),
-    "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage(
-      "Select province",
+    "mkcloudStatusErrorDesc": MessageLookupByLibrary.simpleMessage(
+      "ネットワーク接続と API キーを確認して、もう一度お試しください。",
     ),
-    "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("Whitelist now"),
     "mkcloudStatusNoKey": MessageLookupByLibrary.simpleMessage(
-      "Add an API key to start",
+      "開始するには API キーを追加してください",
     ),
-    "mkcloudStatusOff": MessageLookupByLibrary.simpleMessage(
-      "Auto whitelist is off",
-    ),
-    "mkcloudStatusWaiting": MessageLookupByLibrary.simpleMessage(
-      "Waiting for status",
-    ),
-    "mkcloudSwitchIp": MessageLookupByLibrary.simpleMessage(
-      "Switch to IP whitelist",
-    ),
-    "mkcloudSwitchProvince": MessageLookupByLibrary.simpleMessage(
-      "Switch to province mode",
-    ),
+    "mkcloudStatusOff": MessageLookupByLibrary.simpleMessage("自動ホワイトリストはオフです"),
+    "mkcloudStatusWaiting": MessageLookupByLibrary.simpleMessage("ステータスを取得中"),
+    "mkcloudSwitchIp": MessageLookupByLibrary.simpleMessage("IP ホワイトリストに切り替え"),
+    "mkcloudSwitchProvince": MessageLookupByLibrary.simpleMessage("省モードに切り替え"),
     "mkcloudUsage": m26,
-    "mkcloudWhitelistNow": MessageLookupByLibrary.simpleMessage(
-      "Whitelist now",
-    ),
+    "mkcloudWhitelistNow": MessageLookupByLibrary.simpleMessage("今すぐ追加"),
     "mode": MessageLookupByLibrary.simpleMessage("モード"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("モノクローム"),
     "monthsAgo": m27,

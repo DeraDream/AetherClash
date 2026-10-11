@@ -8,42 +8,119 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-const _maxContentWidth = 920.0;
+const _maxContentWidth = 1240.0;
+const _referencePage = Color(0xFFF5F6F8);
+const _referenceCard = Colors.white;
+const _referenceInk = Color(0xFF14213A);
+const _referenceMuted = Color(0xFF7B8AA5);
+const _referenceBlue = Color(0xFF2F6DF6);
+const _referencePurple = Color(0xFF8757F5);
+const _referenceGreen = Color(0xFF21C66A);
+const _referenceCell = Color(0xFFF0F2F6);
+
+class _ReferenceCard extends StatelessWidget {
+  const _ReferenceCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(18),
+  });
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: padding,
+    decoration: const BoxDecoration(
+      color: _referenceCard,
+      borderRadius: AppRadius.medium,
+      boxShadow: [
+        BoxShadow(
+          color: Color(0x120F172A),
+          blurRadius: 14,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: DefaultTextStyle.merge(
+      style: const TextStyle(color: _referenceInk),
+      child: child,
+    ),
+  );
+}
+
+class _ReferenceActionCard extends StatelessWidget {
+  const _ReferenceActionCard({
+    required this.child,
+    required this.onTap,
+    required this.padding,
+  });
+  final Widget child;
+  final VoidCallback onTap;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => _ReferenceCard(
+    padding: EdgeInsets.zero,
+    child: InkWell(
+      borderRadius: AppRadius.medium,
+      onTap: onTap,
+      child: Padding(padding: padding, child: child),
+    ),
+  );
+}
 
 class MkcloudFirewallView extends StatelessWidget {
   const MkcloudFirewallView({super.key});
 
   @override
-  Widget build(BuildContext context) => BaseScaffold(
-    title: context.appLocalizations.mkcloudFirewall,
-    body: ListView(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        4,
-        16,
-        24 + BottomInsetScope.of(context),
-      ),
+  Widget build(BuildContext context) => ScaffoldTitleSlot(
+    title: Row(
       children: [
-        Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: _maxContentWidth),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _Overview(),
-                SizedBox(height: 12),
-                _AutomationSettings(),
-                SizedBox(height: 12),
-                _ApiKeyTile(),
-                SizedBox(height: 12),
-                _Rules(),
-                SizedBox(height: 12),
-                _DirectTip(),
-              ],
-            ),
+        Text(
+          context.appLocalizations.mkcloudFirewall,
+          style: context.textTheme.headlineSmall?.copyWith(
+            color: _referenceInk,
+            fontWeight: FontWeight.w800,
           ),
         ),
+        const SizedBox(width: 16),
+        Text(
+          context.appLocalizations.mkcloudProductService,
+          style: context.textTheme.bodyMedium?.copyWith(color: _referenceMuted),
+        ),
       ],
+    ),
+    child: BaseScaffold(
+      title: context.appLocalizations.mkcloudFirewall,
+      body: ColoredBox(
+        color: _referencePage,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            20,
+            24,
+            28 + BottomInsetScope.of(context),
+          ),
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Overview(),
+                    SizedBox(height: 18),
+                    _AutomationSettings(),
+                    SizedBox(height: 22),
+                    _ApiKeyTile(),
+                    SizedBox(height: 22),
+                    _Rules(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }
@@ -57,9 +134,12 @@ class _Overview extends ConsumerWidget {
     final state = ref.watch(mkcloudFirewallProvider);
     final result = state.result;
     final ready = setting.apiKey.isNotEmpty;
+    final failed = result?.type == MkcloudResultType.error;
     final ipMode = result?.mode == 'ip';
     final provinceMode = result?.mode == 'province';
-    final title = ipMode
+    final title = failed
+        ? l10n.mkcloudStatusError
+        : ipMode
         ? l10n.mkcloudIpActive
         : provinceMode
         ? l10n.mkcloudProvinceActive
@@ -70,7 +150,9 @@ class _Overview extends ConsumerWidget {
         : state.isRunning
         ? l10n.mkcloudRunning
         : l10n.mkcloudStatusWaiting;
-    final subtitle = provinceMode
+    final subtitle = failed
+        ? l10n.mkcloudStatusErrorDesc
+        : provinceMode
         ? l10n.mkcloudCurrentProvince(result?.province ?? '-')
         : ipMode
         ? l10n.mkcloudUsage(result?.count ?? 0, result?.limit ?? 10)
@@ -78,36 +160,62 @@ class _Overview extends ConsumerWidget {
         ? l10n.mkcloudNeverRun
         : l10n.mkcloudLastRun(state.lastRunAt!.toLocal().toString());
     final notifier = ref.read(mkcloudFirewallProvider.notifier);
-    return GlassSurface(
-      borderRadius: AppRadius.large,
-      padding: const EdgeInsets.all(20),
-      child: Wrap(
-        runSpacing: 16,
-        spacing: 16,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          GlassIconBadge(
-            icon: ipMode ? Icons.public_rounded : Icons.map_rounded,
-          ),
-          SizedBox(
-            width: 380,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: context.textTheme.headlineSmall),
-                const SizedBox(height: 6),
-                Text(subtitle, style: context.textTheme.bodyMedium),
-                if (setting.enable) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.mkcloudPollEvery(setting.pollSeconds),
-                    style: context.textTheme.bodySmall,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Wrap(
+    return _ReferenceCard(
+      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final summary = Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF0EAFF),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  failed
+                      ? Icons.cloud_off_rounded
+                      : ipMode
+                      ? Icons.public_rounded
+                      : Icons.map_rounded,
+                  color: failed ? const Color(0xFFE54B4B) : _referencePurple,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: context.textTheme.headlineSmall?.copyWith(
+                        color: _referenceInk,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: _referenceMuted,
+                      ),
+                    ),
+                    if (setting.enable) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.mkcloudPollEvery(setting.pollSeconds),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: _referenceMuted,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          );
+          final actions = Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
@@ -115,8 +223,20 @@ class _Overview extends ConsumerWidget {
                 onPressed: ready && !state.isRunning
                     ? () => unawaited(notifier.query())
                     : null,
-                icon: const Icon(Icons.travel_explore_rounded),
+                icon: const Icon(Icons.travel_explore_rounded, size: 18),
                 label: Text(l10n.mkcloudQueryStatus),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _referenceInk,
+                  backgroundColor: _referenceCell,
+                  side: BorderSide.none,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.small,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
               ),
               if (result?.mode != null)
                 OutlinedButton.icon(
@@ -125,21 +245,59 @@ class _Overview extends ConsumerWidget {
                             ? _showProvinceDialog(context, ref, result!)
                             : unawaited(notifier.switchToIp())
                       : null,
-                  icon: Icon(ipMode ? Icons.map_rounded : Icons.public_rounded),
+                  icon: Icon(
+                    ipMode ? Icons.map_rounded : Icons.public_rounded,
+                    size: 18,
+                  ),
                   label: Text(
                     ipMode ? l10n.mkcloudSwitchProvince : l10n.mkcloudSwitchIp,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: _referencePurple,
+                    side: BorderSide.none,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.small,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
                 ),
               FilledButton.icon(
                 onPressed: ready && !state.isRunning
                     ? () => unawaited(notifier.whitelist())
                     : null,
-                icon: const Icon(Icons.bolt_rounded),
+                icon: const Icon(Icons.bolt_rounded, size: 18),
                 label: Text(l10n.mkcloudWhitelistNow),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _referenceBlue,
+                  foregroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.small,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
               ),
             ],
-          ),
-        ],
+          );
+          return constraints.maxWidth < 720
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [summary, const SizedBox(height: 16), actions],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: summary),
+                    const SizedBox(width: 16),
+                    actions,
+                  ],
+                );
+        },
       ),
     );
   }
@@ -153,10 +311,11 @@ class _Overview extends ConsumerWidget {
       context: context,
       builder: (context) => _ProvinceDialog(provinces: result.provinces),
     );
-    if (selected != null)
+    if (selected != null) {
       unawaited(
         ref.read(mkcloudFirewallProvider.notifier).setProvince(selected),
       );
+    }
   }
 }
 
@@ -167,66 +326,102 @@ class _AutomationSettings extends ConsumerWidget {
     final l10n = context.appLocalizations;
     final setting = ref.watch(mkcloudFirewallSettingProvider);
     final notifier = ref.read(mkcloudFirewallSettingProvider.notifier);
-    return Column(
-      children: [
-        GlassButton(
-          padding: const EdgeInsets.all(16),
-          onTap: () => notifier.update((it) => it.copyWith(enable: !it.enable)),
-          child: Row(
-            children: [
-              const GlassIconBadge(icon: Icons.autorenew_rounded),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.mkcloudAutoWhitelist,
-                      style: context.textTheme.titleSmall,
-                    ),
-                    Text(
-                      l10n.mkcloudAutoWhitelistDesc,
-                      style: context.textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: setting.enable,
-                onChanged: (value) =>
-                    notifier.update((it) => it.copyWith(enable: value)),
-              ),
-            ],
+    final auto = _ReferenceActionCard(
+      padding: const EdgeInsets.all(16),
+      onTap: () => notifier.update((it) => it.copyWith(enable: !it.enable)),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: _referenceGreen,
+              borderRadius: AppRadius.small,
+            ),
+            child: const Icon(Icons.shield_rounded, color: Colors.white),
           ),
-        ),
-        const SizedBox(height: 8),
-        GlassButton(
-          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-          onTap: () => _editInterval(context, ref, setting.pollSeconds),
-          child: Row(
-            children: [
-              const GlassIconBadge(icon: Icons.timer_rounded),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.mkcloudPollInterval,
-                      style: context.textTheme.titleSmall,
-                    ),
-                    Text(
-                      l10n.mkcloudPollEvery(setting.pollSeconds),
-                      style: context.textTheme.bodySmall,
-                    ),
-                  ],
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.mkcloudAutoWhitelist,
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: _referenceInk,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const Icon(Icons.edit_rounded, size: 18),
-            ],
+                Text(
+                  l10n.mkcloudAutoWhitelistDesc,
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: _referenceMuted,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          Switch(
+            value: setting.enable,
+            activeThumbColor: Colors.white,
+            activeTrackColor: _referenceGreen,
+            onChanged: (value) =>
+                notifier.update((it) => it.copyWith(enable: value)),
+          ),
+        ],
+      ),
+    );
+    final interval = _ReferenceActionCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+      onTap: () => _editInterval(context, ref, setting.pollSeconds),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: _referenceBlue,
+              borderRadius: AppRadius.small,
+            ),
+            child: const Icon(Icons.timer_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.mkcloudPollInterval,
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: _referenceInk,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  l10n.mkcloudPollEvery(setting.pollSeconds),
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: _referenceMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.edit_rounded, size: 18),
+        ],
+      ),
+    );
+    return LayoutBuilder(
+      builder: (_, constraints) => constraints.maxWidth < 720
+          ? Column(children: [auto, const SizedBox(height: 12), interval])
+          : IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(child: auto),
+                  const SizedBox(width: 12),
+                  Expanded(child: interval),
+                ],
+              ),
+            ),
     );
   }
 
@@ -255,10 +450,11 @@ class _AutomationSettings extends ConsumerWidget {
         },
       ),
     );
-    if (value != null)
+    if (value != null) {
       ref
           .read(mkcloudFirewallSettingProvider.notifier)
           .update((it) => it.copyWith(pollSeconds: int.parse(value)));
+    }
   }
 }
 
@@ -270,44 +466,96 @@ class _ApiKeyTile extends ConsumerWidget {
     final apiKey = ref.watch(
       mkcloudFirewallSettingProvider.select((it) => it.apiKey),
     );
-    return GlassButton(
+    Future<void> edit() async {
+      final value = await dialogs.showCommonDialog<String>(
+        child: InputDialog(
+          title: l10n.mkcloudApiKey,
+          value: apiKey,
+          obscureText: true,
+        ),
+      );
+      if (value != null) {
+        ref
+            .read(mkcloudFirewallSettingProvider.notifier)
+            .update((it) => it.copyWith(apiKey: value.trim()));
+      }
+    }
+
+    return _ReferenceCard(
       padding: const EdgeInsets.all(16),
-      onTap: () async {
-        final value = await dialogs.showCommonDialog<String>(
-          child: InputDialog(
-            title: l10n.mkcloudApiKey,
-            value: apiKey,
-            obscureText: true,
-          ),
-        );
-        if (value != null)
-          ref
-              .read(mkcloudFirewallSettingProvider.notifier)
-              .update((it) => it.copyWith(apiKey: value.trim()));
-      },
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const GlassIconBadge(icon: Icons.key_rounded),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.mkcloudApiKey, style: context.textTheme.titleSmall),
-                Text(
-                  apiKey.isEmpty
-                      ? l10n.mkcloudKeyEmpty
-                      : l10n.mkcloudKeyConfigured,
-                  style: context.textTheme.bodySmall,
+          Row(
+            children: [
+              const GlassIconBadge(icon: Icons.key_rounded),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  l10n.mkcloudApiKey,
+                  style: context.textTheme.titleMedium,
                 ),
-              ],
-            ),
+              ),
+              IconButton(
+                tooltip: l10n.mkcloudChangeApiKey,
+                onPressed: edit,
+                icon: const Icon(Icons.edit_rounded),
+                style: IconButton.styleFrom(
+                  foregroundColor: _referenceBlue,
+                  backgroundColor: const Color(0xFFE8F0FF),
+                ),
+              ),
+            ],
           ),
-          const Icon(Icons.edit_rounded),
+          const SizedBox(height: 16),
+          Text(l10n.mkcloudApiEndpoint, style: context.textTheme.bodySmall),
+          const SizedBox(height: 6),
+          const _CodeCell(value: mkcloudApiUri),
+          const SizedBox(height: 10),
+          _CodeCell(
+            value: apiKey.isEmpty
+                ? l10n.mkcloudKeyEmpty
+                : _maskedApiKey(apiKey),
+            icon: Icons.key_rounded,
+          ),
         ],
       ),
     );
   }
+}
+
+String _maskedApiKey(String value) => value.length <= 8
+    ? '••••••••'
+    : '${value.substring(0, 4)}••••${value.substring(value.length - 4)}';
+
+class _CodeCell extends StatelessWidget {
+  const _CodeCell({required this.value, this.icon});
+  final String value;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: const BoxDecoration(
+      color: _referenceCell,
+      borderRadius: AppRadius.small,
+    ),
+    child: Row(
+      children: [
+        if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 10)],
+        Expanded(
+          child: SelectableText(
+            value,
+            style: const TextStyle(
+              color: _referenceInk,
+              fontFamily: 'monospace',
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _Rules extends ConsumerWidget {
@@ -317,29 +565,165 @@ class _Rules extends ConsumerWidget {
     final l10n = context.appLocalizations;
     final state = ref.watch(mkcloudFirewallProvider);
     final result = state.result;
-    if (result == null || result.type == MkcloudResultType.error)
+    if (result == null || result.type == MkcloudResultType.error) {
       return const SizedBox.shrink();
-    if (result.mode == 'province')
-      return GlassSurface(
-        borderRadius: AppRadius.medium,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.mkcloudProvinceRule,
-              style: context.textTheme.titleMedium,
+    }
+    if (result.mode == 'province') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _RuleHeading(
+            title: '${l10n.mkcloudProvinceRule}（${l10n.mkcloudProvinceActive}）',
+          ),
+          const SizedBox(height: 10),
+          _ReferenceCard(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.mkcloudProvinceRule,
+                  style: context.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.mkcloudCurrentProvince(result.province ?? '-'),
+                      ),
+                    ),
+                    FilledButton.icon(
+                      onPressed: state.isRunning
+                          ? null
+                          : () => _showProvincePicker(context, ref, result),
+                      icon: const Icon(Icons.check_rounded, size: 18),
+                      label: Text(l10n.mkcloudSetProvince),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _referencePurple,
+                        foregroundColor: Colors.white,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.small,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final province in result.provinces)
+                      ChoiceChip(
+                        label: Text(province.label),
+                        selected: province.value == result.province,
+                        selectedColor: const Color(0xFFEFE8FF),
+                        labelStyle: TextStyle(
+                          color: province.value == result.province
+                              ? _referencePurple
+                              : _referenceMuted,
+                        ),
+                        onSelected:
+                            state.isRunning || province.value == result.province
+                            ? null
+                            : (_) => unawaited(
+                                ref
+                                    .read(mkcloudFirewallProvider.notifier)
+                                    .setProvince(province.value),
+                              ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.mkcloudProvinceHint,
+                  style: context.textTheme.bodySmall,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(l10n.mkcloudCurrentProvince(result.province ?? '-')),
-            const SizedBox(height: 8),
-            Text(l10n.mkcloudProvinceHint, style: context.textTheme.bodySmall),
-          ],
-        ),
+          ),
+          const SizedBox(height: 22),
+          _RuleHeading(title: l10n.mkcloudIpRule(result.count, result.limit)),
+          const SizedBox(height: 10),
+          _IpRules(result: result),
+        ],
       );
+    }
     if (result.mode != 'ip') return const SizedBox.shrink();
-    return GlassSurface(
-      borderRadius: AppRadius.medium,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _RuleHeading(title: l10n.mkcloudIpRule(result.count, result.limit)),
+        const SizedBox(height: 10),
+        _IpRules(result: result),
+      ],
+    );
+  }
+
+  Future<void> _showProvincePicker(
+    BuildContext context,
+    WidgetRef ref,
+    MkcloudResult result,
+  ) async {
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => _ProvinceDialog(provinces: result.provinces),
+    );
+    if (selected != null) {
+      unawaited(
+        ref.read(mkcloudFirewallProvider.notifier).setProvince(selected),
+      );
+    }
+  }
+}
+
+class _RuleHeading extends StatelessWidget {
+  const _RuleHeading({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    title,
+    style: context.textTheme.titleMedium?.copyWith(
+      color: _referenceMuted,
+      fontWeight: FontWeight.w700,
+    ),
+  );
+}
+
+class _IpRules extends ConsumerStatefulWidget {
+  const _IpRules({required this.result});
+  final MkcloudResult result;
+
+  @override
+  ConsumerState<_IpRules> createState() => _IpRulesState();
+}
+
+class _IpRulesState extends ConsumerState<_IpRules> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _addIp() {
+    final value = _controller.text.trim();
+    if (!isIpv4(value)) return;
+    _controller.clear();
+    unawaited(ref.read(mkcloudFirewallProvider.notifier).addIp(value));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.appLocalizations;
+    final state = ref.watch(mkcloudFirewallProvider);
+    final result = widget.result;
+    final usage = result.limit == 0 ? 0.0 : result.count / result.limit;
+    final disabled = state.isRunning;
+    return _ReferenceCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,83 +732,172 @@ class _Rules extends ConsumerWidget {
             l10n.mkcloudIpRule(result.count, result.limit),
             style: context.textTheme.titleMedium,
           ),
-          const SizedBox(height: 10),
-          for (final entry in result.entries) _IpRow(entry: entry),
-          const Divider(),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final input = TextField(
+                controller: _controller,
+                enabled: !disabled,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _addIp(),
+                decoration: InputDecoration(
+                  hintText: l10n.mkcloudIpHint,
+                  prefixIcon: const Icon(Icons.language_rounded),
+                  filled: true,
+                  fillColor: _referenceCell,
+                  border: AppShape.input,
+                  enabledBorder: AppShape.input,
+                  focusedBorder: AppShape.input,
+                ),
+              );
+              final actions = Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.icon(
+                    onPressed: disabled ? null : _addIp,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: Text(l10n.mkcloudAddIp),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _referenceBlue,
+                      foregroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.small,
+                      ),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: disabled
+                        ? null
+                        : () => unawaited(
+                            ref
+                                .read(mkcloudFirewallProvider.notifier)
+                                .switchToIp(),
+                          ),
+                    icon: const Icon(Icons.public_rounded, size: 18),
+                    label: Text(l10n.mkcloudAddCurrentExit),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _referenceInk,
+                      backgroundColor: _referenceCell,
+                      side: BorderSide.none,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.small,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+              return constraints.maxWidth < 640
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [input, const SizedBox(height: 10), actions],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: input),
+                        const SizedBox(width: 10),
+                        actions,
+                      ],
+                    );
+            },
+          ),
+          const SizedBox(height: 16),
+          LinearProgressIndicator(
+            value: usage.clamp(0, 1),
+            color: _referenceGreen,
+            backgroundColor: _referenceCell,
+            borderRadius: AppRadius.full,
+          ),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: state.isRunning ? null : () => _addIp(context, ref),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(l10n.mkcloudAddIp),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                l10n.mkcloudUsage(result.count, result.limit),
+                style: context.textTheme.bodySmall,
+              ),
             ),
           ),
+          const Divider(height: 24),
+          _IpTableHeader(),
+          for (final (index, entry) in result.entries.indexed) ...[
+            const Divider(height: 1),
+            _IpTableRow(index: index + 1, entry: entry),
+          ],
         ],
       ),
     );
   }
+}
 
-  Future<void> _addIp(BuildContext context, WidgetRef ref) async {
+class _IpTableHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.appLocalizations;
-    final ip = await dialogs.showCommonDialog<String>(
-      child: InputDialog(
-        title: l10n.mkcloudAddIp,
-        value: '',
-        hintText: l10n.mkcloudIpHint,
-        keyboardType: TextInputType.number,
-        validator: (value) =>
-            isIpv4(value ?? '') ? null : l10n.mkcloudInvalidIp,
-      ),
+    return Row(
+      children: [
+        const SizedBox(width: 32, child: Text('#')),
+        Expanded(
+          flex: 3,
+          child: Text(
+            l10n.mkcloudIpAddress,
+            style: context.textTheme.labelMedium,
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(
+            l10n.mkcloudAddedAt,
+            style: context.textTheme.labelMedium,
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(l10n.mkcloudSource, style: context.textTheme.labelMedium),
+        ),
+        const SizedBox(width: 40),
+      ],
     );
-    if (ip != null)
-      unawaited(ref.read(mkcloudFirewallProvider.notifier).addIp(ip));
   }
 }
 
-class _IpRow extends ConsumerWidget {
-  const _IpRow({required this.entry});
+class _IpTableRow extends ConsumerWidget {
+  const _IpTableRow({required this.index, required this.entry});
+  final int index;
   final MkcloudWhitelistEntry entry;
-  @override
-  Widget build(BuildContext context, WidgetRef ref) => Row(
-    children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(entry.cidr),
-            Text(
-              entry.createdAt?.toLocal().toString() ??
-                  context.appLocalizations.mkcloudLegacyEntry,
-              style: context.textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-      IconButton(
-        icon: const Icon(Icons.delete_outline_rounded),
-        onPressed: () => unawaited(
-          ref.read(mkcloudFirewallProvider.notifier).deleteIp(entry.cidr),
-        ),
-      ),
-    ],
-  );
-}
 
-class _DirectTip extends StatelessWidget {
-  const _DirectTip();
   @override
-  Widget build(BuildContext context) => GlassSurface(
-    borderRadius: AppRadius.medium,
-    padding: const EdgeInsets.all(16),
+  Widget build(BuildContext context, WidgetRef ref) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.info_outline_rounded),
-        const SizedBox(width: 10),
+        SizedBox(
+          width: 32,
+          child: Text('$index', style: context.textTheme.bodySmall),
+        ),
+        Expanded(flex: 3, child: Text(entry.cidr)),
         Expanded(
+          flex: 3,
           child: Text(
-            context.appLocalizations.mkcloudDirectTip,
+            entry.createdAt?.toLocal().toString() ??
+                context.appLocalizations.mkcloudLegacyEntry,
             style: context.textTheme.bodySmall,
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            context.appLocalizations.mkcloudLocal,
+            style: context.textTheme.bodySmall,
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, size: 19),
+            onPressed: () => unawaited(
+              ref.read(mkcloudFirewallProvider.notifier).deleteIp(entry.cidr),
+            ),
           ),
         ),
       ],

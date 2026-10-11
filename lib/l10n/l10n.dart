@@ -5535,6 +5535,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Product · Service ID 3438`
+  String get mkcloudProductService {
+    return Intl.message(
+      'Product · Service ID 3438',
+      name: 'mkcloudProductService',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `MKCloud whitelist`
   String get mkcloudFirewall {
     return Intl.message(
@@ -5563,6 +5573,71 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
+  }
+
+  /// `API request address (the key is sent in the X-API-Key header)`
+  String get mkcloudApiEndpoint {
+    return Intl.message(
+      'API request address (the key is sent in the X-API-Key header)',
+      name: 'mkcloudApiEndpoint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change API Key`
+  String get mkcloudChangeApiKey {
+    return Intl.message(
+      'Change API Key',
+      name: 'mkcloudChangeApiKey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove API Key`
+  String get mkcloudRemoveApiKey {
+    return Intl.message(
+      'Remove API Key',
+      name: 'mkcloudRemoveApiKey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add current exit`
+  String get mkcloudAddCurrentExit {
+    return Intl.message(
+      'Add current exit',
+      name: 'mkcloudAddCurrentExit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IP address`
+  String get mkcloudIpAddress {
+    return Intl.message(
+      'IP address',
+      name: 'mkcloudIpAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Added at`
+  String get mkcloudAddedAt {
+    return Intl.message('Added at', name: 'mkcloudAddedAt', desc: '', args: []);
+  }
+
+  /// `Source`
+  String get mkcloudSource {
+    return Intl.message('Source', name: 'mkcloudSource', desc: '', args: []);
+  }
+
+  /// `Local`
+  String get mkcloudLocal {
+    return Intl.message('Local', name: 'mkcloudLocal', desc: '', args: []);
   }
 
   /// `IP whitelist mode · active`
@@ -5610,6 +5685,26 @@ class AppLocalizations {
     return Intl.message(
       'Waiting for status',
       name: 'mkcloudStatusWaiting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whitelist refresh failed`
+  String get mkcloudStatusError {
+    return Intl.message(
+      'Whitelist refresh failed',
+      name: 'mkcloudStatusError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the network connection, API key, and then try again.`
+  String get mkcloudStatusErrorDesc {
+    return Intl.message(
+      'Check the network connection, API key, and then try again.',
+      name: 'mkcloudStatusErrorDesc',
       desc: '',
       args: [],
     );

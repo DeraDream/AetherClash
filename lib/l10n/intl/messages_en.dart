@@ -582,9 +582,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -694,13 +695,23 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "minutesAgo": m20,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Mixed port"),
+    "mkcloudAddCurrentExit": MessageLookupByLibrary.simpleMessage(
+      "Add current exit",
+    ),
     "mkcloudAddIp": MessageLookupByLibrary.simpleMessage("Add IP whitelist"),
+    "mkcloudAddedAt": MessageLookupByLibrary.simpleMessage("Added at"),
+    "mkcloudApiEndpoint": MessageLookupByLibrary.simpleMessage(
+      "API request address (the key is sent in the X-API-Key header)",
+    ),
     "mkcloudApiKey": MessageLookupByLibrary.simpleMessage("API Key"),
     "mkcloudAutoWhitelist": MessageLookupByLibrary.simpleMessage(
       "Auto whitelist",
     ),
     "mkcloudAutoWhitelistDesc": MessageLookupByLibrary.simpleMessage(
       "Maintain the active whitelist mode at the selected interval",
+    ),
+    "mkcloudChangeApiKey": MessageLookupByLibrary.simpleMessage(
+      "Change API Key",
     ),
     "mkcloudCurrentProvince": m21,
     "mkcloudDirectTip": MessageLookupByLibrary.simpleMessage(
@@ -718,6 +729,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mkcloudIpActive": MessageLookupByLibrary.simpleMessage(
       "IP whitelist mode · active",
     ),
+    "mkcloudIpAddress": MessageLookupByLibrary.simpleMessage("IP address"),
     "mkcloudIpHint": MessageLookupByLibrary.simpleMessage(
       "For example, 203.0.113.1",
     ),
@@ -730,6 +742,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mkcloudLegacyEntry": MessageLookupByLibrary.simpleMessage(
       "Legacy entry; date unknown",
     ),
+    "mkcloudLocal": MessageLookupByLibrary.simpleMessage("Local"),
     "mkcloudNav": MessageLookupByLibrary.simpleMessage("MKCloud whitelist"),
     "mkcloudNeverRun": MessageLookupByLibrary.simpleMessage("Not run yet"),
     "mkcloudPollEvery": m24,
@@ -737,6 +750,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Refresh interval",
     ),
     "mkcloudPollIntervalRange": m25,
+    "mkcloudProductService": MessageLookupByLibrary.simpleMessage(
+      "Product · Service ID 3438",
+    ),
     "mkcloudProvinceActive": MessageLookupByLibrary.simpleMessage(
       "Province mode · active",
     ),
@@ -747,11 +763,21 @@ class MessageLookup extends MessageLookupByLibrary {
       "Province rule",
     ),
     "mkcloudQueryStatus": MessageLookupByLibrary.simpleMessage("Query status"),
+    "mkcloudRemoveApiKey": MessageLookupByLibrary.simpleMessage(
+      "Remove API Key",
+    ),
     "mkcloudRunning": MessageLookupByLibrary.simpleMessage("Running…"),
     "mkcloudSelectProvince": MessageLookupByLibrary.simpleMessage(
       "Select province",
     ),
     "mkcloudSetProvince": MessageLookupByLibrary.simpleMessage("Whitelist now"),
+    "mkcloudSource": MessageLookupByLibrary.simpleMessage("Source"),
+    "mkcloudStatusError": MessageLookupByLibrary.simpleMessage(
+      "Whitelist refresh failed",
+    ),
+    "mkcloudStatusErrorDesc": MessageLookupByLibrary.simpleMessage(
+      "Check the network connection, API key, and then try again.",
+    ),
     "mkcloudStatusNoKey": MessageLookupByLibrary.simpleMessage(
       "Add an API key to start",
     ),

@@ -4,7 +4,11 @@ import 'dart:io';
 import 'package:fl_clash/models/mkcloud_firewall.dart';
 
 const mkcloudApiHost = 'www.mkcloud.net';
-const mkcloudExitHost = 'api.ipify.org';
+const mkcloudExitHosts = ['api.ipify.org', 'api4.ipify.org'];
+const mkcloudExitUris = [
+  'https://api.ipify.org?format=json',
+  'https://api4.ipify.org?format=json',
+];
 const mkcloudApiUri =
     'https://$mkcloudApiHost/index.php?m=provincewhitelist&hosting_id=3438';
 
@@ -13,15 +17,29 @@ bool isIpv4(String value) => RegExp(
 ).hasMatch(value);
 
 Future<List<String>> resolveMkcloudDirectCidrs() async {
-  final addresses = <String>{};
-  for (final host in [mkcloudApiHost, mkcloudExitHost]) {
-    final resolved = await InternetAddress.lookup(
-      host,
-      type: InternetAddressType.IPv4,
-    );
-    addresses.addAll(resolved.map((it) => '${it.address}/32'));
+  final apiAddresses = <String>{};
+  final exitAddresses = <String>{};
+  for (final host in [mkcloudApiHost, ...mkcloudExitHosts]) {
+    try {
+      final resolved = await InternetAddress.lookup(
+        host,
+        type: InternetAddressType.IPv4,
+      ).timeout(const Duration(seconds: 8));
+      final addresses = resolved.map((it) => '${it.address}/32');
+      if (host == mkcloudApiHost) {
+        apiAddresses.addAll(addresses);
+      } else {
+        exitAddresses.addAll(addresses);
+      }
+    } catch (_) {}
   }
-  return addresses.toList(growable: false);
+  if (apiAddresses.isEmpty || exitAddresses.isEmpty) {
+    throw HttpException(
+      'Unable to resolve the MKCloud or exit IP service',
+      uri: Uri.parse(mkcloudApiUri),
+    );
+  }
+  return {...apiAddresses, ...exitAddresses}.toList(growable: false);
 }
 
 class MkcloudDirectTransport {
@@ -37,15 +55,17 @@ class MkcloudDirectTransport {
     required String apiKey,
     required Map<String, Object?> body,
   }) async {
-    final request = await _http.postUrl(uri);
+    final request = await _http
+        .postUrl(uri)
+        .timeout(const Duration(seconds: 12));
     request.headers.contentType = ContentType.json;
     request.headers.set('X-API-Key', apiKey);
     request.write(jsonEncode(body));
-    final response = await request.close();
+    final response = await request.close().timeout(const Duration(seconds: 12));
     final raw = await response.transform(utf8.decoder).join();
     final value = jsonDecode(raw);
     if (value is! Map) {
-      throw HttpException('Invalid MKCloud response');
+      throw const HttpException('Invalid MKCloud response');
     }
     final result = Map<String, Object?>.from(value);
     if (response.statusCode != HttpStatus.ok || result['code'] != 0) {
@@ -55,17 +75,29 @@ class MkcloudDirectTransport {
   }
 
   Future<String> currentIp() async {
-    final request = await _http.getUrl(
-      Uri.parse('https://$mkcloudExitHost?format=json'),
-    );
-    final response = await request.close();
-    final raw = await response.transform(utf8.decoder).join();
-    final value = jsonDecode(raw);
-    final ip = value is Map ? value['ip']?.toString() : null;
-    if (response.statusCode != HttpStatus.ok || ip == null || !isIpv4(ip)) {
-      throw HttpException('Unable to determine the direct IPv4 exit');
+    Object? lastError;
+    for (final value in mkcloudExitUris) {
+      try {
+        final request = await _http
+            .getUrl(Uri.parse(value))
+            .timeout(const Duration(seconds: 12));
+        final response = await request.close().timeout(
+          const Duration(seconds: 12),
+        );
+        final raw = await response.transform(utf8.decoder).join();
+        final body = jsonDecode(raw);
+        final ip = body is Map ? body['ip']?.toString() : null;
+        if (response.statusCode == HttpStatus.ok && ip != null && isIpv4(ip)) {
+          return ip;
+        }
+        lastError = const HttpException('Invalid exit IP response');
+      } catch (error) {
+        lastError = error;
+      }
     }
-    return ip;
+    throw HttpException(
+      'Unable to determine the direct IPv4 exit${lastError == null ? '' : ': $lastError'}',
+    );
   }
 
   void reset() {
@@ -80,7 +112,7 @@ MkcloudResult mkcloudResultOf(
 }) {
   final raw = response['data'];
   if (raw is! Map) {
-    throw const FormatException('MKCloud 返回缺少 data');
+    throw const FormatException('MKCloud response is missing data');
   }
   final data = Map<String, Object?>.from(raw);
   final entries = data['entries'] is List

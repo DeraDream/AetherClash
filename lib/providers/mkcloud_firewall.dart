@@ -44,9 +44,18 @@ class MkcloudFirewall extends _$MkcloudFirewall {
       _mutate({'api': 1, 'api_action': 'add_whitelist', 'ip': ip});
 
   Future<bool> switchToIp() async {
+    final setting = _setting;
+    if (!_started || setting.apiKey.isEmpty || _inFlight) return false;
+    _inFlight = true;
+    _timer?.cancel();
+    state = state.copyWith(isRunning: true);
     try {
       final ip = await ref.read(mkcloudFirewallClientProvider).currentIp();
-      return await addIp(ip);
+      return await _mutate({
+        'api': 1,
+        'api_action': 'add_whitelist',
+        'ip': ip,
+      }, isLocked: true);
     } catch (error) {
       state = MkcloudFirewallState(
         lastRunAt: DateTime.now(),
@@ -54,6 +63,9 @@ class MkcloudFirewall extends _$MkcloudFirewall {
         result: MkcloudResult(type: MkcloudResultType.error, message: '$error'),
       );
       return false;
+    } finally {
+      _inFlight = false;
+      _schedule();
     }
   }
 
@@ -65,7 +77,10 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     ref.read(mkcloudFirewallClientProvider).reset();
     try {
       await _refreshDirectRoutes();
-    } catch (_) {}
+    } catch (_) {
+      _setRoutePreparationError();
+      return;
+    }
     pollNow();
   }
 
@@ -77,13 +92,24 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     if (previous.enable != next.enable) {
       _timer?.cancel();
       if (next.enable) {
-        await _refreshDirectRoutes();
-        await whitelist();
+        try {
+          await _refreshDirectRoutes();
+          await whitelist();
+        } catch (_) {
+          _setRoutePreparationError();
+        }
       }
       return;
     }
-    if (previous.apiKey != next.apiKey && next.apiKey.isNotEmpty) {
-      await _refreshDirectRoutes();
+    if (previous.apiKey != next.apiKey) {
+      _timer?.cancel();
+      if (next.apiKey.isEmpty) return;
+      try {
+        await _refreshDirectRoutes();
+        if (next.enable) await whitelist();
+      } catch (_) {
+        _setRoutePreparationError();
+      }
       return;
     }
     if (previous.pollSeconds != next.pollSeconds && !_inFlight) _schedule();
@@ -99,13 +125,24 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     await ref.read(setupActionProvider.notifier).applyProfile(silence: true);
   }
 
+  void _setRoutePreparationError() {
+    state = MkcloudFirewallState(
+      lastRunAt: DateTime.now(),
+      lastRunKind: MkcloudRunKind.whitelist,
+      result: const MkcloudResult(
+        type: MkcloudResultType.error,
+        message: 'route_preparation_failed',
+      ),
+    );
+  }
+
   Future<void> _run(MkcloudRunKind kind) async {
     final setting = _setting;
     if (!_started || setting.apiKey.isEmpty || _inFlight) return;
     if (kind == MkcloudRunKind.poll && !setting.enable) return;
     _inFlight = true;
     _timer?.cancel();
-    if (kind != MkcloudRunKind.poll) state = state.copyWith(isRunning: true);
+    state = state.copyWith(isRunning: true);
     try {
       final client = ref.read(mkcloudFirewallClientProvider);
       final initial = await client.post(
@@ -174,14 +211,19 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     }
   }
 
-  Future<bool> _mutate(Map<String, Object?> body) async {
+  Future<bool> _mutate(
+    Map<String, Object?> body, {
+    bool isLocked = false,
+  }) async {
     final setting = _setting;
-    if (!_started || setting.apiKey.isEmpty || _inFlight) {
+    if (!_started || setting.apiKey.isEmpty || (!isLocked && _inFlight)) {
       return false;
     }
-    _inFlight = true;
-    _timer?.cancel();
-    state = state.copyWith(isRunning: true);
+    if (!isLocked) {
+      _inFlight = true;
+      _timer?.cancel();
+      state = state.copyWith(isRunning: true);
+    }
     try {
       final client = ref.read(mkcloudFirewallClientProvider);
       await client.post(
@@ -210,8 +252,10 @@ class MkcloudFirewall extends _$MkcloudFirewall {
       );
       return false;
     } finally {
-      _inFlight = false;
-      _schedule();
+      if (!isLocked) {
+        _inFlight = false;
+        _schedule();
+      }
     }
   }
 
