@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MkcloudFirewallProps {
 
- bool get enable; String get apiKey; int get pollSeconds; List<String> get directCidrs;
+ bool get enable; String get apiUrl; String get apiKey; int get pollSeconds; List<String> get directCidrs;
 /// Create a copy of MkcloudFirewallProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $MkcloudFirewallPropsCopyWith<MkcloudFirewallProps> get copyWith => _$MkcloudFir
 @override
 bool operator ==(Object other) {
   final _this = this as MkcloudFirewallProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MkcloudFirewallProps&&(identical(other.enable, _this.enable) || other.enable == _this.enable)&&(identical(other.apiKey, _this.apiKey) || other.apiKey == _this.apiKey)&&(identical(other.pollSeconds, _this.pollSeconds) || other.pollSeconds == _this.pollSeconds)&&const DeepCollectionEquality().equals(other.directCidrs, _this.directCidrs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MkcloudFirewallProps&&(identical(other.enable, _this.enable) || other.enable == _this.enable)&&(identical(other.apiUrl, _this.apiUrl) || other.apiUrl == _this.apiUrl)&&(identical(other.apiKey, _this.apiKey) || other.apiKey == _this.apiKey)&&(identical(other.pollSeconds, _this.pollSeconds) || other.pollSeconds == _this.pollSeconds)&&const DeepCollectionEquality().equals(other.directCidrs, _this.directCidrs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as MkcloudFirewallProps;
-  return Object.hash(runtimeType,_this.enable,_this.apiKey,_this.pollSeconds,const DeepCollectionEquality().hash(_this.directCidrs));
+  return Object.hash(runtimeType,_this.enable,_this.apiUrl,_this.apiKey,_this.pollSeconds,const DeepCollectionEquality().hash(_this.directCidrs));
 }
 
 @override
 String toString() {
   final _this = this as MkcloudFirewallProps;
-  return 'MkcloudFirewallProps(enable: ${_this.enable}, apiKey: ${_this.apiKey}, pollSeconds: ${_this.pollSeconds}, directCidrs: ${_this.directCidrs})';
+  return 'MkcloudFirewallProps(enable: ${_this.enable}, apiUrl: ${_this.apiUrl}, apiKey: ${_this.apiKey}, pollSeconds: ${_this.pollSeconds}, directCidrs: ${_this.directCidrs})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $MkcloudFirewallPropsCopyWith<$Res>  {
   factory $MkcloudFirewallPropsCopyWith(MkcloudFirewallProps value, $Res Function(MkcloudFirewallProps) _then) = _$MkcloudFirewallPropsCopyWithImpl;
 @useResult
 $Res call({
- bool enable, String apiKey, int pollSeconds, List<String> directCidrs
+ bool enable, String apiUrl, String apiKey, int pollSeconds, List<String> directCidrs
 });
 
 
@@ -71,10 +71,11 @@ class _$MkcloudFirewallPropsCopyWithImpl<$Res>
 
 /// Create a copy of MkcloudFirewallProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? enable = null,Object? apiKey = null,Object? pollSeconds = null,Object? directCidrs = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? enable = null,Object? apiUrl = null,Object? apiKey = null,Object? pollSeconds = null,Object? directCidrs = null,}) {
   return _then(MkcloudFirewallProps(
 enable: null == enable ? _self.enable : enable // ignore: cast_nullable_to_non_nullable
-as bool,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
+as bool,apiUrl: null == apiUrl ? _self.apiUrl : apiUrl // ignore: cast_nullable_to_non_nullable
+as String,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
 as String,pollSeconds: null == pollSeconds ? _self.pollSeconds : pollSeconds // ignore: cast_nullable_to_non_nullable
 as int,directCidrs: null == directCidrs ? _self.directCidrs : directCidrs // ignore: cast_nullable_to_non_nullable
 as List<String>,
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enable,  String apiKey,  int pollSeconds,  List<String> directCidrs)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enable,  String apiUrl,  String apiKey,  int pollSeconds,  List<String> directCidrs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MkcloudFirewallProps() when $default != null:
-return $default(_that.enable,_that.apiKey,_that.pollSeconds,_that.directCidrs);case _:
+return $default(_that.enable,_that.apiUrl,_that.apiKey,_that.pollSeconds,_that.directCidrs);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.enable,_that.apiKey,_that.pollSeconds,_that.directCidrs);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enable,  String apiKey,  int pollSeconds,  List<String> directCidrs)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enable,  String apiUrl,  String apiKey,  int pollSeconds,  List<String> directCidrs)  $default,) {final _that = this;
 switch (_that) {
 case _MkcloudFirewallProps():
-return $default(_that.enable,_that.apiKey,_that.pollSeconds,_that.directCidrs);case _:
+return $default(_that.enable,_that.apiUrl,_that.apiKey,_that.pollSeconds,_that.directCidrs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.enable,_that.apiKey,_that.pollSeconds,_that.directCidrs);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enable,  String apiKey,  int pollSeconds,  List<String> directCidrs)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enable,  String apiUrl,  String apiKey,  int pollSeconds,  List<String> directCidrs)?  $default,) {final _that = this;
 switch (_that) {
 case _MkcloudFirewallProps() when $default != null:
-return $default(_that.enable,_that.apiKey,_that.pollSeconds,_that.directCidrs);case _:
+return $default(_that.enable,_that.apiUrl,_that.apiKey,_that.pollSeconds,_that.directCidrs);case _:
   return null;
 
 }
@@ -218,10 +219,11 @@ return $default(_that.enable,_that.apiKey,_that.pollSeconds,_that.directCidrs);c
 @JsonSerializable()
 
 class _MkcloudFirewallProps implements MkcloudFirewallProps {
-  const _MkcloudFirewallProps({this.enable = false, this.apiKey = '', this.pollSeconds = 5,  List<String> directCidrs = const []}): _directCidrs = directCidrs;
+  const _MkcloudFirewallProps({this.enable = false, this.apiUrl = '', this.apiKey = '', this.pollSeconds = 5,  List<String> directCidrs = const []}): _directCidrs = directCidrs;
   factory _MkcloudFirewallProps.fromJson(Map<String, dynamic> json) => _$MkcloudFirewallPropsFromJson(json);
 
 @override@JsonKey() final  bool enable;
+@override@JsonKey() final  String apiUrl;
 @override@JsonKey() final  String apiKey;
 @override@JsonKey() final  int pollSeconds;
  final  List<String> _directCidrs;
@@ -245,18 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MkcloudFirewallProps&&(identical(other.enable, enable) || other.enable == enable)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.pollSeconds, pollSeconds) || other.pollSeconds == pollSeconds)&&const DeepCollectionEquality().equals(other.directCidrs, _directCidrs));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MkcloudFirewallProps&&(identical(other.enable, enable) || other.enable == enable)&&(identical(other.apiUrl, apiUrl) || other.apiUrl == apiUrl)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.pollSeconds, pollSeconds) || other.pollSeconds == pollSeconds)&&const DeepCollectionEquality().equals(other.directCidrs, _directCidrs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,enable,apiKey,pollSeconds,const DeepCollectionEquality().hash(_directCidrs));
+    return Object.hash(runtimeType,enable,apiUrl,apiKey,pollSeconds,const DeepCollectionEquality().hash(_directCidrs));
 }
 
 @override
 String toString() {
-    return 'MkcloudFirewallProps(enable: $enable, apiKey: $apiKey, pollSeconds: $pollSeconds, directCidrs: $directCidrs)';
+    return 'MkcloudFirewallProps(enable: $enable, apiUrl: $apiUrl, apiKey: $apiKey, pollSeconds: $pollSeconds, directCidrs: $directCidrs)';
 }
 
 
@@ -267,7 +269,7 @@ abstract mixin class _$MkcloudFirewallPropsCopyWith<$Res> implements $MkcloudFir
   factory _$MkcloudFirewallPropsCopyWith(_MkcloudFirewallProps value, $Res Function(_MkcloudFirewallProps) _then) = __$MkcloudFirewallPropsCopyWithImpl;
 @override @useResult
 $Res call({
- bool enable, String apiKey, int pollSeconds, List<String> directCidrs
+ bool enable, String apiUrl, String apiKey, int pollSeconds, List<String> directCidrs
 });
 
 
@@ -284,10 +286,11 @@ class __$MkcloudFirewallPropsCopyWithImpl<$Res>
 
 /// Create a copy of MkcloudFirewallProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? enable = null,Object? apiKey = null,Object? pollSeconds = null,Object? directCidrs = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? enable = null,Object? apiUrl = null,Object? apiKey = null,Object? pollSeconds = null,Object? directCidrs = null,}) {
   return _then(_MkcloudFirewallProps(
 enable: null == enable ? _self.enable : enable // ignore: cast_nullable_to_non_nullable
-as bool,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
+as bool,apiUrl: null == apiUrl ? _self.apiUrl : apiUrl // ignore: cast_nullable_to_non_nullable
+as String,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
 as String,pollSeconds: null == pollSeconds ? _self.pollSeconds : pollSeconds // ignore: cast_nullable_to_non_nullable
 as int,directCidrs: null == directCidrs ? _self._directCidrs : directCidrs // ignore: cast_nullable_to_non_nullable
 as List<String>,

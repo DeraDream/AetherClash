@@ -428,7 +428,7 @@ final class SharedStateProvider
   }
 }
 
-String _$sharedStateHash() => r'79a13c453074e5010c7a9cc91fd4ab64f8819627';
+String _$sharedStateHash() => r'de01d89b263dbf82028e66ef8a86eea090f05241';
 
 @ProviderFor(AccessControlState)
 final accessControlStateProvider = AccessControlStateProvider._();
@@ -1351,7 +1351,7 @@ final class CurrentGroupsStateProvider
 }
 
 String _$currentGroupsStateHash() =>
-    r'dbf8f02606a31486c99d7b89d19914cd5a1fc496';
+    r'cf3ded8077174cb74bfc56876dd3b2dcd68347f3';
 
 @ProviderFor(proxyState)
 final proxyStateProvider = ProxyStateProvider._();

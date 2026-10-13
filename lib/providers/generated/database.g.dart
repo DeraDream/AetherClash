@@ -781,7 +781,7 @@ final class ProfileDisabledRuleIdsProvider
 }
 
 String _$profileDisabledRuleIdsHash() =>
-    r'7a06f7f179f9c42671f9ccb97124aed670ab51bd';
+    r'138795bdde84215df8ac1f85037ff25405de4cf2';
 
 final class ProfileDisabledRuleIdsFamily extends $Family
     with

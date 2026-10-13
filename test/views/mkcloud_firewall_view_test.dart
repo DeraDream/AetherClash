@@ -20,7 +20,10 @@ class _FakeMkcloudFirewall extends MkcloudFirewall {
   MkcloudFirewallState build() => initial;
 }
 
-const _setting = MkcloudFirewallProps(apiKey: 'test-key');
+const _setting = MkcloudFirewallProps(
+  apiUrl: 'https://user.example/mkcloud',
+  apiKey: 'test-key',
+);
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -57,5 +60,15 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.byType(CommonCircleLoading), findsNothing);
+  });
+
+  testWidgets('requires a runtime endpoint instead of displaying a fixed URL', (
+    tester,
+  ) async {
+    await _pump(tester, state: const MkcloudFirewallState());
+
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.textContaining('www.mkcloud.net'), findsNothing);
+    expect(find.text('https://user.example/mkcloud'), findsOneWidget);
   });
 }

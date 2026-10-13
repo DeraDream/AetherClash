@@ -17,6 +17,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
   Timer? _timer;
   bool _started = false;
   bool _inFlight = false;
+  Uri? _endpoint;
 
   MkcloudFirewallProps get _setting => ref.read(mkcloudFirewallSettingProvider);
 
@@ -30,7 +31,27 @@ class MkcloudFirewall extends _$MkcloudFirewall {
   void start() {
     if (_started) return;
     _started = true;
+    _endpoint = _endpointOf(_setting.apiUrl);
     pollNow();
+  }
+
+  Future<void> configure(String apiUrl, String apiKey) async {
+    final endpoint = _endpointOf(apiUrl);
+    _endpoint = endpoint;
+    final setting = _setting;
+    if (setting.apiUrl != apiUrl || setting.apiKey != apiKey) {
+      ref
+          .read(mkcloudFirewallSettingProvider.notifier)
+          .update((it) => it.copyWith(apiUrl: apiUrl, apiKey: apiKey));
+    }
+    if (!_started || endpoint == null || apiKey.isEmpty || _inFlight) return;
+    _timer?.cancel();
+    try {
+      await _refreshDirectRoutes();
+      await query();
+    } catch (_) {
+      _setRoutePreparationError();
+    }
   }
 
   void pollNow() => unawaited(_run(MkcloudRunKind.poll));
@@ -52,7 +73,9 @@ class MkcloudFirewall extends _$MkcloudFirewall {
 
   Future<bool> switchToIp() async {
     final setting = _setting;
-    if (!_started || setting.apiKey.isEmpty || _inFlight) return false;
+    if (!_started || setting.apiKey.isEmpty || _endpoint == null || _inFlight) {
+      return false;
+    }
     _inFlight = true;
     _timer?.cancel();
     state = state.copyWith(isRunning: true);
@@ -80,7 +103,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
       _mutate({'api': 1, 'api_action': 'delete_whitelist', 'ip': ip});
 
   Future<void> onNetworkChanged() async {
-    if (!_started || !_setting.enable) return;
+    if (!_started || !_setting.enable || _endpoint == null) return;
     ref.read(mkcloudFirewallClientProvider).reset();
     try {
       await _refreshDirectRoutes();
@@ -98,7 +121,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     if (!_started || previous == null || previous == next) return;
     if (previous.enable != next.enable) {
       _timer?.cancel();
-      if (next.enable) {
+      if (next.enable && _endpoint != null) {
         try {
           await _refreshDirectRoutes();
           await whitelist();
@@ -108,27 +131,31 @@ class MkcloudFirewall extends _$MkcloudFirewall {
       }
       return;
     }
-    if (previous.apiKey != next.apiKey) {
-      _timer?.cancel();
-      if (next.apiKey.isEmpty) return;
-      try {
-        await _refreshDirectRoutes();
-        if (next.enable) await whitelist();
-      } catch (_) {
-        _setRoutePreparationError();
-      }
-      return;
-    }
     if (previous.pollSeconds != next.pollSeconds && !_inFlight) _schedule();
   }
 
-  Future<void> _refreshDirectRoutes() async {
-    final cidrs = await resolveMkcloudDirectCidrs();
-    final notifier = ref.read(mkcloudFirewallSettingProvider.notifier);
-    if (!_setting.directCidrs.toSet().containsAll(cidrs) ||
-        cidrs.toSet().length != _setting.directCidrs.toSet().length) {
-      notifier.update((it) => it.copyWith(directCidrs: cidrs));
+  Uri? _endpointOf(String value) {
+    final endpoint = Uri.tryParse(value.trim());
+    if (endpoint == null ||
+        endpoint.scheme != 'https' ||
+        endpoint.host.isEmpty) {
+      return null;
     }
+    return endpoint;
+  }
+
+  Future<void> _refreshDirectRoutes() async {
+    final endpoint = _endpoint;
+    if (endpoint == null) return;
+    final cidrs = await ref
+        .read(mkcloudFirewallClientProvider)
+        .directCidrs(endpoint);
+    final notifier = ref.read(mkcloudFirewallSettingProvider.notifier);
+    final didChange =
+        !_setting.directCidrs.toSet().containsAll(cidrs) ||
+        cidrs.toSet().length != _setting.directCidrs.toSet().length;
+    if (!didChange) return;
+    notifier.update((it) => it.copyWith(directCidrs: cidrs));
     await ref.read(setupActionProvider.notifier).applyProfile(silence: true);
   }
 
@@ -145,7 +172,10 @@ class MkcloudFirewall extends _$MkcloudFirewall {
 
   Future<void> _run(MkcloudRunKind kind) async {
     final setting = _setting;
-    if (!_started || setting.apiKey.isEmpty || _inFlight) return;
+    final endpoint = _endpoint;
+    if (!_started || setting.apiKey.isEmpty || endpoint == null || _inFlight) {
+      return;
+    }
     if (kind == MkcloudRunKind.poll && !setting.enable) return;
     _inFlight = true;
     _timer?.cancel();
@@ -153,7 +183,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     try {
       final client = ref.read(mkcloudFirewallClientProvider);
       final initial = await client.post(
-        Uri.parse(mkcloudApiUri),
+        endpoint,
         apiKey: setting.apiKey,
         body: {'api': 1, 'api_action': 'get_provinces'},
       );
@@ -168,7 +198,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
           if (!exists) {
             result = mkcloudResultOf(
               await client.post(
-                Uri.parse(mkcloudApiUri),
+                endpoint,
                 apiKey: setting.apiKey,
                 body: {'api': 1, 'api_action': 'add_whitelist', 'ip': ip},
               ),
@@ -183,7 +213,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
               : result.province!;
           result = mkcloudResultOf(
             await client.post(
-              Uri.parse(mkcloudApiUri),
+              endpoint,
               apiKey: setting.apiKey,
               body: {
                 'api': 1,
@@ -220,7 +250,11 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     bool isLocked = false,
   }) async {
     final setting = _setting;
-    if (!_started || setting.apiKey.isEmpty || (!isLocked && _inFlight)) {
+    final endpoint = _endpoint;
+    if (!_started ||
+        setting.apiKey.isEmpty ||
+        endpoint == null ||
+        (!isLocked && _inFlight)) {
       return false;
     }
     if (!isLocked) {
@@ -231,7 +265,7 @@ class MkcloudFirewall extends _$MkcloudFirewall {
     try {
       final client = ref.read(mkcloudFirewallClientProvider);
       final response = await client.post(
-        Uri.parse(mkcloudApiUri),
+        endpoint,
         apiKey: setting.apiKey,
         body: body,
       );
@@ -260,7 +294,10 @@ class MkcloudFirewall extends _$MkcloudFirewall {
 
   void _schedule() {
     _timer?.cancel();
-    if (_started && _setting.enable && _setting.apiKey.isNotEmpty) {
+    if (_started &&
+        _endpoint != null &&
+        _setting.enable &&
+        _setting.apiKey.isNotEmpty) {
       _timer = Timer(Duration(seconds: _setting.pollSeconds), pollNow);
     }
   }

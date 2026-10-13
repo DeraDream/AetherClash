@@ -10,6 +10,7 @@ _MkcloudFirewallProps _$MkcloudFirewallPropsFromJson(
   Map<String, dynamic> json,
 ) => _MkcloudFirewallProps(
   enable: json['enable'] as bool? ?? false,
+  apiUrl: json['apiUrl'] as String? ?? '',
   apiKey: json['apiKey'] as String? ?? '',
   pollSeconds: (json['pollSeconds'] as num?)?.toInt() ?? 5,
   directCidrs:
@@ -23,6 +24,7 @@ Map<String, dynamic> _$MkcloudFirewallPropsToJson(
   _MkcloudFirewallProps instance,
 ) => <String, dynamic>{
   'enable': instance.enable,
+  'apiUrl': instance.apiUrl,
   'apiKey': instance.apiKey,
   'pollSeconds': instance.pollSeconds,
   'directCidrs': instance.directCidrs,

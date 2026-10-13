@@ -10,6 +10,7 @@ const mkcloudPollSecondsRange = (min: 1, max: 3600);
 abstract class MkcloudFirewallProps with _$MkcloudFirewallProps {
   const factory MkcloudFirewallProps({
     @Default(false) bool enable,
+    @Default('') String apiUrl,
     @Default('') String apiKey,
     @Default(5) int pollSeconds,
     @Default([]) List<String> directCidrs,

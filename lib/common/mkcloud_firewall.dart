@@ -3,16 +3,12 @@ import 'dart:io';
 
 import 'package:fl_clash/models/mkcloud_firewall.dart';
 
-const mkcloudApiHost = 'www.mkcloud.net';
 const mkcloudExitHosts = ['api.ip.sb', 'myip.ipip.net', 'ipv4.icanhazip.com'];
 const mkcloudExitUris = [
   'https://api.ip.sb/ip',
   'https://myip.ipip.net/json',
   'https://ipv4.icanhazip.com/',
 ];
-const mkcloudApiUri =
-    'https://$mkcloudApiHost/index.php?m=provincewhitelist&hosting_id=3438';
-
 bool isIpv4(String value) => RegExp(
   r'^(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}$',
 ).hasMatch(value);
@@ -35,11 +31,11 @@ String? mkcloudExitIpOf(String response) {
   return null;
 }
 
-Future<List<String>> resolveMkcloudDirectCidrs() async {
+Future<List<String>> resolveMkcloudDirectCidrs(Uri apiUri) async {
   final apiAddresses = <String>{};
   final exitAddresses = <String>{};
   final resolvedHosts = await Future.wait(
-    [mkcloudApiHost, ...mkcloudExitHosts].map((host) async {
+    {apiUri.host, ...mkcloudExitHosts}.map((host) async {
       try {
         final addresses = await InternetAddress.lookup(
           host,
@@ -53,7 +49,7 @@ Future<List<String>> resolveMkcloudDirectCidrs() async {
   );
   for (final resolved in resolvedHosts) {
     final addresses = resolved.addresses.map((it) => '${it.address}/32');
-    if (resolved.host == mkcloudApiHost) {
+    if (resolved.host == apiUri.host) {
       apiAddresses.addAll(addresses);
     } else {
       exitAddresses.addAll(addresses);
@@ -62,7 +58,7 @@ Future<List<String>> resolveMkcloudDirectCidrs() async {
   if (apiAddresses.isEmpty || exitAddresses.isEmpty) {
     throw HttpException(
       'Unable to resolve the MKCloud or exit IP service',
-      uri: Uri.parse(mkcloudApiUri),
+      uri: apiUri,
     );
   }
   return {...apiAddresses, ...exitAddresses}.toList(growable: false);
@@ -99,6 +95,9 @@ class MkcloudDirectTransport {
     }
     return result;
   }
+
+  Future<List<String>> directCidrs(Uri apiUri) =>
+      resolveMkcloudDirectCidrs(apiUri);
 
   Future<String> currentIp() async {
     Object? lastError;

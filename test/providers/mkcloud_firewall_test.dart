@@ -9,6 +9,7 @@ import 'package:riverpod/riverpod.dart';
 
 class _FakeMkcloudClient extends MkcloudDirectTransport {
   final requests = <String>[];
+  final uris = <Uri>[];
   Completer<void>? gate;
   var mode = 'province';
   var province = 'jiangsu';
@@ -17,12 +18,18 @@ class _FakeMkcloudClient extends MkcloudDirectTransport {
   Future<String> currentIp() async => '203.0.113.1';
 
   @override
+  Future<List<String>> directCidrs(Uri apiUri) async => const [
+    '203.0.113.2/32',
+  ];
+
+  @override
   Future<Map<String, Object?>> post(
     Uri uri, {
     required String apiKey,
     required Map<String, Object?> body,
   }) async {
     await gate?.future;
+    uris.add(uri);
     final action = body['api_action']! as String;
     requests.add(action);
     if (action == 'add_whitelist') mode = 'ip';
@@ -48,7 +55,10 @@ const _setting = MkcloudFirewallProps(
   enable: true,
   apiKey: 'test-key',
   pollSeconds: 3600,
+  directCidrs: ['203.0.113.2/32'],
 );
+
+final _endpoint = Uri.parse('https://example.test/mkcloud');
 
 void main() {
   late ProviderContainer container;
@@ -67,7 +77,38 @@ void main() {
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
+  Future<void> prepare(MkcloudFirewall notifier) async {
+    notifier.start();
+    await notifier.configure(_endpoint.toString(), _setting.apiKey);
+  }
+
   tearDown(() => container.dispose());
+
+  test(
+    'a configured endpoint is used for the initial status request',
+    () async {
+      createContainer();
+      final notifier = container.read(mkcloudFirewallProvider.notifier);
+
+      await prepare(notifier);
+
+      expect(client.uris, everyElement(_endpoint));
+    },
+  );
+
+  test('stores the user-supplied endpoint with the local settings', () async {
+    createContainer();
+    final notifier = container.read(mkcloudFirewallProvider.notifier);
+    const apiUrl = 'https://personal.example/firewall?id=42';
+
+    await notifier.configure(apiUrl, 'personal-token');
+
+    expect(container.read(mkcloudFirewallSettingProvider).apiUrl, apiUrl);
+    expect(
+      container.read(mkcloudFirewallSettingProvider).apiKey,
+      'personal-token',
+    );
+  });
 
   test(
     'a poll exposes its busy state so conflicting actions are disabled',
@@ -77,6 +118,7 @@ void main() {
       final notifier = container.read(mkcloudFirewallProvider.notifier);
 
       notifier.start();
+      unawaited(notifier.configure(_endpoint.toString(), _setting.apiKey));
       await settle();
       expect(container.read(mkcloudFirewallProvider).isRunning, isTrue);
       expect(await notifier.switchToIp(), isFalse);
@@ -94,9 +136,7 @@ void main() {
       createContainer();
       final notifier = container.read(mkcloudFirewallProvider.notifier);
 
-      notifier.start();
-      await settle();
-      await settle();
+      await prepare(notifier);
       client.requests.clear();
 
       expect(await notifier.switchToIp(), isTrue);
@@ -112,9 +152,7 @@ void main() {
       createContainer();
       final notifier = container.read(mkcloudFirewallProvider.notifier);
 
-      notifier.start();
-      await settle();
-      await settle();
+      await prepare(notifier);
       client.requests.clear();
 
       notifier.selectProvince('beijing');

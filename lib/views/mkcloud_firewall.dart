@@ -167,7 +167,7 @@ class MkcloudFirewallView extends ConsumerWidget {
                           SizedBox(height: 18),
                           _AutomationSettings(),
                           SizedBox(height: 22),
-                          _ApiKeyTile(),
+                          _ConnectionSettings(),
                           SizedBox(height: 22),
                           _Rules(),
                         ],
@@ -217,14 +217,8 @@ class _Overview extends ConsumerWidget {
     final result = state.result;
     final ready = setting.apiKey.isNotEmpty;
     final failed = result?.type == MkcloudResultType.error;
-    final ipMode = result?.mode == 'ip';
-    final provinceMode = result?.mode == 'province';
     final title = failed
         ? l10n.mkcloudStatusError
-        : ipMode
-        ? l10n.mkcloudIpActive
-        : provinceMode
-        ? l10n.mkcloudProvinceActive
         : !setting.enable
         ? l10n.mkcloudStatusOff
         : !ready
@@ -234,169 +228,59 @@ class _Overview extends ConsumerWidget {
         : l10n.mkcloudStatusWaiting;
     final subtitle = failed
         ? l10n.mkcloudStatusErrorDesc
-        : provinceMode
-        ? l10n.mkcloudCurrentProvince(_provinceLabel(result!, result.province))
-        : ipMode
-        ? l10n.mkcloudUsage(result?.count ?? 0, result?.limit ?? 10)
         : state.lastRunAt == null
         ? l10n.mkcloudNeverRun
         : l10n.mkcloudLastRun(state.lastRunAt!.toLocal().toString());
-    final notifier = ref.read(mkcloudFirewallProvider.notifier);
     return _ReferenceCard(
       padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final summary = Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF0EAFF),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  failed
-                      ? Icons.cloud_off_rounded
-                      : ipMode
-                      ? Icons.public_rounded
-                      : Icons.map_rounded,
-                  color: failed ? const Color(0xFFE54B4B) : _referencePurple,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        color: _referenceInk,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: _referenceMuted,
-                      ),
-                    ),
-                    if (setting.enable) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.mkcloudPollEvery(setting.pollSeconds),
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: _referenceMuted,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          );
-          final actions = Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              OutlinedButton.icon(
-                onPressed: ready && !state.isRunning
-                    ? () => unawaited(notifier.query())
-                    : null,
-                icon: const Icon(Icons.travel_explore_rounded, size: 18),
-                label: Text(l10n.mkcloudQueryStatus),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _referenceInk,
-                  backgroundColor: _referenceCell,
-                  side: BorderSide.none,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppRadius.small,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF0EAFF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              failed ? Icons.cloud_off_rounded : Icons.shield_rounded,
+              color: failed ? const Color(0xFFE54B4B) : _referencePurple,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: context.textTheme.headlineSmall?.copyWith(
+                    color: _referenceInk,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-              ),
-              if (result?.mode != null)
-                OutlinedButton.icon(
-                  onPressed: ready && !state.isRunning
-                      ? () => ipMode
-                            ? _showProvinceDialog(context, ref, result!)
-                            : unawaited(notifier.switchToIp())
-                      : null,
-                  icon: Icon(
-                    ipMode ? Icons.map_rounded : Icons.public_rounded,
-                    size: 18,
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: _referenceMuted,
                   ),
-                  label: Text(
-                    ipMode ? l10n.mkcloudSwitchProvince : l10n.mkcloudSwitchIp,
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: _referencePurple,
-                    side: BorderSide.none,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.small,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                ),
+                if (setting.enable) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.mkcloudPollEvery(setting.pollSeconds),
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: _referenceMuted,
                     ),
                   ),
-                ),
-              FilledButton.icon(
-                onPressed: ready && !state.isRunning
-                    ? () => unawaited(notifier.whitelist())
-                    : null,
-                icon: const Icon(Icons.bolt_rounded, size: 18),
-                label: Text(l10n.mkcloudWhitelistNow),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _referenceBlue,
-                  foregroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppRadius.small,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                ),
-              ),
-            ],
-          );
-          return constraints.maxWidth < 720
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [summary, const SizedBox(height: 16), actions],
-                )
-              : Row(
-                  children: [
-                    Expanded(child: summary),
-                    const SizedBox(width: 16),
-                    actions,
-                  ],
-                );
-        },
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  Future<void> _showProvinceDialog(
-    BuildContext context,
-    WidgetRef ref,
-    MkcloudResult result,
-  ) async {
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (context) => _ProvinceDialog(provinces: result.provinces),
-    );
-    if (selected != null) {
-      if (!context.mounted) return;
-      await ref.read(mkcloudFirewallProvider.notifier).setProvince(selected);
-    }
   }
 }
 
@@ -539,104 +423,103 @@ class _AutomationSettings extends ConsumerWidget {
   }
 }
 
-class _ApiKeyTile extends ConsumerWidget {
-  const _ApiKeyTile();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.appLocalizations;
-    final apiKey = ref.watch(
-      mkcloudFirewallSettingProvider.select((it) => it.apiKey),
-    );
-    Future<void> edit() async {
-      final value = await dialogs.showCommonDialog<String>(
-        child: InputDialog(
-          title: l10n.mkcloudApiKey,
-          value: apiKey,
-          obscureText: true,
-        ),
-      );
-      if (value != null) {
-        ref
-            .read(mkcloudFirewallSettingProvider.notifier)
-            .update((it) => it.copyWith(apiKey: value.trim()));
-      }
-    }
+class _ConnectionSettings extends ConsumerStatefulWidget {
+  const _ConnectionSettings();
 
+  @override
+  ConsumerState<_ConnectionSettings> createState() =>
+      _ConnectionSettingsState();
+}
+
+class _ConnectionSettingsState extends ConsumerState<_ConnectionSettings> {
+  late final TextEditingController _endpointController;
+  late final TextEditingController _apiKeyController;
+  Timer? _connectTimer;
+  String? _submittedConfiguration;
+
+  @override
+  void initState() {
+    super.initState();
+    final setting = ref.read(mkcloudFirewallSettingProvider);
+    _endpointController = TextEditingController(text: setting.apiUrl);
+    _apiKeyController = TextEditingController(text: setting.apiKey);
+  }
+
+  @override
+  void dispose() {
+    _connectTimer?.cancel();
+    _endpointController.dispose();
+    _apiKeyController.dispose();
+    super.dispose();
+  }
+
+  void _connect() {
+    final apiUrl = _endpointController.text.trim();
+    final apiKey = _apiKeyController.text.trim();
+    final configuration = '$apiUrl\n$apiKey';
+    if (_submittedConfiguration == configuration) return;
+    _submittedConfiguration = configuration;
+    unawaited(
+      ref.read(mkcloudFirewallProvider.notifier).configure(apiUrl, apiKey),
+    );
+  }
+
+  void _onChanged(String _) {
+    _submittedConfiguration = null;
+    _connectTimer?.cancel();
+    _connectTimer = Timer(const Duration(milliseconds: 500), _connect);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.appLocalizations;
     return _ReferenceCard(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const GlassIconBadge(icon: Icons.key_rounded),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  l10n.mkcloudApiKey,
-                  style: context.textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                tooltip: l10n.mkcloudChangeApiKey,
-                onPressed: edit,
-                icon: const Icon(Icons.edit_rounded),
-                style: IconButton.styleFrom(
-                  foregroundColor: _referenceBlue,
-                  backgroundColor: const Color(0xFFE8F0FF),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.mkcloudApiEndpoint, style: context.textTheme.bodySmall),
-          const SizedBox(height: 6),
-          const _CodeCell(value: mkcloudApiUri),
-          const SizedBox(height: 10),
-          _CodeCell(
-            value: apiKey.isEmpty
-                ? l10n.mkcloudKeyEmpty
-                : _maskedApiKey(apiKey),
-            icon: Icons.key_rounded,
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final endpoint = TextField(
+            controller: _endpointController,
+            keyboardType: TextInputType.url,
+            onChanged: _onChanged,
+            onSubmitted: (_) => _connect(),
+            decoration: InputDecoration(
+              labelText: l10n.mkcloudApiEndpoint,
+              prefixIcon: const Icon(Icons.link_rounded),
+              filled: true,
+              fillColor: _referenceCell,
+              border: AppShape.input,
+              enabledBorder: AppShape.input,
+              focusedBorder: AppShape.input,
+            ),
+          );
+          final apiKey = TextField(
+            controller: _apiKeyController,
+            obscureText: true,
+            onChanged: _onChanged,
+            onSubmitted: (_) => _connect(),
+            decoration: InputDecoration(
+              labelText: l10n.mkcloudApiKey,
+              prefixIcon: const Icon(Icons.key_rounded),
+              filled: true,
+              fillColor: _referenceCell,
+              border: AppShape.input,
+              enabledBorder: AppShape.input,
+              focusedBorder: AppShape.input,
+            ),
+          );
+          return constraints.maxWidth < 640
+              ? Column(children: [endpoint, const SizedBox(height: 12), apiKey])
+              : Row(
+                  children: [
+                    Expanded(child: endpoint),
+                    const SizedBox(width: 12),
+                    Expanded(child: apiKey),
+                  ],
+                );
+        },
       ),
     );
   }
-}
-
-String _maskedApiKey(String value) => value.length <= 8
-    ? '••••••••'
-    : '${value.substring(0, 4)}••••${value.substring(value.length - 4)}';
-
-class _CodeCell extends StatelessWidget {
-  const _CodeCell({required this.value, this.icon});
-  final String value;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    decoration: const BoxDecoration(
-      color: _referenceCell,
-      borderRadius: AppRadius.small,
-    ),
-    child: Row(
-      children: [
-        if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 10)],
-        Expanded(
-          child: SelectableText(
-            value,
-            style: const TextStyle(
-              color: _referenceInk,
-              fontFamily: 'monospace',
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
 }
 
 class _Rules extends ConsumerWidget {
@@ -654,8 +537,26 @@ class _Rules extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _RuleHeading(
-            title: '${l10n.mkcloudProvinceRule}（${l10n.mkcloudProvinceActive}）',
+          Row(
+            children: [
+              Expanded(child: _RuleHeading(title: l10n.mkcloudProvinceRule)),
+              Text(
+                l10n.mkcloudProvinceActive,
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: _referencePurple,
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                onPressed: state.isRunning
+                    ? null
+                    : () => unawaited(
+                        ref.read(mkcloudFirewallProvider.notifier).whitelist(),
+                      ),
+                icon: const Icon(Icons.bolt_rounded, size: 18),
+                label: Text(l10n.mkcloudWhitelistNow),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           _ReferenceCard(
@@ -705,7 +606,31 @@ class _Rules extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _RuleHeading(title: l10n.mkcloudIpRule(result.count, result.limit)),
+        Row(
+          children: [
+            Expanded(
+              child: _RuleHeading(
+                title: l10n.mkcloudIpRule(result.count, result.limit),
+              ),
+            ),
+            Text(
+              l10n.mkcloudIpActive,
+              style: context.textTheme.labelMedium?.copyWith(
+                color: _referencePurple,
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.icon(
+              onPressed: state.isRunning
+                  ? null
+                  : () => unawaited(
+                      ref.read(mkcloudFirewallProvider.notifier).switchToIp(),
+                    ),
+              icon: const Icon(Icons.public_rounded, size: 18),
+              label: Text(l10n.mkcloudAddCurrentExit),
+            ),
+          ],
+        ),
         const SizedBox(height: 10),
         _IpRules(result: result),
       ],
@@ -849,25 +774,6 @@ class _IpRulesState extends ConsumerState<_IpRules> {
                       ),
                     ),
                   ),
-                  OutlinedButton.icon(
-                    onPressed: disabled
-                        ? null
-                        : () => unawaited(
-                            ref
-                                .read(mkcloudFirewallProvider.notifier)
-                                .switchToIp(),
-                          ),
-                    icon: const Icon(Icons.public_rounded, size: 18),
-                    label: Text(l10n.mkcloudAddCurrentExit),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _referenceInk,
-                      backgroundColor: _referenceCell,
-                      side: BorderSide.none,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppRadius.small,
-                      ),
-                    ),
-                  ),
                 ],
               );
               return constraints.maxWidth < 640
@@ -986,49 +892,4 @@ class _IpTableRow extends ConsumerWidget {
       ],
     ),
   );
-}
-
-class _ProvinceDialog extends StatefulWidget {
-  const _ProvinceDialog({required this.provinces});
-  final List<MkcloudProvince> provinces;
-  @override
-  State<_ProvinceDialog> createState() => _ProvinceDialogState();
-}
-
-class _ProvinceDialogState extends State<_ProvinceDialog> {
-  String? selected;
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.appLocalizations;
-    return AlertDialog(
-      title: Text(l10n.mkcloudSelectProvince),
-      content: SizedBox(
-        width: 440,
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final province in widget.provinces)
-              ChoiceChip(
-                label: Text(province.label),
-                selected: selected == province.value,
-                onSelected: (_) => setState(() => selected = province.value),
-              ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: selected == null
-              ? null
-              : () => Navigator.pop(context, selected),
-          child: Text(l10n.mkcloudSetProvince),
-        ),
-      ],
-    );
-  }
 }
