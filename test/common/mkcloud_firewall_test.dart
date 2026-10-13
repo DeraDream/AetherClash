@@ -31,4 +31,14 @@ void main() {
     expect(isIpv4('203.0.113.1/32'), isFalse);
     expect(isIpv4('999.0.0.1'), isFalse);
   });
+
+  test('extracts an exit IPv4 from supported service response formats', () {
+    expect(mkcloudExitIpOf('203.0.113.1\n'), '203.0.113.1');
+    expect(mkcloudExitIpOf('{"ip":"203.0.113.1"}'), '203.0.113.1');
+    expect(
+      mkcloudExitIpOf('{"ret":"ok","data":{"ip":"203.0.113.1"}}'),
+      '203.0.113.1',
+    );
+    expect(mkcloudExitIpOf('{"ip":"not-an-ip"}'), isNull);
+  });
 }

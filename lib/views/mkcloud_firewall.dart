@@ -64,38 +64,6 @@ String _provinceLabel(MkcloudResult result, String? value) {
   return value;
 }
 
-Future<void> _showRequestLoading(
-  BuildContext context,
-  Future<dynamic> request,
-) async {
-  final navigator = Navigator.of(context, rootNavigator: true);
-  unawaited(
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const PopScope(
-        canPop: false,
-        child: Center(
-          child: Card(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: CommonCircleLoading(),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-  try {
-    await request.timeout(const Duration(seconds: 60));
-  } on TimeoutException {
-    // The provider records the eventual request result; the UI must never
-    // block the user longer than a minute.
-  } finally {
-    if (navigator.canPop()) navigator.pop();
-  }
-}
-
 class _ReferenceCard extends StatelessWidget {
   const _ReferenceCard({
     required this.child,
@@ -146,57 +114,93 @@ class _ReferenceActionCard extends StatelessWidget {
   );
 }
 
-class MkcloudFirewallView extends StatelessWidget {
+class MkcloudFirewallView extends ConsumerWidget {
   const MkcloudFirewallView({super.key});
 
   @override
-  Widget build(BuildContext context) => ScaffoldTitleSlot(
-    title: Row(
-      children: [
-        Text(
-          context.appLocalizations.mkcloudFirewall,
-          style: context.textTheme.headlineSmall?.copyWith(
-            color: _referenceInk,
-            fontWeight: FontWeight.w800,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isRunning = ref.watch(
+      mkcloudFirewallProvider.select((state) => state.isRunning),
+    );
+    return ScaffoldTitleSlot(
+      title: Row(
+        children: [
+          Text(
+            context.appLocalizations.mkcloudFirewall,
+            style: context.textTheme.headlineSmall?.copyWith(
+              color: _referenceInk,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Text(
-          context.appLocalizations.mkcloudProductService,
-          style: context.textTheme.bodyMedium?.copyWith(color: _referenceMuted),
-        ),
-      ],
-    ),
-    child: BaseScaffold(
-      title: context.appLocalizations.mkcloudFirewall,
-      body: ColoredBox(
-        color: _referencePage,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            24,
-            20,
-            24,
-            28 + BottomInsetScope.of(context),
+          const SizedBox(width: 16),
+          Text(
+            context.appLocalizations.mkcloudProductService,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: _referenceMuted,
+            ),
           ),
+        ],
+      ),
+      child: BaseScaffold(
+        title: context.appLocalizations.mkcloudFirewall,
+        body: Stack(
           children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _Overview(),
-                    SizedBox(height: 18),
-                    _AutomationSettings(),
-                    SizedBox(height: 22),
-                    _ApiKeyTile(),
-                    SizedBox(height: 22),
-                    _Rules(),
-                  ],
+            ColoredBox(
+              color: _referencePage,
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  20,
+                  24,
+                  28 + BottomInsetScope.of(context),
                 ),
+                children: [
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: _maxContentWidth,
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _Overview(),
+                          SizedBox(height: 18),
+                          _AutomationSettings(),
+                          SizedBox(height: 22),
+                          _ApiKeyTile(),
+                          SizedBox(height: 22),
+                          _Rules(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+            if (isRunning) const _MkcloudLoadingOverlay(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MkcloudLoadingOverlay extends StatelessWidget {
+  const _MkcloudLoadingOverlay();
+
+  @override
+  Widget build(BuildContext context) => const Positioned.fill(
+    child: AbsorbPointer(
+      child: ColoredBox(
+        color: Color(0x140F172A),
+        child: Center(
+          child: _ReferenceCard(
+            padding: EdgeInsets.all(16),
+            child: SizedBox.square(
+              dimension: 28,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+          ),
         ),
       ),
     ),
@@ -299,9 +303,7 @@ class _Overview extends ConsumerWidget {
             children: [
               OutlinedButton.icon(
                 onPressed: ready && !state.isRunning
-                    ? () => unawaited(
-                        _showRequestLoading(context, notifier.query()),
-                      )
+                    ? () => unawaited(notifier.query())
                     : null,
                 icon: const Icon(Icons.travel_explore_rounded, size: 18),
                 label: Text(l10n.mkcloudQueryStatus),
@@ -323,12 +325,7 @@ class _Overview extends ConsumerWidget {
                   onPressed: ready && !state.isRunning
                       ? () => ipMode
                             ? _showProvinceDialog(context, ref, result!)
-                            : unawaited(
-                                _showRequestLoading(
-                                  context,
-                                  notifier.switchToIp(),
-                                ),
-                              )
+                            : unawaited(notifier.switchToIp())
                       : null,
                   icon: Icon(
                     ipMode ? Icons.map_rounded : Icons.public_rounded,
@@ -352,9 +349,7 @@ class _Overview extends ConsumerWidget {
                 ),
               FilledButton.icon(
                 onPressed: ready && !state.isRunning
-                    ? () => unawaited(
-                        _showRequestLoading(context, notifier.whitelist()),
-                      )
+                    ? () => unawaited(notifier.whitelist())
                     : null,
                 icon: const Icon(Icons.bolt_rounded, size: 18),
                 label: Text(l10n.mkcloudWhitelistNow),
@@ -400,10 +395,7 @@ class _Overview extends ConsumerWidget {
     );
     if (selected != null) {
       if (!context.mounted) return;
-      await _showRequestLoading(
-        context,
-        ref.read(mkcloudFirewallProvider.notifier).setProvince(selected),
-      );
+      await ref.read(mkcloudFirewallProvider.notifier).setProvince(selected);
     }
   }
 }
@@ -804,12 +796,7 @@ class _IpRulesState extends ConsumerState<_IpRules> {
     final value = _controller.text.trim();
     if (!isIpv4(value)) return;
     _controller.clear();
-    unawaited(
-      _showRequestLoading(
-        context,
-        ref.read(mkcloudFirewallProvider.notifier).addIp(value),
-      ),
-    );
+    unawaited(ref.read(mkcloudFirewallProvider.notifier).addIp(value));
   }
 
   @override
@@ -866,12 +853,9 @@ class _IpRulesState extends ConsumerState<_IpRules> {
                     onPressed: disabled
                         ? null
                         : () => unawaited(
-                            _showRequestLoading(
-                              context,
-                              ref
-                                  .read(mkcloudFirewallProvider.notifier)
-                                  .switchToIp(),
-                            ),
+                            ref
+                                .read(mkcloudFirewallProvider.notifier)
+                                .switchToIp(),
                           ),
                     icon: const Icon(Icons.public_rounded, size: 18),
                     label: Text(l10n.mkcloudAddCurrentExit),

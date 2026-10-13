@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:fl_clash/models/mkcloud_firewall.dart';
 
 const mkcloudApiHost = 'www.mkcloud.net';
-const mkcloudExitHosts = ['api.ipify.org', 'api4.ipify.org'];
+const mkcloudExitHosts = ['api.ip.sb', 'myip.ipip.net', 'ipv4.icanhazip.com'];
 const mkcloudExitUris = [
-  'https://api.ipify.org?format=json',
-  'https://api4.ipify.org?format=json',
+  'https://api.ip.sb/ip',
+  'https://myip.ipip.net/json',
+  'https://ipv4.icanhazip.com/',
 ];
 const mkcloudApiUri =
     'https://$mkcloudApiHost/index.php?m=provincewhitelist&hosting_id=3438';
@@ -16,22 +17,47 @@ bool isIpv4(String value) => RegExp(
   r'^(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}$',
 ).hasMatch(value);
 
+String? mkcloudExitIpOf(String response) {
+  final body = response.trim();
+  if (isIpv4(body)) return body;
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is! Map) return null;
+    final data = decoded['data'];
+    final candidates = [decoded['ip'], if (data is Map) data['ip']];
+    for (final candidate in candidates) {
+      final ip = candidate?.toString();
+      if (ip != null && isIpv4(ip)) return ip;
+    }
+  } on FormatException {
+    return null;
+  }
+  return null;
+}
+
 Future<List<String>> resolveMkcloudDirectCidrs() async {
   final apiAddresses = <String>{};
   final exitAddresses = <String>{};
-  for (final host in [mkcloudApiHost, ...mkcloudExitHosts]) {
-    try {
-      final resolved = await InternetAddress.lookup(
-        host,
-        type: InternetAddressType.IPv4,
-      ).timeout(const Duration(seconds: 8));
-      final addresses = resolved.map((it) => '${it.address}/32');
-      if (host == mkcloudApiHost) {
-        apiAddresses.addAll(addresses);
-      } else {
-        exitAddresses.addAll(addresses);
+  final resolvedHosts = await Future.wait(
+    [mkcloudApiHost, ...mkcloudExitHosts].map((host) async {
+      try {
+        final addresses = await InternetAddress.lookup(
+          host,
+          type: InternetAddressType.IPv4,
+        ).timeout(const Duration(seconds: 8));
+        return (host: host, addresses: addresses);
+      } catch (_) {
+        return (host: host, addresses: <InternetAddress>[]);
       }
-    } catch (_) {}
+    }),
+  );
+  for (final resolved in resolvedHosts) {
+    final addresses = resolved.addresses.map((it) => '${it.address}/32');
+    if (resolved.host == mkcloudApiHost) {
+      apiAddresses.addAll(addresses);
+    } else {
+      exitAddresses.addAll(addresses);
+    }
   }
   if (apiAddresses.isEmpty || exitAddresses.isEmpty) {
     throw HttpException(
@@ -78,16 +104,11 @@ class MkcloudDirectTransport {
     Object? lastError;
     for (final value in mkcloudExitUris) {
       try {
-        final request = await _http
-            .getUrl(Uri.parse(value))
-            .timeout(const Duration(seconds: 12));
-        final response = await request.close().timeout(
-          const Duration(seconds: 12),
-        );
-        final raw = await response.transform(utf8.decoder).join();
-        final body = jsonDecode(raw);
-        final ip = body is Map ? body['ip']?.toString() : null;
-        if (response.statusCode == HttpStatus.ok && ip != null && isIpv4(ip)) {
+        final response = await _currentIpResponse(
+          Uri.parse(value),
+        ).timeout(const Duration(seconds: 8));
+        final ip = mkcloudExitIpOf(response.body);
+        if (response.statusCode == HttpStatus.ok && ip != null) {
           return ip;
         }
         lastError = const HttpException('Invalid exit IP response');
@@ -97,6 +118,15 @@ class MkcloudDirectTransport {
     }
     throw HttpException(
       'Unable to determine the direct IPv4 exit${lastError == null ? '' : ': $lastError'}',
+    );
+  }
+
+  Future<({int statusCode, String body})> _currentIpResponse(Uri uri) async {
+    final request = await _http.getUrl(uri);
+    final response = await request.close();
+    return (
+      statusCode: response.statusCode,
+      body: await response.transform(utf8.decoder).join(),
     );
   }
 
